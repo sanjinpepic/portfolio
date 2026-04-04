@@ -9,6 +9,11 @@ const projectLinks = [...document.querySelectorAll(".project-link[data-browser-u
 const browserFrame = document.getElementById("browser-frame");
 const browserAddress = document.getElementById("browser-url");
 const browserTitle = document.getElementById("browser-title");
+const browserGo = document.getElementById("browser-go");
+const browserBack = document.getElementById("browser-back");
+const browserForward = document.getElementById("browser-forward");
+const browserHome = document.getElementById("browser-home");
+const browserStatus = document.getElementById("browser-status");
 const clock = document.getElementById("clock");
 
 let topZ = 10;
@@ -52,8 +57,19 @@ function closeWindow(id) {
 function openInRetroBrowser(url, title) {
   if (browserFrame) browserFrame.src = url;
   if (browserAddress) browserAddress.value = url;
+  if (browserStatus) browserStatus.textContent = `Loading ${url}...`;
   if (browserTitle) browserTitle.textContent = `Retro Browser — ${title}`;
   openWindow("browser-window");
+}
+
+function navigateBrowserTo(url) {
+  if (!url) return;
+  const hasProtocol = /^https?:\/\//i.test(url) || url.startsWith("about:");
+  const normalizedUrl = hasProtocol ? url : `https://${url}`;
+  if (browserAddress) browserAddress.value = normalizedUrl;
+  if (browserFrame) browserFrame.src = normalizedUrl;
+  if (browserStatus) browserStatus.textContent = `Loading ${normalizedUrl}...`;
+  if (browserTitle) browserTitle.textContent = "Retro Browser";
 }
 
 function closeFocusedWindow() {
@@ -108,6 +124,42 @@ projectLinks.forEach((projectLink) => {
     openInRetroBrowser(projectLink.dataset.browserUrl, projectLink.dataset.browserTitle || "Project");
   });
 });
+
+if (browserGo) {
+  browserGo.addEventListener("click", () => navigateBrowserTo(browserAddress?.value || ""));
+}
+
+if (browserAddress) {
+  browserAddress.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      navigateBrowserTo(browserAddress.value);
+    }
+  });
+}
+
+if (browserHome) {
+  browserHome.addEventListener("click", () => navigateBrowserTo("https://metalcre.vercel.app/"));
+}
+
+if (browserBack) {
+  browserBack.addEventListener("click", () => {
+    const frameWindow = browserFrame?.contentWindow;
+    frameWindow?.history.back();
+  });
+}
+
+if (browserForward) {
+  browserForward.addEventListener("click", () => {
+    const frameWindow = browserFrame?.contentWindow;
+    frameWindow?.history.forward();
+  });
+}
+
+if (browserFrame) {
+  browserFrame.addEventListener("load", () => {
+    if (browserStatus) browserStatus.textContent = "Document: Done";
+  });
+}
 
 windows.forEach((win) => {
   const handle = win.querySelector(".drag-handle");

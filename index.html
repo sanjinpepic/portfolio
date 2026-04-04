@@ -138,7 +138,7 @@
       <section
         id="browser-window"
         class="window"
-        style="--left: 19rem; --top: 7.5rem; --width: 44rem"
+        style="--left: 19rem; --top: 7.5rem; --width: 44rem; --height: 31rem"
         aria-labelledby="browser-title"
       >
         <header class="title-bar drag-handle">
@@ -146,9 +146,16 @@
           <button class="close-btn" data-close="browser-window" aria-label="Close Browser">×</button>
         </header>
         <div class="window-content browser-content">
+          <div class="browser-menubar" aria-hidden="true">File Edit View Go Bookmarks Options Directory Window Help</div>
           <div class="browser-chrome" role="group" aria-label="Retro browser chrome">
-            <label for="browser-url" class="browser-label">Address:</label>
-            <input id="browser-url" class="browser-address" type="text" readonly value="about:blank" />
+            <div class="browser-nav-buttons">
+              <button id="browser-back" class="browser-nav-btn" type="button">◀</button>
+              <button id="browser-forward" class="browser-nav-btn" type="button">▶</button>
+              <button id="browser-home" class="browser-nav-btn" type="button">Home</button>
+            </div>
+            <label for="browser-url" class="browser-label">Location:</label>
+            <input id="browser-url" class="browser-address" type="text" value="about:blank" />
+            <button id="browser-go" class="browser-go-btn" type="button">Go</button>
           </div>
           <iframe
             id="browser-frame"
@@ -157,6 +164,10 @@
             title="Retro Browser Content"
             loading="lazy"
           ></iframe>
+          <div class="browser-status-bar">
+            <span id="browser-status">Document: Done</span>
+            <span class="browser-brand">Netscape-ish 1.0</span>
+          </div>
           <p class="resume-note">
             If the embedded site blocks iframes, use the “Open in new tab” link from Projects.
           </p>
