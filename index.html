@@ -46,28 +46,32 @@
     </div>
 
     <main id="desktop" class="desktop" aria-label="Retro portfolio desktop">
-      <button class="desktop-icon" data-open="about-window" style="--x: 3rem; --y: 4.5rem">
-        <span class="icon emoji" aria-hidden="true">💾</span>
-        <span class="label">About Me</span>
-      </button>
-      <button class="desktop-icon" data-open="projects-window" style="--x: 3rem; --y: 12.5rem">
-        <span class="icon emoji" aria-hidden="true">🗂️</span>
-        <span class="label">Projects</span>
-      </button>
-      <button class="desktop-icon" data-open="browser-window" style="--x: 3rem; --y: 20.5rem">
-        <span class="icon emoji" aria-hidden="true">🌐</span>
-        <span class="label">Browser</span>
-      </button>
-      <button class="desktop-icon" data-open="resume-window" style="--x: 3rem; --y: 28.5rem">
-        <span class="icon emoji" aria-hidden="true">📄</span>
-        <span class="label">Resume</span>
-      </button>
-      <button class="desktop-icon" data-open="contact-window" style="--x: 3rem; --y: 36.5rem">
-        <span class="icon emoji" aria-hidden="true">☎️</span>
-        <span class="label">Contact</span>
-      </button>
+      <div class="desktop-icons" aria-label="Desktop shortcuts">
+        <button class="desktop-icon" data-open="about-window" style="--x: 3rem; --y: 4.5rem">
+          <span class="icon emoji" aria-hidden="true">💾</span>
+          <span class="label">About Me</span>
+        </button>
+        <button class="desktop-icon" data-open="projects-window" style="--x: 3rem; --y: 12.5rem">
+          <span class="icon emoji" aria-hidden="true">🗂️</span>
+          <span class="label">Projects</span>
+        </button>
+        <button class="desktop-icon" data-open="browser-window" style="--x: 3rem; --y: 20.5rem">
+          <span class="icon emoji" aria-hidden="true">🌐</span>
+          <span class="label">Browser</span>
+        </button>
+        <button class="desktop-icon" data-open="resume-window" style="--x: 3rem; --y: 28.5rem">
+          <span class="icon emoji" aria-hidden="true">📄</span>
+          <span class="label">Resume</span>
+        </button>
+        <button class="desktop-icon" data-open="contact-window" style="--x: 3rem; --y: 36.5rem">
+          <span class="icon emoji" aria-hidden="true">☎️</span>
+          <span class="label">Contact</span>
+        </button>
+      </div>
 
-      <section
+      <div class="window-stack">
+
+        <section
         id="about-window"
         class="window"
         style="--left: 18rem; --top: 6rem; --width: 26rem"
@@ -80,7 +84,7 @@
         <div class="window-content" data-window-src="windows/about.html"></div>
       </section>
 
-      <section
+        <section
         id="projects-window"
         class="window"
         style="--left: 31rem; --top: 9rem; --width: 32rem"
@@ -93,7 +97,7 @@
         <div class="window-content" data-window-src="windows/projects.html"></div>
       </section>
 
-      <section
+        <section
         id="browser-window"
         class="window"
         style="--left: 6rem; --top: 4rem; --width: 78rem; --height: 38rem"
@@ -106,7 +110,7 @@
         <div class="window-content browser-content" data-window-src="windows/browser.html"></div>
       </section>
 
-      <section
+        <section
         id="resume-window"
         class="window"
         style="--left: 20rem; --top: 8rem; --width: 48rem; --height: 34rem"
@@ -119,7 +123,7 @@
         <div class="window-content resume-content" data-window-src="windows/resume.html"></div>
       </section>
 
-      <section
+        <section
         id="contact-window"
         class="window"
         style="--left: 38rem; --top: 18rem; --width: 24rem"
@@ -130,7 +134,8 @@
           <button class="close-btn" data-close="contact-window" aria-label="Close Contact">×</button>
         </header>
         <div class="window-content" data-window-src="windows/contact.html"></div>
-      </section>
+        </section>
+      </div>
     </main>
 
     <script src="apps/metalcore.js"></script>
