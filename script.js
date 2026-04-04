@@ -193,24 +193,11 @@ function loadBrowserHomePage() {
     <meta charset="UTF-8" />
     <title>Projects Home</title>
     <style>
-      body {
-        font-family: "VT323", monospace;
-        background: #f5f5f5;
-        color: #111;
-        margin: 0;
-        padding: 0.6rem 0.75rem;
-        font-size: 1.2rem;
-        line-height: 1.2;
-      }
-      h1 {
-        margin: 0.55rem 0 0.3rem;
-        line-height: 1.1;
-        font-size: 1.65rem;
-        text-transform: uppercase;
-      }
-      p { margin: 0 0 0.4rem; }
-      ul { margin: 0 0 0.45rem 1.1rem; padding: 0; }
-      li { margin-bottom: 0.15rem; }
+      body { font-family: "VT323", monospace; background: #f4f4f4; color: #111; margin: 0; padding: 1rem 1.25rem; font-size: 1.35rem; }
+      h1 { margin: 0 0 0.6rem; font-size: 1.8rem; }
+      p { margin: 0 0 0.7rem; }
+      ul { margin: 0; padding-left: 1.1rem; }
+      li { margin-bottom: 0.55rem; }
       a { color: #133f9a; }
     </style>
   </head>
