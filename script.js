@@ -17,6 +17,7 @@ let browserForward = null;
 let browserHome = null;
 let browserReload = null;
 let browserStop = null;
+let browserGo = null;
 let browserThrobber = null;
 let browserStatus = null;
 let resumeText = null;
@@ -145,6 +146,7 @@ function syncDynamicElements() {
   browserHome = document.getElementById("browser-home");
   browserReload = document.getElementById("browser-reload");
   browserStop = document.getElementById("browser-stop");
+  browserGo = document.getElementById("browser-go");
   browserThrobber = document.getElementById("browser-throbber");
   browserStatus = document.getElementById("browser-status");
   resumeText = document.getElementById("resume-text");
@@ -280,10 +282,22 @@ function loadBrowserHomePage() {
 
 function navigateBrowserTo(url) {
   if (!url) return;
-  const hasProtocol = /^https?:\/\//i.test(url) || url.startsWith("about:");
-  const normalizedUrl = hasProtocol ? url : `https://${url}`;
+  const trimmedUrl = url.trim();
+  if (!trimmedUrl) return;
+  const hasProtocol = /^https?:\/\//i.test(trimmedUrl) || trimmedUrl.startsWith("about:");
+  const looksLikeLocalPath =
+    /^\.{0,2}\//.test(trimmedUrl) || trimmedUrl.startsWith("/") || /^[\w-]+\/[\w./-]+$/.test(trimmedUrl);
+  const normalizedUrl = hasProtocol || looksLikeLocalPath ? trimmedUrl : `https://${trimmedUrl}`;
+
+  if (normalizedUrl === BROWSER_HOME_URL) {
+    loadBrowserHomePage();
+    return;
+  }
+
   if (!isAllowedUrl(normalizedUrl)) {
-    if (browserStatus) browserStatus.textContent = "Navigation blocked: only linked projects may be loaded.";
+    if (browserStatus) {
+      browserStatus.textContent = `Blocked: ${normalizedUrl} is not in the allowed project list.`;
+    }
     return;
   }
   if (browserAddress) browserAddress.value = normalizedUrl;
@@ -381,6 +395,21 @@ function bindDynamicContentEvents() {
     browserStop.addEventListener("click", () => {
       if (browserThrobber) browserThrobber.classList.remove("loading");
       if (browserStatus) browserStatus.textContent = "Transfer interrupted.";
+    });
+  }
+
+  if (browserGo) {
+    browserGo.addEventListener("click", () => {
+      if (!browserAddress) return;
+      navigateBrowserTo(browserAddress.value);
+    });
+  }
+
+  if (browserAddress) {
+    browserAddress.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter") return;
+      event.preventDefault();
+      navigateBrowserTo(browserAddress.value);
     });
   }
 
