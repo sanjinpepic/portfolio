@@ -19,6 +19,7 @@ const browserThrobber = document.getElementById("browser-throbber");
 const browserStatus = document.getElementById("browser-status");
 const clock = document.getElementById("clock");
 const resumeText = document.getElementById("resume-text");
+const BROWSER_HOME_URL = "about:home";
 
 function escapeHtml(value) {
   return value
@@ -138,6 +139,9 @@ function bringToFront(win) {
 function openWindow(id) {
   const win = document.getElementById(id);
   if (!win) return;
+  if (id === "browser-window" && browserAddress?.value === "about:blank") {
+    loadBrowserHomePage();
+  }
   win.classList.add("open");
   bringToFront(win);
 }
@@ -173,12 +177,60 @@ function isAllowedUrl(url) {
 
 function openInRetroBrowser(url, title) {
   if (!isAllowedUrl(url)) return; // silently ignore; called only from project links
+  if (browserFrame) browserFrame.removeAttribute("srcdoc");
   if (browserFrame) browserFrame.src = url;
   if (browserAddress) browserAddress.value = url;
   if (browserStatus) browserStatus.textContent = `Loading ${url}...`;
   if (browserTitle) browserTitle.textContent = `Netscape Navigator — ${title}`;
   if (browserThrobber) browserThrobber.classList.add("loading");
   openWindow("browser-window");
+}
+
+function loadBrowserHomePage() {
+  const homeMarkup = `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Projects Home</title>
+    <style>
+      body {
+        font-family: "VT323", monospace;
+        background: #f5f5f5;
+        color: #111;
+        margin: 0;
+        padding: 0.6rem 0.75rem;
+        font-size: 1.2rem;
+        line-height: 1.2;
+      }
+      h1 {
+        margin: 0.55rem 0 0.3rem;
+        line-height: 1.1;
+        font-size: 1.65rem;
+        text-transform: uppercase;
+      }
+      p { margin: 0 0 0.4rem; }
+      ul { margin: 0 0 0.45rem 1.1rem; padding: 0; }
+      li { margin-bottom: 0.15rem; }
+      a { color: #133f9a; }
+    </style>
+  </head>
+  <body>
+    <h1>Projects Home</h1>
+    <p>Select a project to view:</p>
+    <ul>
+      <li><a href="https://metalcre.vercel.app/">01 — MetalCore</a></li>
+      <li>02 — Product Analytics Dashboard</li>
+      <li>03 — Commerce Design System</li>
+      <li>04 — AI Support Assistant</li>
+    </ul>
+  </body>
+</html>`;
+
+  if (browserFrame) browserFrame.srcdoc = homeMarkup;
+  if (browserAddress) browserAddress.value = BROWSER_HOME_URL;
+  if (browserStatus) browserStatus.textContent = "Document: Done";
+  if (browserTitle) browserTitle.textContent = "Netscape Navigator — Projects Home";
+  if (browserThrobber) browserThrobber.classList.remove("loading");
 }
 
 function navigateBrowserTo(url) {
@@ -250,7 +302,7 @@ projectLinks.forEach((projectLink) => {
 });
 
 if (browserHome) {
-  browserHome.addEventListener("click", () => navigateBrowserTo("https://metalcre.vercel.app/"));
+  browserHome.addEventListener("click", () => loadBrowserHomePage());
 }
 
 if (browserBack) {
