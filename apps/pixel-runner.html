@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pixel Runner: Cat Escape</title>
+    <style>
+      :root {
+        --ink: #0f0f0f;
+        --sky: #b2f0ff;
+        --ground: #34545f;
+        --ui: #f8f8f8;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: "VT323", monospace;
+        background: linear-gradient(#d4f7ff, #8fe0ff 60%, #77c0d8);
+        color: var(--ink);
+      }
+
+      .game-wrap {
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 1rem;
+      }
+
+      .game-shell {
+        width: min(100%, 720px);
+        border: 4px solid #111;
+        background: #e6fbff;
+        box-shadow: 4px 4px 0 #000;
+        padding: 0.6rem;
+      }
+
+      canvas {
+        width: 100%;
+        height: auto;
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+        background: var(--sky);
+        border: 3px solid #000;
+        display: block;
+      }
+
+      .hud {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 1.5rem;
+        margin-top: 0.45rem;
+      }
+
+      .hint {
+        margin: 0.35rem 0 0;
+        font-size: 1.2rem;
+      }
+
+      kbd {
+        font: inherit;
+        border: 2px solid #000;
+        background: var(--ui);
+        padding: 0 0.25rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="game-wrap">
+      <section class="game-shell" aria-label="Pixel runner game">
+        <canvas id="game" width="640" height="240" aria-label="Running cat game"></canvas>
+        <div class="hud">
+          <strong>CAT ESCAPE.EXE</strong>
+          <span id="score">Distance: 0m</span>
+        </div>
+        <p class="hint">Jump with <kbd>Space</kbd>, <kbd>W</kbd>, <kbd>↑</kbd>, or tap/click. Avoid office cacti forever.</p>
+      </section>
+    </main>
+
+    <script>
+      const canvas = document.getElementById("game");
+      const ctx = canvas.getContext("2d");
+      const scoreEl = document.getElementById("score");
+
+      const world = { w: canvas.width, h: canvas.height, groundY: 190 };
+      const gravity = 0.45;
+      const jumpPower = -8.5;
+
+      const player = {
+        x: 72,
+        y: world.groundY - 24,
+        w: 24,
+        h: 24,
+        vy: 0,
+        onGround: true
+      };
+
+      let obstacles = [];
+      let tick = 0;
+      let speed = 3.4;
+      let score = 0;
+      let best = Number(localStorage.getItem("pixelRunnerBest") || 0);
+      let gameOver = false;
+
+      function jump() {
+        if (!player.onGround || gameOver) return;
+        player.vy = jumpPower;
+        player.onGround = false;
+      }
+
+      function resetGame() {
+        obstacles = [];
+        score = 0;
+        speed = 3.4;
+        tick = 0;
+        player.y = world.groundY - player.h;
+        player.vy = 0;
+        player.onGround = true;
+        gameOver = false;
+      }
+
+      function spawnObstacle() {
+        const size = Math.random() > 0.72 ? 22 : 16;
+        obstacles.push({
+          x: world.w + 12,
+          y: world.groundY - size,
+          w: size,
+          h: size,
+          blink: Math.random() > 0.6
+        });
+      }
+
+      function rectHit(a, b) {
+        return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+      }
+
+      function drawPixelCat(x, y) {
+        ctx.fillStyle = "#202020";
+        ctx.fillRect(x + 4, y + 8, 16, 12);
+        ctx.fillRect(x, y + 10, 6, 8);
+        ctx.fillRect(x + 18, y + 10, 6, 8);
+
+        ctx.fillStyle = "#202020";
+        ctx.fillRect(x + 5, y + 4, 4, 4);
+        ctx.fillRect(x + 15, y + 4, 4, 4);
+
+        ctx.fillStyle = "#f4f4f4";
+        ctx.fillRect(x + 7, y + 12, 2, 2);
+        ctx.fillRect(x + 15, y + 12, 2, 2);
+
+        ctx.fillStyle = "#ff8ea9";
+        ctx.fillRect(x + 11, y + 14, 2, 2);
+
+        const legLift = player.onGround ? 0 : 2;
+        ctx.fillStyle = "#111";
+        ctx.fillRect(x + 6, y + 20 - legLift, 3, 4 + legLift);
+        ctx.fillRect(x + 15, y + 20 + legLift, 3, 4 - legLift);
+      }
+
+      function drawOfficeCactus(ob) {
+        ctx.fillStyle = ob.blink && Math.floor(tick / 25) % 2 === 0 ? "#2f9158" : "#2a7e4d";
+        ctx.fillRect(ob.x + 6, ob.y, ob.w - 12, ob.h);
+        ctx.fillRect(ob.x + 2, ob.y + 7, 5, 5);
+        ctx.fillRect(ob.x + ob.w - 7, ob.y + 11, 5, 5);
+        ctx.fillStyle = "#ffdc6a";
+        ctx.fillRect(ob.x + 8, ob.y + 4, 2, 2);
+      }
+
+      function drawBackdrop() {
+        ctx.fillStyle = "#95def8";
+        ctx.fillRect(0, 0, world.w, world.h);
+
+        const cloudShift = (tick * 0.35) % (world.w + 50);
+        for (let i = 0; i < 4; i++) {
+          const x = world.w - cloudShift + i * 180;
+          ctx.fillStyle = "rgba(255,255,255,0.8)";
+          ctx.fillRect(x, 36, 26, 9);
+          ctx.fillRect(x + 8, 30, 24, 9);
+        }
+
+        ctx.fillStyle = "#4f7f5c";
+        ctx.fillRect(0, world.groundY, world.w, world.h - world.groundY);
+
+        ctx.fillStyle = "#355640";
+        for (let i = 0; i < world.w; i += 22) {
+          const offset = (tick * speed) % 22;
+          ctx.fillRect(i - offset, world.groundY + 8, 10, 3);
+        }
+      }
+
+      function drawGameOver() {
+        ctx.fillStyle = "rgba(0,0,0,0.7)";
+        ctx.fillRect(120, 70, 400, 110);
+        ctx.fillStyle = "#fff";
+        ctx.font = "28px VT323";
+        ctx.fillText("MEOW-CRASH!", 255, 110);
+        ctx.font = "20px VT323";
+        ctx.fillText("Press Space / Click to restart", 212, 138);
+        ctx.fillText(`Best distance: ${best}m`, 245, 162);
+      }
+
+      function update() {
+        tick += 1;
+        if (!gameOver) {
+          player.vy += gravity;
+          player.y += player.vy;
+
+          if (player.y >= world.groundY - player.h) {
+            player.y = world.groundY - player.h;
+            player.vy = 0;
+            player.onGround = true;
+          }
+
+          if (tick % Math.max(40, 95 - Math.floor(speed * 11)) === 0) {
+            spawnObstacle();
+          }
+
+          obstacles.forEach((ob) => {
+            ob.x -= speed;
+          });
+          obstacles = obstacles.filter((ob) => ob.x + ob.w > -10);
+
+          for (const ob of obstacles) {
+            if (rectHit(player, ob)) {
+              gameOver = true;
+              best = Math.max(best, Math.floor(score));
+              localStorage.setItem("pixelRunnerBest", String(best));
+              break;
+            }
+          }
+
+          score += 0.11;
+          speed = Math.min(7.8, speed + 0.0008);
+        }
+
+        drawBackdrop();
+        obstacles.forEach(drawOfficeCactus);
+        drawPixelCat(player.x, Math.floor(player.y));
+        if (gameOver) drawGameOver();
+
+        const dist = Math.floor(score);
+        scoreEl.textContent = `Distance: ${dist}m | Best: ${best}m`;
+        requestAnimationFrame(update);
+      }
+
+      window.addEventListener("keydown", (event) => {
+        if (!["Space", "ArrowUp", "KeyW"].includes(event.code)) return;
+        event.preventDefault();
+        if (gameOver) {
+          resetGame();
+          return;
+        }
+        jump();
+      });
+
+      canvas.addEventListener("pointerdown", () => {
+        if (gameOver) {
+          resetGame();
+          return;
+        }
+        jump();
+      });
+
+      update();
+    </script>
+  </body>
+</html>
