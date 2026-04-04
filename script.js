@@ -21,14 +21,12 @@ let browserStop = null;
 let browserThrobber = null;
 let browserStatus = null;
 let resumeText = null;
-
 function escapeHtml(value) {
   return value
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;");
 }
-
 function inlineMarkdownToHtml(line) {
   const escaped = escapeHtml(line);
   return escaped
@@ -36,41 +34,34 @@ function inlineMarkdownToHtml(line) {
     .replace(/`(.+?)`/g, "<code>$1</code>")
     .replace(/\[(.+?)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
 }
-
 function markdownToRetroHtml(markdown) {
   const lines = markdown.split(/\r?\n/);
   const out = [];
   let listOpen = false;
   let paragraph = [];
-
   function closeParagraph() {
     if (!paragraph.length) return;
     out.push(`<p>${inlineMarkdownToHtml(paragraph.join(" "))}</p>`);
     paragraph = [];
   }
-
   function closeList() {
     if (!listOpen) return;
     out.push("</ul>");
     listOpen = false;
   }
-
   lines.forEach((rawLine) => {
     const line = rawLine.trim();
-
     if (!line) {
       closeParagraph();
       closeList();
       return;
     }
-
     if (/^---+$/.test(line)) {
       closeParagraph();
       closeList();
       out.push("<hr>");
       return;
     }
-
     const headingMatch = line.match(/^(#{1,3})\s+(.*)$/);
     if (headingMatch) {
       closeParagraph();
@@ -79,7 +70,6 @@ function markdownToRetroHtml(markdown) {
       out.push(`<h${level}>${inlineMarkdownToHtml(headingMatch[2])}</h${level}>`);
       return;
     }
-
     const listMatch = line.match(/^-\s+(.*)$/);
     if (listMatch) {
       closeParagraph();
@@ -90,23 +80,18 @@ function markdownToRetroHtml(markdown) {
       out.push(`<li>${inlineMarkdownToHtml(listMatch[1])}</li>`);
       return;
     }
-
     closeList();
     paragraph.push(line);
   });
-
   closeParagraph();
   closeList();
   return out.join("\n");
 }
-
 async function loadResumeTextFile() {
   if (!resumeText) return;
-
   try {
     const response = await fetch("assets/sanjin.md", { cache: "no-cache" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
     const markdown = await response.text();
     resumeText.innerHTML = markdownToRetroHtml(markdown);
   } catch (error) {
@@ -118,7 +103,6 @@ async function loadResumeTextFile() {
     ].join("\n");
   }
 }
-
 async function loadWindowPartials() {
   const containers = [...document.querySelectorAll("[data-window-src]")];
   await Promise.all(
@@ -135,7 +119,6 @@ async function loadWindowPartials() {
     })
   );
 }
-
 function syncDynamicElements() {
   projectList = document.getElementById("project-list");
   browserFrame = document.getElementById("browser-frame");
@@ -150,10 +133,8 @@ function syncDynamicElements() {
   browserStatus = document.getElementById("browser-status");
   resumeText = document.getElementById("resume-text");
 }
-
 let topZ = 10;
 let activeWindowId = null;
-
 function updateClock() {
   const now = new Date();
   clock.textContent = now.toLocaleString([], {
@@ -162,7 +143,6 @@ function updateClock() {
     minute: "2-digit"
   });
 }
-
 function bringToFront(win) {
   if (mobileLayoutQuery.matches) {
     activeWindowId = win.id;
@@ -172,7 +152,6 @@ function bringToFront(win) {
   win.style.zIndex = String(topZ);
   activeWindowId = win.id;
 }
-
 function openWindow(id) {
   const win = document.getElementById(id);
   if (!win) return;
@@ -187,7 +166,6 @@ function openWindow(id) {
   win.classList.add("open");
   bringToFront(win);
 }
-
 function closeWindow(id) {
   const win = document.getElementById(id);
   if (!win) return;
@@ -200,17 +178,14 @@ function closeWindow(id) {
     activeWindowId = topOpenWindow?.id || null;
   }
 }
-
 // Only URLs explicitly listed in the app files (or the home URL) may load
 // in the iframe. All other navigation attempts are blocked.
 const ALLOWED_URLS = new Set(["about:blank"]);
 portfolioApps.forEach((app) => {
   if (app.url) ALLOWED_URLS.add(app.url);
 });
-
 function renderProjects() {
   if (!projectList) return;
-
   const items = portfolioApps.map((app, index) => {
     const orderLabel = String(app.order || index + 1).padStart(2, "0");
     const linkedTitle = app.url
@@ -219,20 +194,29 @@ function renderProjects() {
     const externalLink = app.url
       ? ` <a href="${app.url}" target="_blank" rel="noopener">${app.openInNewTabLabel || "Open in new tab"}</a>`
       : "";
-
-    return `<li><h3>${orderLabel} — ${linkedTitle}</h3><p>${app.description}${externalLink}</p></li>`;
+    const impactItems = Array.isArray(app.impact)
+      ? app.impact.map((metric) => `<li>${metric}</li>`).join("")
+      : "";
+    const stack = Array.isArray(app.stack) ? app.stack.join(", ") : app.stack || "";
+    return `<li class="project-item">
+      <h3>${orderLabel} — ${linkedTitle}</h3>
+      <p>${app.description}${externalLink}</p>
+      <dl class="project-meta">
+        <div><dt>Role</dt><dd>${app.role || "—"}</dd></div>
+        <div><dt>Challenge</dt><dd>${app.challenge || "—"}</dd></div>
+        <div><dt>Impact</dt><dd>${impactItems ? `<ul>${impactItems}</ul>` : "—"}</dd></div>
+        <div><dt>Stack</dt><dd>${stack || "—"}</dd></div>
+      </dl>
+    </li>`;
   });
-
   projectList.innerHTML = items.join("\n");
 }
-
 function buildBrowserHomeMarkup() {
   const items = portfolioApps.map((app, index) => {
     const orderLabel = String(app.order || index + 1).padStart(2, "0");
     const body = app.url ? `<a href="${app.url}">${orderLabel} — ${app.title}</a>` : `${orderLabel} — ${app.title}`;
     return `<li>${body}</li>`;
   });
-
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -257,18 +241,39 @@ function buildBrowserHomeMarkup() {
   </body>
 </html>`;
 }
-
 function isAllowedUrl(url) {
-  if (ALLOWED_URLS.has(url)) return true;
-  // Allow same-origin prefix match (e.g. sub-pages of a whitelisted origin)
-  for (const allowed of ALLOWED_URLS) {
-    if (allowed !== "about:blank" && url.startsWith(allowed)) return true;
+  if (url === "about:blank" || url === BROWSER_HOME_URL) return true;
+
+  let candidate;
+  try {
+    candidate = new URL(url);
+  } catch {
+    return false;
   }
+
+  for (const allowed of ALLOWED_URLS) {
+    if (allowed === "about:blank" || allowed === BROWSER_HOME_URL) continue;
+
+    let allowedParsed;
+    try {
+      allowedParsed = new URL(allowed);
+    } catch {
+      continue;
+    }
+
+    if (candidate.origin !== allowedParsed.origin) continue;
+    if (candidate.pathname.startsWith(allowedParsed.pathname)) return true;
+  }
+
   return false;
 }
-
 function openInRetroBrowser(url, title) {
   if (!isAllowedUrl(url)) return; // silently ignore; called only from project links
+  if (url === BROWSER_HOME_URL) {
+    loadBrowserHomePage();
+    openWindow("browser-window");
+    return;
+  }
   if (browserFrame) browserFrame.removeAttribute("srcdoc");
   if (browserFrame) browserFrame.src = url;
   if (browserAddress) browserAddress.value = url;
@@ -277,41 +282,40 @@ function openInRetroBrowser(url, title) {
   if (browserThrobber) browserThrobber.classList.add("loading");
   openWindow("browser-window");
 }
-
 function loadBrowserHomePage() {
   const homeMarkup = buildBrowserHomeMarkup();
-
   if (browserFrame) browserFrame.srcdoc = homeMarkup;
   if (browserAddress) browserAddress.value = BROWSER_HOME_URL;
   if (browserStatus) browserStatus.textContent = "Document: Done";
   if (browserTitle) browserTitle.textContent = "Netscape Navigator — Projects Home";
   if (browserThrobber) browserThrobber.classList.remove("loading");
 }
-
 function navigateBrowserTo(url) {
   if (!url) return;
   const hasProtocol = /^https?:\/\//i.test(url) || url.startsWith("about:");
   const normalizedUrl = hasProtocol ? url : `https://${url}`;
+  if (normalizedUrl === BROWSER_HOME_URL) {
+    loadBrowserHomePage();
+    return;
+  }
   if (!isAllowedUrl(normalizedUrl)) {
     if (browserStatus) browserStatus.textContent = "Navigation blocked: only linked projects may be loaded.";
     return;
   }
+  if (browserFrame) browserFrame.removeAttribute("srcdoc");
   if (browserAddress) browserAddress.value = normalizedUrl;
   if (browserFrame) browserFrame.src = normalizedUrl;
   if (browserStatus) browserStatus.textContent = `Loading ${normalizedUrl}...`;
   if (browserTitle) browserTitle.textContent = "Netscape Navigator";
   if (browserThrobber) browserThrobber.classList.add("loading");
 }
-
 function closeFocusedWindow() {
   if (activeWindowId) closeWindow(activeWindowId);
 }
-
 function closeAllWindows() {
   windows.forEach((win) => win.classList.remove("open"));
   activeWindowId = null;
 }
-
 function openAllWindows() {
   if (mobileLayoutQuery.matches) {
     openWindow("about-window");
@@ -319,7 +323,6 @@ function openAllWindows() {
   }
   windows.forEach((win) => openWindow(win.id));
 }
-
 function cascadeWindows() {
   if (mobileLayoutQuery.matches) return;
   let x = 210;
@@ -334,27 +337,22 @@ function cascadeWindows() {
       y += 28;
     });
 }
-
 function closeMenus() {
   menuDropdowns.forEach((dropdown) => dropdown.classList.remove("open"));
 }
-
 openers.forEach((icon) => {
   icon.addEventListener("click", () => {
     openWindow(icon.dataset.open);
   });
-
   icon.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
       openWindow(icon.dataset.open);
     }
   });
 });
-
 closers.forEach((btn) => {
   btn.addEventListener("click", () => closeWindow(btn.dataset.close));
 });
-
 function bindDynamicContentEvents() {
   if (projectList) {
     projectList.addEventListener("click", (event) => {
@@ -363,25 +361,21 @@ function bindDynamicContentEvents() {
       openInRetroBrowser(projectLink.dataset.browserUrl, projectLink.dataset.browserTitle || "Project");
     });
   }
-
   if (browserHome) {
     browserHome.addEventListener("click", () => loadBrowserHomePage());
   }
-
   if (browserBack) {
     browserBack.addEventListener("click", () => {
       const frameWindow = browserFrame?.contentWindow;
       frameWindow?.history.back();
     });
   }
-
   if (browserForward) {
     browserForward.addEventListener("click", () => {
       const frameWindow = browserFrame?.contentWindow;
       frameWindow?.history.forward();
     });
   }
-
   if (browserReload) {
     browserReload.addEventListener("click", () => {
       if (browserFrame) {
@@ -391,14 +385,12 @@ function bindDynamicContentEvents() {
       }
     });
   }
-
   if (browserStop) {
     browserStop.addEventListener("click", () => {
       if (browserThrobber) browserThrobber.classList.remove("loading");
       if (browserStatus) browserStatus.textContent = "Transfer interrupted.";
     });
   }
-
   if (browserFrame) {
     browserFrame.addEventListener("load", () => {
       if (browserStatus) browserStatus.textContent = "Document: Done";
@@ -406,14 +398,12 @@ function bindDynamicContentEvents() {
     });
   }
 }
-
 windows.forEach((win) => {
   const handle = win.querySelector(".drag-handle");
   if (!handle) return;
   let dragging = false;
   let offsetX = 0;
   let offsetY = 0;
-
   function onMove(event) {
     if (!dragging) return;
     const x = event.clientX - offsetX;
@@ -423,7 +413,6 @@ windows.forEach((win) => {
     win.style.left = `${Math.max(0, Math.min(x, maxX))}px`;
     win.style.top = `${Math.max(0, Math.min(y, maxY))}px`;
   }
-
   handle.addEventListener("pointerdown", (event) => {
     if (mobileLayoutQuery.matches) return;
     if (event.target.closest(".close-btn")) return;
@@ -435,34 +424,29 @@ windows.forEach((win) => {
     offsetY = event.clientY - (rect.top - desktopRect.top);
     handle.setPointerCapture(event.pointerId);
   });
-
   handle.addEventListener("pointerup", (event) => {
     dragging = false;
     if (handle.hasPointerCapture(event.pointerId)) {
       handle.releasePointerCapture(event.pointerId);
     }
   });
-
   handle.addEventListener("pointercancel", (event) => {
     dragging = false;
     if (handle.hasPointerCapture(event.pointerId)) {
       handle.releasePointerCapture(event.pointerId);
     }
   });
-
   handle.addEventListener("pointermove", onMove);
   win.addEventListener("mousedown", () => {
     if (mobileLayoutQuery.matches) return;
     bringToFront(win);
   });
 });
-
 desktop.addEventListener("dblclick", (event) => {
   if (event.target === desktop) {
     closeAllWindows();
   }
 });
-
 menuButtons.forEach((button) => {
   button.addEventListener("click", () => {
     const targetId = button.dataset.menu;
@@ -472,28 +456,32 @@ menuButtons.forEach((button) => {
     if (targetMenu && !alreadyOpen) targetMenu.classList.add("open");
   });
 });
-
+function runMenuAction(action) {
+  if (action === "open-about") openWindow("about-window");
+  if (action === "open-projects") openWindow("projects-window");
+  if (action === "open-browser") openWindow("browser-window");
+  if (action === "open-resume") openWindow("resume-window");
+  if (action === "open-contact") openWindow("contact-window");
+  if (action === "close-focused") closeFocusedWindow();
+  if (action === "close-all") closeAllWindows();
+  if (action === "open-all") openAllWindows();
+  if (action === "cascade") cascadeWindows();
+  if (action === "toggle-theme") document.body.classList.toggle("dark-desktop");
+  closeMenus();
+}
 menuActions.forEach((actionButton) => {
   actionButton.addEventListener("click", () => {
-    const action = actionButton.dataset.action;
-    if (action === "open-about") openWindow("about-window");
-    if (action === "open-projects") openWindow("projects-window");
-    if (action === "open-browser") openWindow("browser-window");
-    if (action === "open-resume") openWindow("resume-window");
-    if (action === "open-contact") openWindow("contact-window");
-    if (action === "close-focused") closeFocusedWindow();
-    if (action === "close-all") closeAllWindows();
-    if (action === "open-all") openAllWindows();
-    if (action === "cascade") cascadeWindows();
-    if (action === "toggle-theme") document.body.classList.toggle("dark-desktop");
-    closeMenus();
+    runMenuAction(actionButton.dataset.action);
   });
 });
-
+desktop?.addEventListener("click", (event) => {
+  const actionTrigger = event.target.closest("[data-action]");
+  if (!actionTrigger || menuActions.includes(actionTrigger)) return;
+  runMenuAction(actionTrigger.dataset.action);
+});
 document.addEventListener("click", (event) => {
   if (!event.target.closest(".menu-group")) closeMenus();
 });
-
 document.addEventListener("keydown", (event) => {
   if (event.key.toLowerCase() === "x") {
     closeFocusedWindow();
@@ -512,7 +500,6 @@ mobileLayoutQuery.addEventListener("change", () => {
 
 setInterval(updateClock, 1000 * 15);
 updateClock();
-
 async function initDesktop() {
   await loadWindowPartials();
   syncDynamicElements();
@@ -521,5 +508,4 @@ async function initDesktop() {
   await loadResumeTextFile();
   openWindow("about-window");
 }
-
 initDesktop();

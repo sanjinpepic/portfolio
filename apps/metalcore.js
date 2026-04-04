@@ -6,6 +6,15 @@ window.PORTFOLIO_APPS.push({
   browserTitle: "MetalCore",
   url: "https://metalcre.vercel.app/",
   description:
-    "MetalCore is a metallurgical database and visualization platform that analyzes elite knife alloys through interactive performance matrices. It integrates data-driven chemical analysis with an AI assistant to help users navigate complex material trade-offs.",
+    "Built a metallurgical intelligence platform that made alloy evaluation faster and more commercially actionable.",
+  role: "Product & strategy lead",
+  challenge:
+    "Experts relied on fragmented data and manual comparison workflows, slowing customer decision cycles.",
+  impact: [
+    "Reduced analysis time from hours to minutes for alloy shortlisting.",
+    "Improved decision confidence through side-by-side performance matrices.",
+    "Enabled higher-quality technical conversations in early sales stages."
+  ],
+  stack: ["Product strategy", "Data modeling", "Visualization UX", "AI assistant integration"],
   openInNewTabLabel: "Open in new tab"
 });
