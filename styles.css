@@ -422,27 +422,6 @@ body {
   margin-bottom: 1rem;
 }
 
-.project-meta {
-  margin: 0;
-}
-
-.project-meta div {
-  margin-bottom: 0.4rem;
-}
-
-.project-meta dt {
-  font-weight: 700;
-}
-
-.project-meta dd {
-  margin: 0.1rem 0 0;
-}
-
-.project-meta ul {
-  margin: 0.15rem 0 0;
-  padding-left: 1rem;
-}
-
 .project-link:hover,
 .project-link:focus-visible {
   color: #0a2c70;
