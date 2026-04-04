@@ -5,22 +5,21 @@ const closers = [...document.querySelectorAll(".close-btn")];
 const menuButtons = [...document.querySelectorAll(".menu-item[data-menu]")];
 const menuActions = [...document.querySelectorAll(".menu-dropdown [data-action]")];
 const menuDropdowns = [...document.querySelectorAll(".menu-dropdown")];
-const projectList = document.getElementById("project-list");
 const portfolioApps = [...(window.PORTFOLIO_APPS || [])].sort((a, b) => (a.order || 0) - (b.order || 0));
-const browserFrame = document.getElementById("browser-frame");
-const browserAddress = document.getElementById("browser-url");
-const browserTitle = document.getElementById("browser-title");
-const browserGo = document.getElementById("browser-go");
-const browserBack = document.getElementById("browser-back");
-const browserForward = document.getElementById("browser-forward");
-const browserHome = document.getElementById("browser-home");
-const browserReload = document.getElementById("browser-reload");
-const browserStop = document.getElementById("browser-stop");
-const browserThrobber = document.getElementById("browser-throbber");
-const browserStatus = document.getElementById("browser-status");
 const clock = document.getElementById("clock");
-const resumeText = document.getElementById("resume-text");
 const BROWSER_HOME_URL = "about:home";
+let projectList = null;
+let browserFrame = null;
+let browserAddress = null;
+let browserTitle = null;
+let browserBack = null;
+let browserForward = null;
+let browserHome = null;
+let browserReload = null;
+let browserStop = null;
+let browserThrobber = null;
+let browserStatus = null;
+let resumeText = null;
 
 function escapeHtml(value) {
   return value
@@ -117,6 +116,38 @@ async function loadResumeTextFile() {
       `Details: ${error.message}`
     ].join("\n");
   }
+}
+
+async function loadWindowPartials() {
+  const containers = [...document.querySelectorAll("[data-window-src]")];
+  await Promise.all(
+    containers.map(async (container) => {
+      const source = container.dataset.windowSrc;
+      if (!source) return;
+      try {
+        const response = await fetch(source, { cache: "no-cache" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        container.innerHTML = await response.text();
+      } catch (error) {
+        container.innerHTML = `<p>Could not load ${source}: ${error.message}</p>`;
+      }
+    })
+  );
+}
+
+function syncDynamicElements() {
+  projectList = document.getElementById("project-list");
+  browserFrame = document.getElementById("browser-frame");
+  browserAddress = document.getElementById("browser-url");
+  browserTitle = document.getElementById("browser-title");
+  browserBack = document.getElementById("browser-back");
+  browserForward = document.getElementById("browser-forward");
+  browserHome = document.getElementById("browser-home");
+  browserReload = document.getElementById("browser-reload");
+  browserStop = document.getElementById("browser-stop");
+  browserThrobber = document.getElementById("browser-throbber");
+  browserStatus = document.getElementById("browser-status");
+  resumeText = document.getElementById("resume-text");
 }
 
 let topZ = 10;
@@ -308,54 +339,56 @@ closers.forEach((btn) => {
   btn.addEventListener("click", () => closeWindow(btn.dataset.close));
 });
 
-if (projectList) {
-  projectList.addEventListener("click", (event) => {
-    const projectLink = event.target.closest(".project-link[data-browser-url]");
-    if (!projectLink) return;
-    openInRetroBrowser(projectLink.dataset.browserUrl, projectLink.dataset.browserTitle || "Project");
-  });
-}
+function bindDynamicContentEvents() {
+  if (projectList) {
+    projectList.addEventListener("click", (event) => {
+      const projectLink = event.target.closest(".project-link[data-browser-url]");
+      if (!projectLink) return;
+      openInRetroBrowser(projectLink.dataset.browserUrl, projectLink.dataset.browserTitle || "Project");
+    });
+  }
 
-if (browserHome) {
-  browserHome.addEventListener("click", () => loadBrowserHomePage());
-}
+  if (browserHome) {
+    browserHome.addEventListener("click", () => loadBrowserHomePage());
+  }
 
-if (browserBack) {
-  browserBack.addEventListener("click", () => {
-    const frameWindow = browserFrame?.contentWindow;
-    frameWindow?.history.back();
-  });
-}
+  if (browserBack) {
+    browserBack.addEventListener("click", () => {
+      const frameWindow = browserFrame?.contentWindow;
+      frameWindow?.history.back();
+    });
+  }
 
-if (browserForward) {
-  browserForward.addEventListener("click", () => {
-    const frameWindow = browserFrame?.contentWindow;
-    frameWindow?.history.forward();
-  });
-}
+  if (browserForward) {
+    browserForward.addEventListener("click", () => {
+      const frameWindow = browserFrame?.contentWindow;
+      frameWindow?.history.forward();
+    });
+  }
 
-if (browserReload) {
-  browserReload.addEventListener("click", () => {
-    if (browserFrame) {
-      browserFrame.src = browserFrame.src;
-      if (browserThrobber) browserThrobber.classList.add("loading");
-      if (browserStatus) browserStatus.textContent = "Reloading...";
-    }
-  });
-}
+  if (browserReload) {
+    browserReload.addEventListener("click", () => {
+      if (browserFrame) {
+        browserFrame.src = browserFrame.src;
+        if (browserThrobber) browserThrobber.classList.add("loading");
+        if (browserStatus) browserStatus.textContent = "Reloading...";
+      }
+    });
+  }
 
-if (browserStop) {
-  browserStop.addEventListener("click", () => {
-    if (browserThrobber) browserThrobber.classList.remove("loading");
-    if (browserStatus) browserStatus.textContent = "Transfer interrupted.";
-  });
-}
+  if (browserStop) {
+    browserStop.addEventListener("click", () => {
+      if (browserThrobber) browserThrobber.classList.remove("loading");
+      if (browserStatus) browserStatus.textContent = "Transfer interrupted.";
+    });
+  }
 
-if (browserFrame) {
-  browserFrame.addEventListener("load", () => {
-    if (browserStatus) browserStatus.textContent = "Document: Done";
-    if (browserThrobber) browserThrobber.classList.remove("loading");
-  });
+  if (browserFrame) {
+    browserFrame.addEventListener("load", () => {
+      if (browserStatus) browserStatus.textContent = "Document: Done";
+      if (browserThrobber) browserThrobber.classList.remove("loading");
+    });
+  }
 }
 
 windows.forEach((win) => {
@@ -449,8 +482,15 @@ document.addEventListener("keydown", (event) => {
 
 setInterval(updateClock, 1000 * 15);
 updateClock();
-renderProjects();
-loadResumeTextFile();
 
-openWindow("about-window");
-openWindow("projects-window");
+async function initDesktop() {
+  await loadWindowPartials();
+  syncDynamicElements();
+  bindDynamicContentEvents();
+  renderProjects();
+  await loadResumeTextFile();
+  openWindow("about-window");
+  openWindow("projects-window");
+}
+
+initDesktop();
