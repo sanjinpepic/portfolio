@@ -444,6 +444,20 @@ body {
   margin-bottom: 1rem;
 }
 
+.repo-link {
+  font-size: 0.75em;
+  color: var(--border-mid);
+  text-decoration: none;
+  border-bottom: 1px dashed var(--border-mid);
+  vertical-align: middle;
+  margin-left: 0.3em;
+}
+
+.repo-link:hover {
+  color: var(--border-dark);
+  border-bottom-style: solid;
+}
+
 .source-badge {
   display: inline-block;
   font-size: 0.75em;

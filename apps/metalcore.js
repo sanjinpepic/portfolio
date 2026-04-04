@@ -16,5 +16,6 @@ window.PORTFOLIO_APPS.push({
     "Enabled higher-quality technical conversations in early sales stages."
   ],
   stack: ["Product strategy", "Data modeling", "Visualization UX", "AI assistant integration"],
-  openInNewTabLabel: "Open in new tab"
+  openInNewTabLabel: "Open in new tab",
+  githubUrl: "https://github.com/sanjinpepic/MetalCore",
 });

@@ -197,8 +197,11 @@ function renderProjects() {
       ? ` <a href="${app.url}" target="_blank" rel="noopener">${app.openInNewTabLabel || "Open in new tab"}</a>`
       : "";
     const sourceBadge = app.isGithubSource ? ' <span class="source-badge">GitHub</span>' : "";
+    const githubLink = app.githubUrl && !app.isGithubSource
+      ? ` <a href="${app.githubUrl}" target="_blank" rel="noopener" class="repo-link">repo</a>`
+      : "";
     return `<li class="project-item">
-      <h3>${orderLabel} — ${linkedTitle}${sourceBadge}</h3>
+      <h3>${orderLabel} — ${linkedTitle}${sourceBadge}${githubLink}</h3>
       <p>${app.description}${externalLink}</p>
     </li>`;
   });
