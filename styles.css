@@ -151,6 +151,13 @@ body {
   border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
 }
 
+
+.icon-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
 .label {
   text-shadow: 1px 1px #1b2f33;
   line-height: 1;
