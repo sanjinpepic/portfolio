@@ -5,21 +5,21 @@ const closers = [...document.querySelectorAll(".close-btn")];
 const menuButtons = [...document.querySelectorAll(".menu-item[data-menu]")];
 const menuActions = [...document.querySelectorAll(".menu-dropdown [data-action]")];
 const menuDropdowns = [...document.querySelectorAll(".menu-dropdown")];
-const projectLinks = [...document.querySelectorAll(".project-link[data-browser-url]")];
-const browserFrame = document.getElementById("browser-frame");
-const browserAddress = document.getElementById("browser-url");
-const browserTitle = document.getElementById("browser-title");
-const browserGo = document.getElementById("browser-go");
-const browserBack = document.getElementById("browser-back");
-const browserForward = document.getElementById("browser-forward");
-const browserHome = document.getElementById("browser-home");
-const browserReload = document.getElementById("browser-reload");
-const browserStop = document.getElementById("browser-stop");
-const browserThrobber = document.getElementById("browser-throbber");
-const browserStatus = document.getElementById("browser-status");
+const portfolioApps = [...(window.PORTFOLIO_APPS || [])].sort((a, b) => (a.order || 0) - (b.order || 0));
 const clock = document.getElementById("clock");
-const resumeText = document.getElementById("resume-text");
 const BROWSER_HOME_URL = "about:home";
+let projectList = null;
+let browserFrame = null;
+let browserAddress = null;
+let browserTitle = null;
+let browserBack = null;
+let browserForward = null;
+let browserHome = null;
+let browserReload = null;
+let browserStop = null;
+let browserThrobber = null;
+let browserStatus = null;
+let resumeText = null;
 
 function escapeHtml(value) {
   return value
@@ -118,6 +118,38 @@ async function loadResumeTextFile() {
   }
 }
 
+async function loadWindowPartials() {
+  const containers = [...document.querySelectorAll("[data-window-src]")];
+  await Promise.all(
+    containers.map(async (container) => {
+      const source = container.dataset.windowSrc;
+      if (!source) return;
+      try {
+        const response = await fetch(source, { cache: "no-cache" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        container.innerHTML = await response.text();
+      } catch (error) {
+        container.innerHTML = `<p>Could not load ${source}: ${error.message}</p>`;
+      }
+    })
+  );
+}
+
+function syncDynamicElements() {
+  projectList = document.getElementById("project-list");
+  browserFrame = document.getElementById("browser-frame");
+  browserAddress = document.getElementById("browser-url");
+  browserTitle = document.getElementById("browser-title");
+  browserBack = document.getElementById("browser-back");
+  browserForward = document.getElementById("browser-forward");
+  browserHome = document.getElementById("browser-home");
+  browserReload = document.getElementById("browser-reload");
+  browserStop = document.getElementById("browser-stop");
+  browserThrobber = document.getElementById("browser-throbber");
+  browserStatus = document.getElementById("browser-status");
+  resumeText = document.getElementById("resume-text");
+}
+
 let topZ = 10;
 let activeWindowId = null;
 
@@ -159,12 +191,61 @@ function closeWindow(id) {
   }
 }
 
-// Only URLs explicitly listed in the project links (or the home URL) may load
+// Only URLs explicitly listed in the app files (or the home URL) may load
 // in the iframe. All other navigation attempts are blocked.
-const ALLOWED_URLS = new Set(["about:blank", "https://metalcre.vercel.app/"]);
-document.querySelectorAll(".project-link[data-browser-url]").forEach((el) => {
-  if (el.dataset.browserUrl) ALLOWED_URLS.add(el.dataset.browserUrl);
+const ALLOWED_URLS = new Set(["about:blank"]);
+portfolioApps.forEach((app) => {
+  if (app.url) ALLOWED_URLS.add(app.url);
 });
+
+function renderProjects() {
+  if (!projectList) return;
+
+  const items = portfolioApps.map((app, index) => {
+    const orderLabel = String(app.order || index + 1).padStart(2, "0");
+    const linkedTitle = app.url
+      ? `<button class="project-link" type="button" data-browser-url="${app.url}" data-browser-title="${app.browserTitle || app.title}">${app.title}</button>`
+      : app.title;
+    const externalLink = app.url
+      ? ` <a href="${app.url}" target="_blank" rel="noopener">${app.openInNewTabLabel || "Open in new tab"}</a>`
+      : "";
+
+    return `<li><h3>${orderLabel} — ${linkedTitle}</h3><p>${app.description}${externalLink}</p></li>`;
+  });
+
+  projectList.innerHTML = items.join("\n");
+}
+
+function buildBrowserHomeMarkup() {
+  const items = portfolioApps.map((app, index) => {
+    const orderLabel = String(app.order || index + 1).padStart(2, "0");
+    const body = app.url ? `<a href="${app.url}">${orderLabel} — ${app.title}</a>` : `${orderLabel} — ${app.title}`;
+    return `<li>${body}</li>`;
+  });
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Projects Home</title>
+    <style>
+      body { font-family: "VT323", monospace; background: #f4f4f4; color: #111; margin: 0; padding: 1rem 1.25rem; font-size: 1.35rem; }
+      h1 { margin: 0 0 0.6rem; font-size: 1.8rem; }
+      p { margin: 0 0 0.7rem; }
+      ul { margin: 0; padding-left: 1.1rem; }
+      li { margin-bottom: 0.55rem; }
+      a { color: #133f9a; }
+    </style>
+  </head>
+  <body>
+    <h1>Projects Home</h1>
+    <p>Select a project to view:</p>
+    <ul>
+      ${items.join("\n      ")}
+    </ul>
+  </body>
+</html>`;
+}
 
 function isAllowedUrl(url) {
   if (ALLOWED_URLS.has(url)) return true;
@@ -187,31 +268,7 @@ function openInRetroBrowser(url, title) {
 }
 
 function loadBrowserHomePage() {
-  const homeMarkup = `<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Projects Home</title>
-    <style>
-      body { font-family: "VT323", monospace; background: #f4f4f4; color: #111; margin: 0; padding: 1rem 1.25rem; font-size: 1.35rem; }
-      h1 { margin: 0 0 0.6rem; font-size: 1.8rem; }
-      p { margin: 0 0 0.7rem; }
-      ul { margin: 0; padding-left: 1.1rem; }
-      li { margin-bottom: 0.55rem; }
-      a { color: #133f9a; }
-    </style>
-  </head>
-  <body>
-    <h1>Projects Home</h1>
-    <p>Select a project to view:</p>
-    <ul>
-      <li><a href="https://metalcre.vercel.app/">01 — MetalCore</a></li>
-      <li>02 — Product Analytics Dashboard</li>
-      <li>03 — Commerce Design System</li>
-      <li>04 — AI Support Assistant</li>
-    </ul>
-  </body>
-</html>`;
+  const homeMarkup = buildBrowserHomeMarkup();
 
   if (browserFrame) browserFrame.srcdoc = homeMarkup;
   if (browserAddress) browserAddress.value = BROWSER_HOME_URL;
@@ -282,52 +339,56 @@ closers.forEach((btn) => {
   btn.addEventListener("click", () => closeWindow(btn.dataset.close));
 });
 
-projectLinks.forEach((projectLink) => {
-  projectLink.addEventListener("click", () => {
-    openInRetroBrowser(projectLink.dataset.browserUrl, projectLink.dataset.browserTitle || "Project");
-  });
-});
+function bindDynamicContentEvents() {
+  if (projectList) {
+    projectList.addEventListener("click", (event) => {
+      const projectLink = event.target.closest(".project-link[data-browser-url]");
+      if (!projectLink) return;
+      openInRetroBrowser(projectLink.dataset.browserUrl, projectLink.dataset.browserTitle || "Project");
+    });
+  }
 
-if (browserHome) {
-  browserHome.addEventListener("click", () => loadBrowserHomePage());
-}
+  if (browserHome) {
+    browserHome.addEventListener("click", () => loadBrowserHomePage());
+  }
 
-if (browserBack) {
-  browserBack.addEventListener("click", () => {
-    const frameWindow = browserFrame?.contentWindow;
-    frameWindow?.history.back();
-  });
-}
+  if (browserBack) {
+    browserBack.addEventListener("click", () => {
+      const frameWindow = browserFrame?.contentWindow;
+      frameWindow?.history.back();
+    });
+  }
 
-if (browserForward) {
-  browserForward.addEventListener("click", () => {
-    const frameWindow = browserFrame?.contentWindow;
-    frameWindow?.history.forward();
-  });
-}
+  if (browserForward) {
+    browserForward.addEventListener("click", () => {
+      const frameWindow = browserFrame?.contentWindow;
+      frameWindow?.history.forward();
+    });
+  }
 
-if (browserReload) {
-  browserReload.addEventListener("click", () => {
-    if (browserFrame) {
-      browserFrame.src = browserFrame.src;
-      if (browserThrobber) browserThrobber.classList.add("loading");
-      if (browserStatus) browserStatus.textContent = "Reloading...";
-    }
-  });
-}
+  if (browserReload) {
+    browserReload.addEventListener("click", () => {
+      if (browserFrame) {
+        browserFrame.src = browserFrame.src;
+        if (browserThrobber) browserThrobber.classList.add("loading");
+        if (browserStatus) browserStatus.textContent = "Reloading...";
+      }
+    });
+  }
 
-if (browserStop) {
-  browserStop.addEventListener("click", () => {
-    if (browserThrobber) browserThrobber.classList.remove("loading");
-    if (browserStatus) browserStatus.textContent = "Transfer interrupted.";
-  });
-}
+  if (browserStop) {
+    browserStop.addEventListener("click", () => {
+      if (browserThrobber) browserThrobber.classList.remove("loading");
+      if (browserStatus) browserStatus.textContent = "Transfer interrupted.";
+    });
+  }
 
-if (browserFrame) {
-  browserFrame.addEventListener("load", () => {
-    if (browserStatus) browserStatus.textContent = "Document: Done";
-    if (browserThrobber) browserThrobber.classList.remove("loading");
-  });
+  if (browserFrame) {
+    browserFrame.addEventListener("load", () => {
+      if (browserStatus) browserStatus.textContent = "Document: Done";
+      if (browserThrobber) browserThrobber.classList.remove("loading");
+    });
+  }
 }
 
 windows.forEach((win) => {
@@ -421,7 +482,15 @@ document.addEventListener("keydown", (event) => {
 
 setInterval(updateClock, 1000 * 15);
 updateClock();
-loadResumeTextFile();
 
-openWindow("about-window");
-openWindow("projects-window");
+async function initDesktop() {
+  await loadWindowPartials();
+  syncDynamicElements();
+  bindDynamicContentEvents();
+  renderProjects();
+  await loadResumeTextFile();
+  openWindow("about-window");
+  openWindow("projects-window");
+}
+
+initDesktop();
