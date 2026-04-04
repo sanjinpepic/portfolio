@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=VT323&display=swap");
+
 :root {
   --desktop-green: #1d857b;
   --menu-gray: #d9d9d9;
@@ -246,7 +248,7 @@ body {
 }
 
 .about-avatar {
-  width: 8rem;
+  width: 4rem;
   height: auto;
   image-rendering: pixelated;
   margin: 0 0 0.5rem 0.75rem;

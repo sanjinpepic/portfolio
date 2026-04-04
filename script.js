@@ -228,14 +228,9 @@ function buildBrowserHomeMarkup() {
   <head>
     <meta charset="UTF-8" />
     <title>Projects Home</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=VT323&display=swap"
-      rel="stylesheet"
-    />
+    <link rel="stylesheet" href="styles.css" />
     <style>
-      body { font-family: "VT323", monospace; background: #f4f4f4; color: #111; margin: 0; padding: 1rem 1.25rem; font-size: 1.35rem; }
+      body { background: #f4f4f4; color: #111; margin: 0; padding: 1rem 1.25rem; font-size: 1.35rem; }
       h1 { margin: 0 0 0.6rem; font-size: 1.8rem; }
       p { margin: 0 0 0.7rem; }
       ul { margin: 0; padding-left: 1.1rem; }
