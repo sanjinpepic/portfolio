@@ -249,16 +249,39 @@ function buildBrowserHomeMarkup() {
 }
 
 function isAllowedUrl(url) {
-  if (ALLOWED_URLS.has(url)) return true;
-  // Allow same-origin prefix match (e.g. sub-pages of a whitelisted origin)
-  for (const allowed of ALLOWED_URLS) {
-    if (allowed !== "about:blank" && url.startsWith(allowed)) return true;
+  if (url === "about:blank" || url === BROWSER_HOME_URL) return true;
+
+  let candidate;
+  try {
+    candidate = new URL(url);
+  } catch {
+    return false;
   }
+
+  for (const allowed of ALLOWED_URLS) {
+    if (allowed === "about:blank" || allowed === BROWSER_HOME_URL) continue;
+
+    let allowedParsed;
+    try {
+      allowedParsed = new URL(allowed);
+    } catch {
+      continue;
+    }
+
+    if (candidate.origin !== allowedParsed.origin) continue;
+    if (candidate.pathname.startsWith(allowedParsed.pathname)) return true;
+  }
+
   return false;
 }
 
 function openInRetroBrowser(url, title) {
   if (!isAllowedUrl(url)) return; // silently ignore; called only from project links
+  if (url === BROWSER_HOME_URL) {
+    loadBrowserHomePage();
+    openWindow("browser-window");
+    return;
+  }
   if (browserFrame) browserFrame.removeAttribute("srcdoc");
   if (browserFrame) browserFrame.src = url;
   if (browserAddress) browserAddress.value = url;
@@ -282,10 +305,15 @@ function navigateBrowserTo(url) {
   if (!url) return;
   const hasProtocol = /^https?:\/\//i.test(url) || url.startsWith("about:");
   const normalizedUrl = hasProtocol ? url : `https://${url}`;
+  if (normalizedUrl === BROWSER_HOME_URL) {
+    loadBrowserHomePage();
+    return;
+  }
   if (!isAllowedUrl(normalizedUrl)) {
     if (browserStatus) browserStatus.textContent = "Navigation blocked: only linked projects may be loaded.";
     return;
   }
+  if (browserFrame) browserFrame.removeAttribute("srcdoc");
   if (browserAddress) browserAddress.value = normalizedUrl;
   if (browserFrame) browserFrame.src = normalizedUrl;
   if (browserStatus) browserStatus.textContent = `Loading ${normalizedUrl}...`;
