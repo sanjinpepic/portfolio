@@ -5,7 +5,7 @@ const closers = [...document.querySelectorAll(".close-btn")];
 const menuButtons = [...document.querySelectorAll(".menu-item[data-menu]")];
 const menuActions = [...document.querySelectorAll(".menu-dropdown [data-action]")];
 const menuDropdowns = [...document.querySelectorAll(".menu-dropdown")];
-const portfolioApps = [...(window.PORTFOLIO_APPS || [])].sort((a, b) => (a.order || 0) - (b.order || 0));
+let portfolioApps = [...(window.PORTFOLIO_APPS || [])].sort((a, b) => (a.order || 0) - (b.order || 0));
 const clock = document.getElementById("clock");
 const BROWSER_HOME_URL = "about:home";
 const mobileLayoutQuery = window.matchMedia("(max-width: 900px)");
@@ -196,8 +196,9 @@ function renderProjects() {
     const externalLink = app.url
       ? ` <a href="${app.url}" target="_blank" rel="noopener">${app.openInNewTabLabel || "Open in new tab"}</a>`
       : "";
+    const sourceBadge = app.isGithubSource ? ' <span class="source-badge">GitHub</span>' : "";
     return `<li class="project-item">
-      <h3>${orderLabel} — ${linkedTitle}</h3>
+      <h3>${orderLabel} — ${linkedTitle}${sourceBadge}</h3>
       <p>${app.description}${externalLink}</p>
     </li>`;
   });
@@ -235,6 +236,7 @@ function buildBrowserHomeMarkup() {
 }
 function isAllowedUrl(url) {
   if (url === "about:blank" || url === BROWSER_HOME_URL) return true;
+  if (ALLOWED_URLS.has(url)) return true;
 
   let candidate;
   try {
@@ -517,6 +519,14 @@ mobileLayoutQuery.addEventListener("change", () => {
 
 setInterval(updateClock, 1000 * 15);
 updateClock();
+window.addGithubRepos = function (repos) {
+  const existingIds = new Set(portfolioApps.map((a) => a.id));
+  const newRepos = repos.filter((r) => !existingIds.has(r.id));
+  if (newRepos.length === 0) return;
+  portfolioApps = [...portfolioApps, ...newRepos].sort((a, b) => (a.order || 0) - (b.order || 0));
+  newRepos.forEach((r) => { if (r.url) ALLOWED_URLS.add(r.url); });
+  renderProjects();
+};
 async function initDesktop() {
   await loadWindowPartials();
   syncDynamicElements();

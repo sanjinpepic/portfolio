@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GitHub Repo Viewer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --panel-gray: #c9c9c9;
+        --border-dark: #3f3f3f;
+        --border-mid: #7a7a7a;
+        --border-light: #ffffff;
+        --text-main: #101010;
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body {
+        margin: 0;
+        padding: 0;
+        background: var(--panel-gray);
+        color: var(--text-main);
+        font-family: "VT323", monospace;
+        font-size: 1.25rem;
+        line-height: 1.5;
+      }
+
+      body { padding: 1rem 1.25rem; }
+
+      .repo-header {
+        border: 2px solid;
+        border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+        background: #d7d7d7;
+        padding: 0.6rem 0.8rem;
+        margin-bottom: 1rem;
+      }
+
+      .repo-title {
+        margin: 0 0 0.2rem;
+        font-size: 1.8rem;
+        letter-spacing: 0.03em;
+      }
+
+      .repo-description {
+        margin: 0 0 0.5rem;
+        color: #333;
+      }
+
+      .repo-meta {
+        display: flex;
+        gap: 1.2rem;
+        font-size: 1rem;
+        color: var(--border-mid);
+        flex-wrap: wrap;
+      }
+
+      .repo-meta span::before {
+        margin-right: 0.25em;
+      }
+
+      .repo-links {
+        margin-top: 0.6rem;
+      }
+
+      .repo-links a {
+        color: #133f9a;
+        text-decoration: underline;
+        font-size: 1.1rem;
+        margin-right: 1rem;
+      }
+
+      .readme-section {
+        border: 2px solid;
+        border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+        background: #f4f4f4;
+        padding: 0.75rem 1rem;
+      }
+
+      .readme-section h2 {
+        margin: 0 0 0.5rem;
+        font-size: 1.3rem;
+        border-bottom: 1px solid var(--border-mid);
+        padding-bottom: 0.25rem;
+        letter-spacing: 0.05em;
+      }
+
+      .readme-body {
+        font-size: 1.1rem;
+      }
+
+      .readme-body h1,
+      .readme-body h2,
+      .readme-body h3 {
+        margin: 0.8rem 0 0.3rem;
+        font-family: "VT323", monospace;
+      }
+
+      .readme-body h1 { font-size: 1.6rem; }
+      .readme-body h2 { font-size: 1.4rem; }
+      .readme-body h3 { font-size: 1.2rem; }
+
+      .readme-body p { margin: 0 0 0.5rem; }
+
+      .readme-body ul {
+        margin: 0 0 0.5rem;
+        padding-left: 1.2rem;
+      }
+
+      .readme-body li { margin-bottom: 0.2rem; }
+
+      .readme-body code {
+        background: #ddd;
+        padding: 0 0.25em;
+        font-family: "VT323", monospace;
+      }
+
+      .readme-body pre {
+        background: #222;
+        color: #dfd;
+        padding: 0.6rem 0.8rem;
+        overflow-x: auto;
+        margin: 0.5rem 0;
+        font-family: "VT323", monospace;
+        font-size: 1.05rem;
+        line-height: 1.4;
+      }
+
+      .readme-body pre code {
+        background: transparent;
+        padding: 0;
+        color: inherit;
+      }
+
+      .readme-body a {
+        color: #133f9a;
+      }
+
+      .readme-body hr {
+        border: none;
+        border-top: 1px solid var(--border-mid);
+        margin: 0.6rem 0;
+      }
+
+      .readme-body img {
+        max-width: 100%;
+      }
+
+      .readme-body blockquote {
+        border-left: 3px solid var(--border-mid);
+        margin: 0.4rem 0;
+        padding-left: 0.75rem;
+        color: #555;
+      }
+
+      .error-msg {
+        color: #800;
+        padding: 0.5rem 0;
+      }
+
+      .loading-msg {
+        color: var(--border-mid);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="repo-content">
+      <p class="loading-msg">Loading repository info...</p>
+    </div>
+
+    <script>
+      const GITHUB_USER = "sanjinpepic";
+      const params = new URLSearchParams(location.search);
+      const repoName = params.get("repo");
+
+      function escapeHtml(str) {
+        return str
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+
+      // Lightweight markdown-to-HTML (handles headings, lists, code blocks, bold, inline code, links, hr, blockquote, images)
+      function markdownToHtml(md) {
+        const lines = md.split(/\r?\n/);
+        const out = [];
+        let inCodeBlock = false;
+        let codeLang = "";
+        let codeLines = [];
+        let listOpen = false;
+        let paragraph = [];
+
+        function closeParagraph() {
+          if (!paragraph.length) return;
+          out.push(`<p>${inlineMarkdown(paragraph.join(" "))}</p>`);
+          paragraph = [];
+        }
+
+        function closeList() {
+          if (!listOpen) return;
+          out.push("</ul>");
+          listOpen = false;
+        }
+
+        function inlineMarkdown(text) {
+          return text
+            .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">')
+            .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+            .replace(/`([^`]+)`/g, "<code>$1</code>")
+            .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+            .replace(/\*(.+?)\*/g, "<em>$1</em>")
+            .replace(/~~(.+?)~~/g, "<del>$1</del>");
+        }
+
+        for (const rawLine of lines) {
+          // Fenced code blocks
+          if (/^```/.test(rawLine)) {
+            if (inCodeBlock) {
+              out.push(`<pre><code>${escapeHtml(codeLines.join("\n"))}</code></pre>`);
+              codeLines = [];
+              inCodeBlock = false;
+            } else {
+              closeParagraph();
+              closeList();
+              codeLang = rawLine.slice(3).trim();
+              inCodeBlock = true;
+            }
+            continue;
+          }
+          if (inCodeBlock) {
+            codeLines.push(rawLine);
+            continue;
+          }
+
+          const line = rawLine.trim();
+
+          if (!line) {
+            closeParagraph();
+            closeList();
+            continue;
+          }
+
+          if (/^---+$/.test(line)) {
+            closeParagraph();
+            closeList();
+            out.push("<hr>");
+            continue;
+          }
+
+          const headingMatch = line.match(/^(#{1,3})\s+(.*)/);
+          if (headingMatch) {
+            closeParagraph();
+            closeList();
+            const level = headingMatch[1].length;
+            out.push(`<h${level}>${inlineMarkdown(headingMatch[2])}</h${level}>`);
+            continue;
+          }
+
+          if (/^>\s?/.test(line)) {
+            closeParagraph();
+            closeList();
+            out.push(`<blockquote>${inlineMarkdown(line.replace(/^>\s?/, ""))}</blockquote>`);
+            continue;
+          }
+
+          const listMatch = line.match(/^[-*]\s+(.*)/);
+          if (listMatch) {
+            closeParagraph();
+            if (!listOpen) { out.push("<ul>"); listOpen = true; }
+            out.push(`<li>${inlineMarkdown(listMatch[1])}</li>`);
+            continue;
+          }
+
+          closeList();
+          paragraph.push(line);
+        }
+
+        closeParagraph();
+        closeList();
+        if (inCodeBlock) out.push(`<pre><code>${escapeHtml(codeLines.join("\n"))}</code></pre>`);
+        return out.join("\n");
+      }
+
+      async function loadRepo() {
+        const contentEl = document.getElementById("repo-content");
+        if (!repoName) {
+          contentEl.innerHTML = '<p class="error-msg">ERROR: No repository specified.</p>';
+          return;
+        }
+
+        try {
+          const [repoRes, readmeRes] = await Promise.all([
+            fetch(`https://api.github.com/repos/${GITHUB_USER}/${encodeURIComponent(repoName)}`),
+            fetch(`https://api.github.com/repos/${GITHUB_USER}/${encodeURIComponent(repoName)}/readme`)
+          ]);
+
+          if (!repoRes.ok) {
+            contentEl.innerHTML = `<p class="error-msg">ERROR: Could not load repository "${escapeHtml(repoName)}" (HTTP ${repoRes.status})</p>`;
+            return;
+          }
+
+          const repo = await repoRes.json();
+          document.title = repo.name;
+
+          const stars = repo.stargazers_count;
+          const forks = repo.forks_count;
+          const lang = repo.language || "—";
+          const updatedDate = new Date(repo.updated_at).toLocaleDateString("en-GB", {
+            year: "numeric", month: "short", day: "numeric"
+          });
+
+          let readmeHtml = "";
+          if (readmeRes.ok) {
+            const readmeData = await readmeRes.json();
+            const decoded = atob(readmeData.content.replace(/\n/g, ""));
+            readmeHtml = `
+              <div class="readme-section">
+                <h2>README</h2>
+                <div class="readme-body">${markdownToHtml(decoded)}</div>
+              </div>`;
+          }
+
+          contentEl.innerHTML = `
+            <div class="repo-header">
+              <h1 class="repo-title">${escapeHtml(repo.name)}</h1>
+              ${repo.description ? `<p class="repo-description">${escapeHtml(repo.description)}</p>` : ""}
+              <div class="repo-meta">
+                <span>&#9670; ${escapeHtml(lang)}</span>
+                <span>&#9733; ${stars}</span>
+                <span>&#8507; ${forks}</span>
+                <span>Updated: ${updatedDate}</span>
+              </div>
+              <div class="repo-links">
+                <a href="${escapeHtml(repo.html_url)}" target="_blank" rel="noopener">View on GitHub &#8599;</a>
+                ${repo.homepage ? `<a href="${escapeHtml(repo.homepage)}" target="_blank" rel="noopener">Live site &#8599;</a>` : ""}
+              </div>
+            </div>
+            ${readmeHtml}`;
+        } catch (err) {
+          contentEl.innerHTML = `<p class="error-msg">ERROR: ${escapeHtml(err.message)}</p>`;
+        }
+      }
+
+      loadRepo();
+    </script>
+  </body>
+</html>
