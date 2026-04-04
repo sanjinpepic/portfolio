@@ -196,19 +196,9 @@ function renderProjects() {
     const externalLink = app.url
       ? ` <a href="${app.url}" target="_blank" rel="noopener">${app.openInNewTabLabel || "Open in new tab"}</a>`
       : "";
-    const impactItems = Array.isArray(app.impact)
-      ? app.impact.map((metric) => `<li>${metric}</li>`).join("")
-      : "";
-    const stack = Array.isArray(app.stack) ? app.stack.join(", ") : app.stack || "";
     return `<li class="project-item">
       <h3>${orderLabel} — ${linkedTitle}</h3>
       <p>${app.description}${externalLink}</p>
-      <dl class="project-meta">
-        <div><dt>Role</dt><dd>${app.role || "—"}</dd></div>
-        <div><dt>Challenge</dt><dd>${app.challenge || "—"}</dd></div>
-        <div><dt>Impact</dt><dd>${impactItems ? `<ul>${impactItems}</ul>` : "—"}</dd></div>
-        <div><dt>Stack</dt><dd>${stack || "—"}</dd></div>
-      </dl>
     </li>`;
   });
   projectList.innerHTML = items.join("\n");
