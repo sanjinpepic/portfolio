@@ -250,3 +250,27 @@ a {
     min-width: 16rem;
   }
 }
+
+.resume-content {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.resume-note {
+  color: #2a2a2a;
+}
+
+.retro-pdf {
+  width: 100%;
+  height: min(65vh, 38rem);
+  border: 2px solid;
+  border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+  background: #f6f6f6;
+}
+
+code {
+  font-family: "VT323", monospace;
+  background: #ececec;
+  border: 1px solid #8f8f8f;
+  padding: 0 0.25rem;
+}
