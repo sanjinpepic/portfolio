@@ -358,6 +358,102 @@ a {
 }
 
 .browser-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  max-height: none;
+  height: calc(100% - 2rem);
+  overflow: hidden;
+}
+
+.browser-menubar {
+  padding: 0.15rem 0.35rem;
+  border: 2px solid;
+  border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+  background: #dbdbdb;
+  white-space: nowrap;
+  overflow: auto;
+}
+
+.browser-chrome {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  gap: 0.35rem;
+  align-items: center;
+  padding: 0.2rem;
+  border: 2px solid;
+  border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+  background: #d2d2d2;
+}
+
+.browser-nav-buttons {
+  display: inline-flex;
+  gap: 0.25rem;
+}
+
+.browser-nav-btn,
+.browser-go-btn {
+  font: inherit;
+  border: 2px solid;
+  border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+  background: #e5e5e5;
+  padding: 0.05rem 0.45rem;
+}
+
+.browser-nav-btn:active,
+.browser-go-btn:active {
+  border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+}
+
+.browser-label {
+  margin: 0;
+}
+
+.browser-address {
+  font: inherit;
+  border: 2px solid;
+  border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+  padding: 0.15rem 0.3rem;
+  background: #fff;
+}
+
+.retro-browser-frame {
+  width: 100%;
+  flex: 1;
+  min-height: 12rem;
+  border: 2px solid;
+  border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+  background: #fff;
+}
+
+.browser-status-bar {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.15rem 0.3rem;
+  border: 2px solid;
+  border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+  background: #e5e5e5;
+}
+
+.browser-brand {
+  color: #515151;
+}
+
+a {
+  color: #133f9a;
+  text-decoration: underline;
+  padding: 0;
+  cursor: pointer;
+}
+
+.project-link:hover,
+.project-link:focus-visible {
+  color: #0a2c70;
+  outline: none;
+}
+
+.browser-content {
   display: grid;
   gap: 0.5rem;
 }
@@ -371,36 +467,4 @@ a {
 
 .browser-label {
   margin: 0;
-}
-
-.browser-address {
-  font: inherit;
-  border: 2px solid;
-  border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
-  padding: 0.15rem 0.3rem;
-  background: #ebebeb;
-}
-
-.retro-browser-frame {
-  width: 100%;
-  height: min(32rem, calc(100vh - 16rem));
-  border: 2px solid;
-  border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
-  background: #fff;
-}
-
-a {
-  color: #133f9a;
-}
-
-.resume-content {
-  display: grid;
-  gap: 0.5rem;
-}
-
-.pdf-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.35rem;
 }
