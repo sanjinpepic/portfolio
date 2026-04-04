@@ -18,6 +18,104 @@ const browserStop = document.getElementById("browser-stop");
 const browserThrobber = document.getElementById("browser-throbber");
 const browserStatus = document.getElementById("browser-status");
 const clock = document.getElementById("clock");
+const resumeText = document.getElementById("resume-text");
+
+function escapeHtml(value) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+
+function inlineMarkdownToHtml(line) {
+  const escaped = escapeHtml(line);
+  return escaped
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/`(.+?)`/g, "<code>$1</code>")
+    .replace(/\[(.+?)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+}
+
+function markdownToRetroHtml(markdown) {
+  const lines = markdown.split(/\r?\n/);
+  const out = [];
+  let listOpen = false;
+  let paragraph = [];
+
+  function closeParagraph() {
+    if (!paragraph.length) return;
+    out.push(`<p>${inlineMarkdownToHtml(paragraph.join(" "))}</p>`);
+    paragraph = [];
+  }
+
+  function closeList() {
+    if (!listOpen) return;
+    out.push("</ul>");
+    listOpen = false;
+  }
+
+  lines.forEach((rawLine) => {
+    const line = rawLine.trim();
+
+    if (!line) {
+      closeParagraph();
+      closeList();
+      return;
+    }
+
+    if (/^---+$/.test(line)) {
+      closeParagraph();
+      closeList();
+      out.push("<hr>");
+      return;
+    }
+
+    const headingMatch = line.match(/^(#{1,3})\s+(.*)$/);
+    if (headingMatch) {
+      closeParagraph();
+      closeList();
+      const level = headingMatch[1].length;
+      out.push(`<h${level}>${inlineMarkdownToHtml(headingMatch[2])}</h${level}>`);
+      return;
+    }
+
+    const listMatch = line.match(/^-\s+(.*)$/);
+    if (listMatch) {
+      closeParagraph();
+      if (!listOpen) {
+        out.push("<ul>");
+        listOpen = true;
+      }
+      out.push(`<li>${inlineMarkdownToHtml(listMatch[1])}</li>`);
+      return;
+    }
+
+    closeList();
+    paragraph.push(line);
+  });
+
+  closeParagraph();
+  closeList();
+  return out.join("\n");
+}
+
+async function loadResumeTextFile() {
+  if (!resumeText) return;
+
+  try {
+    const response = await fetch("assets/sanjin.md", { cache: "no-cache" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    const markdown = await response.text();
+    resumeText.innerHTML = markdownToRetroHtml(markdown);
+  } catch (error) {
+    resumeText.textContent = [
+      "ERROR: Could not load SANJIN.MD",
+      "Please make sure assets/sanjin.md exists.",
+      "",
+      `Details: ${error.message}`
+    ].join("\n");
+  }
+}
 
 let topZ = 10;
 let activeWindowId = null;
@@ -284,6 +382,7 @@ document.addEventListener("keydown", (event) => {
 
 setInterval(updateClock, 1000 * 15);
 updateClock();
+loadResumeTextFile();
 
 openWindow("about-window");
 openWindow("projects-window");
