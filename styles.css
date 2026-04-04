@@ -386,6 +386,12 @@ body {
   border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
   padding: 0.1rem 0.3rem;
   background: #fff;
+  cursor: default;
+}
+
+.browser-address[readonly] {
+  color: #444;
+  user-select: none;
 }
 
 .browser-go-btn {

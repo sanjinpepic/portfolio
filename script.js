@@ -57,7 +57,24 @@ function closeWindow(id) {
   }
 }
 
+// Only URLs explicitly listed in the project links (or the home URL) may load
+// in the iframe. All other navigation attempts are blocked.
+const ALLOWED_URLS = new Set(["about:blank", "https://metalcre.vercel.app/"]);
+document.querySelectorAll(".project-link[data-browser-url]").forEach((el) => {
+  if (el.dataset.browserUrl) ALLOWED_URLS.add(el.dataset.browserUrl);
+});
+
+function isAllowedUrl(url) {
+  if (ALLOWED_URLS.has(url)) return true;
+  // Allow same-origin prefix match (e.g. sub-pages of a whitelisted origin)
+  for (const allowed of ALLOWED_URLS) {
+    if (allowed !== "about:blank" && url.startsWith(allowed)) return true;
+  }
+  return false;
+}
+
 function openInRetroBrowser(url, title) {
+  if (!isAllowedUrl(url)) return; // silently ignore; called only from project links
   if (browserFrame) browserFrame.src = url;
   if (browserAddress) browserAddress.value = url;
   if (browserStatus) browserStatus.textContent = `Loading ${url}...`;
@@ -70,6 +87,10 @@ function navigateBrowserTo(url) {
   if (!url) return;
   const hasProtocol = /^https?:\/\//i.test(url) || url.startsWith("about:");
   const normalizedUrl = hasProtocol ? url : `https://${url}`;
+  if (!isAllowedUrl(normalizedUrl)) {
+    if (browserStatus) browserStatus.textContent = "Navigation blocked: only linked projects may be loaded.";
+    return;
+  }
   if (browserAddress) browserAddress.value = normalizedUrl;
   if (browserFrame) browserFrame.src = normalizedUrl;
   if (browserStatus) browserStatus.textContent = `Loading ${normalizedUrl}...`;
@@ -129,18 +150,6 @@ projectLinks.forEach((projectLink) => {
     openInRetroBrowser(projectLink.dataset.browserUrl, projectLink.dataset.browserTitle || "Project");
   });
 });
-
-if (browserGo) {
-  browserGo.addEventListener("click", () => navigateBrowserTo(browserAddress?.value || ""));
-}
-
-if (browserAddress) {
-  browserAddress.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-      navigateBrowserTo(browserAddress.value);
-    }
-  });
-}
 
 if (browserHome) {
   browserHome.addEventListener("click", () => navigateBrowserTo("https://metalcre.vercel.app/"));
