@@ -99,37 +99,7 @@
           <button class="close-btn" data-close="projects-window" aria-label="Close Projects">×</button>
         </header>
         <div class="window-content">
-          <ul class="project-list">
-            <li>
-              <h3>
-                01 —
-                <button
-                  class="project-link"
-                  type="button"
-                  data-browser-url="https://metalcre.vercel.app/"
-                  data-browser-title="MetalCore"
-                >
-                  MetalCore
-                </button>
-              </h3>
-              <p>
-                MetalCore is a metallurgical database and visualization platform that analyzes elite knife alloys through interactive performance matrices. It integrates data-driven chemical analysis with an AI assistant to help users navigate complex material trade-offs.
-                <a href="https://metalcre.vercel.app/" target="_blank" rel="noopener">Open in new tab</a>
-              </p>
-            </li>
-            <li>
-              <h3>02 — Product Analytics Dashboard</h3>
-              <p>Real-time KPI system with event pipelines, custom charting, and anomaly alerts.</p>
-            </li>
-            <li>
-              <h3>03 — Commerce Design System</h3>
-              <p>Built reusable UI primitives and accessibility standards used across 4 teams.</p>
-            </li>
-            <li>
-              <h3>04 — AI Support Assistant</h3>
-              <p>Implemented a retrieval-augmented support flow that reduced response time by 37%.</p>
-            </li>
-          </ul>
+          <ul id="project-list" class="project-list"></ul>
         </div>
       </section>
 
@@ -235,6 +205,10 @@
       </section>
     </main>
 
+    <script src="apps/metalcore.js"></script>
+    <script src="apps/product-analytics-dashboard.js"></script>
+    <script src="apps/commerce-design-system.js"></script>
+    <script src="apps/ai-support-assistant.js"></script>
     <script src="script.js"></script>
   </body>
 </html>

@@ -5,7 +5,8 @@ const closers = [...document.querySelectorAll(".close-btn")];
 const menuButtons = [...document.querySelectorAll(".menu-item[data-menu]")];
 const menuActions = [...document.querySelectorAll(".menu-dropdown [data-action]")];
 const menuDropdowns = [...document.querySelectorAll(".menu-dropdown")];
-const projectLinks = [...document.querySelectorAll(".project-link[data-browser-url]")];
+const projectList = document.getElementById("project-list");
+const portfolioApps = [...(window.PORTFOLIO_APPS || [])].sort((a, b) => (a.order || 0) - (b.order || 0));
 const browserFrame = document.getElementById("browser-frame");
 const browserAddress = document.getElementById("browser-url");
 const browserTitle = document.getElementById("browser-title");
@@ -159,12 +160,61 @@ function closeWindow(id) {
   }
 }
 
-// Only URLs explicitly listed in the project links (or the home URL) may load
+// Only URLs explicitly listed in the app files (or the home URL) may load
 // in the iframe. All other navigation attempts are blocked.
-const ALLOWED_URLS = new Set(["about:blank", "https://metalcre.vercel.app/"]);
-document.querySelectorAll(".project-link[data-browser-url]").forEach((el) => {
-  if (el.dataset.browserUrl) ALLOWED_URLS.add(el.dataset.browserUrl);
+const ALLOWED_URLS = new Set(["about:blank"]);
+portfolioApps.forEach((app) => {
+  if (app.url) ALLOWED_URLS.add(app.url);
 });
+
+function renderProjects() {
+  if (!projectList) return;
+
+  const items = portfolioApps.map((app, index) => {
+    const orderLabel = String(app.order || index + 1).padStart(2, "0");
+    const linkedTitle = app.url
+      ? `<button class="project-link" type="button" data-browser-url="${app.url}" data-browser-title="${app.browserTitle || app.title}">${app.title}</button>`
+      : app.title;
+    const externalLink = app.url
+      ? ` <a href="${app.url}" target="_blank" rel="noopener">${app.openInNewTabLabel || "Open in new tab"}</a>`
+      : "";
+
+    return `<li><h3>${orderLabel} — ${linkedTitle}</h3><p>${app.description}${externalLink}</p></li>`;
+  });
+
+  projectList.innerHTML = items.join("\n");
+}
+
+function buildBrowserHomeMarkup() {
+  const items = portfolioApps.map((app, index) => {
+    const orderLabel = String(app.order || index + 1).padStart(2, "0");
+    const body = app.url ? `<a href="${app.url}">${orderLabel} — ${app.title}</a>` : `${orderLabel} — ${app.title}`;
+    return `<li>${body}</li>`;
+  });
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Projects Home</title>
+    <style>
+      body { font-family: "VT323", monospace; background: #f4f4f4; color: #111; margin: 0; padding: 1rem 1.25rem; font-size: 1.35rem; }
+      h1 { margin: 0 0 0.6rem; font-size: 1.8rem; }
+      p { margin: 0 0 0.7rem; }
+      ul { margin: 0; padding-left: 1.1rem; }
+      li { margin-bottom: 0.55rem; }
+      a { color: #133f9a; }
+    </style>
+  </head>
+  <body>
+    <h1>Projects Home</h1>
+    <p>Select a project to view:</p>
+    <ul>
+      ${items.join("\n      ")}
+    </ul>
+  </body>
+</html>`;
+}
 
 function isAllowedUrl(url) {
   if (ALLOWED_URLS.has(url)) return true;
@@ -187,31 +237,7 @@ function openInRetroBrowser(url, title) {
 }
 
 function loadBrowserHomePage() {
-  const homeMarkup = `<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Projects Home</title>
-    <style>
-      body { font-family: "VT323", monospace; background: #f4f4f4; color: #111; margin: 0; padding: 1rem 1.25rem; font-size: 1.35rem; }
-      h1 { margin: 0 0 0.6rem; font-size: 1.8rem; }
-      p { margin: 0 0 0.7rem; }
-      ul { margin: 0; padding-left: 1.1rem; }
-      li { margin-bottom: 0.55rem; }
-      a { color: #133f9a; }
-    </style>
-  </head>
-  <body>
-    <h1>Projects Home</h1>
-    <p>Select a project to view:</p>
-    <ul>
-      <li><a href="https://metalcre.vercel.app/">01 — MetalCore</a></li>
-      <li>02 — Product Analytics Dashboard</li>
-      <li>03 — Commerce Design System</li>
-      <li>04 — AI Support Assistant</li>
-    </ul>
-  </body>
-</html>`;
+  const homeMarkup = buildBrowserHomeMarkup();
 
   if (browserFrame) browserFrame.srcdoc = homeMarkup;
   if (browserAddress) browserAddress.value = BROWSER_HOME_URL;
@@ -282,11 +308,13 @@ closers.forEach((btn) => {
   btn.addEventListener("click", () => closeWindow(btn.dataset.close));
 });
 
-projectLinks.forEach((projectLink) => {
-  projectLink.addEventListener("click", () => {
+if (projectList) {
+  projectList.addEventListener("click", (event) => {
+    const projectLink = event.target.closest(".project-link[data-browser-url]");
+    if (!projectLink) return;
     openInRetroBrowser(projectLink.dataset.browserUrl, projectLink.dataset.browserTitle || "Project");
   });
-});
+}
 
 if (browserHome) {
   browserHome.addEventListener("click", () => loadBrowserHomePage());
@@ -421,6 +449,7 @@ document.addEventListener("keydown", (event) => {
 
 setInterval(updateClock, 1000 * 15);
 updateClock();
+renderProjects();
 loadResumeTextFile();
 
 openWindow("about-window");
