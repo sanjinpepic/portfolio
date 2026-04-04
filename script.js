@@ -18,6 +18,74 @@ const browserStop = document.getElementById("browser-stop");
 const browserThrobber = document.getElementById("browser-throbber");
 const browserStatus = document.getElementById("browser-status");
 const clock = document.getElementById("clock");
+const resumeText = document.getElementById("resume-text");
+
+function markdownToRetroText(markdown) {
+  const lines = markdown.split(/\r?\n/);
+  const out = [];
+
+  for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i].trimEnd();
+
+    if (!line.trim()) {
+      out.push("");
+      continue;
+    }
+
+    if (/^---+$/.test(line.trim())) {
+      out.push("=".repeat(40));
+      continue;
+    }
+
+    if (line.startsWith("### ")) {
+      out.push(`> ${line.slice(4).toUpperCase()}`);
+      continue;
+    }
+
+    if (line.startsWith("## ")) {
+      const heading = line.slice(3).toUpperCase();
+      out.push(heading);
+      out.push("-".repeat(Math.max(heading.length, 8)));
+      continue;
+    }
+
+    if (line.startsWith("# ")) {
+      const heading = line.slice(2).toUpperCase();
+      out.push("=".repeat(Math.max(heading.length, 20)));
+      out.push(heading);
+      out.push("=".repeat(Math.max(heading.length, 20)));
+      continue;
+    }
+
+    if (/^-\s+/.test(line)) {
+      out.push(`* ${line.replace(/^-\s+/, "")}`);
+      continue;
+    }
+
+    out.push(line.replace(/\*\*/g, "").replace(/`/g, ""));
+  }
+
+  return out.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+}
+
+async function loadResumeTextFile() {
+  if (!resumeText) return;
+
+  try {
+    const response = await fetch("assets/sanjin.md", { cache: "no-cache" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    const markdown = await response.text();
+    resumeText.textContent = markdownToRetroText(markdown);
+  } catch (error) {
+    resumeText.textContent = [
+      "ERROR: Could not load SANJIN.MD",
+      "Please make sure assets/sanjin.md exists.",
+      "",
+      `Details: ${error.message}`
+    ].join("\n");
+  }
+}
 
 let topZ = 10;
 let activeWindowId = null;
@@ -284,6 +352,7 @@ document.addEventListener("keydown", (event) => {
 
 setInterval(updateClock, 1000 * 15);
 updateClock();
+loadResumeTextFile();
 
 openWindow("about-window");
 openWindow("projects-window");
