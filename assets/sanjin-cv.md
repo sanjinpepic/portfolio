@@ -1,7 +1,7 @@
 # Sanjin Pepić
 
 Paris, France | sanjin@pepic.me  
-(+46) 73 593-3061 | in/sanjin-pepic
+in/sanjin-pepic
 
 ## Summary
 
