@@ -5,6 +5,10 @@ const closers = [...document.querySelectorAll(".close-btn")];
 const menuButtons = [...document.querySelectorAll(".menu-item[data-menu]")];
 const menuActions = [...document.querySelectorAll(".menu-dropdown [data-action]")];
 const menuDropdowns = [...document.querySelectorAll(".menu-dropdown")];
+const projectLinks = [...document.querySelectorAll(".project-link[data-browser-url]")];
+const browserFrame = document.getElementById("browser-frame");
+const browserAddress = document.getElementById("browser-url");
+const browserTitle = document.getElementById("browser-title");
 const clock = document.getElementById("clock");
 
 let topZ = 10;
@@ -43,6 +47,13 @@ function closeWindow(id) {
       .pop();
     activeWindowId = topOpenWindow?.id || null;
   }
+}
+
+function openInRetroBrowser(url, title) {
+  if (browserFrame) browserFrame.src = url;
+  if (browserAddress) browserAddress.value = url;
+  if (browserTitle) browserTitle.textContent = `Retro Browser — ${title}`;
+  openWindow("browser-window");
 }
 
 function closeFocusedWindow() {
@@ -90,6 +101,12 @@ openers.forEach((icon) => {
 
 closers.forEach((btn) => {
   btn.addEventListener("click", () => closeWindow(btn.dataset.close));
+});
+
+projectLinks.forEach((projectLink) => {
+  projectLink.addEventListener("click", () => {
+    openInRetroBrowser(projectLink.dataset.browserUrl, projectLink.dataset.browserTitle || "Project");
+  });
 });
 
 windows.forEach((win) => {
@@ -157,6 +174,7 @@ menuActions.forEach((actionButton) => {
     const action = actionButton.dataset.action;
     if (action === "open-about") openWindow("about-window");
     if (action === "open-projects") openWindow("projects-window");
+    if (action === "open-browser") openWindow("browser-window");
     if (action === "open-resume") openWindow("resume-window");
     if (action === "open-contact") openWindow("contact-window");
     if (action === "close-focused") closeFocusedWindow();

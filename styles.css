@@ -237,6 +237,54 @@ body {
   padding-left: 1rem;
 }
 
+.project-link {
+  font: inherit;
+  border: none;
+  background: transparent;
+  color: #133f9a;
+  text-decoration: underline;
+  padding: 0;
+  cursor: pointer;
+}
+
+.project-link:hover,
+.project-link:focus-visible {
+  color: #0a2c70;
+  outline: none;
+}
+
+.browser-content {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.browser-chrome {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.browser-label {
+  margin: 0;
+}
+
+.browser-address {
+  font: inherit;
+  border: 2px solid;
+  border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+  padding: 0.15rem 0.3rem;
+  background: #ebebeb;
+}
+
+.retro-browser-frame {
+  width: 100%;
+  height: min(32rem, calc(100vh - 16rem));
+  border: 2px solid;
+  border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+  background: #fff;
+}
+
 a {
   color: #133f9a;
 }
@@ -311,4 +359,13 @@ code {
   .window {
     min-width: 16rem;
   }
+}
+
+.resume-content {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.resume-note {
+  color: #2a2a2a;
 }
