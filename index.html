@@ -45,6 +45,19 @@
       <div class="menu-right" id="clock" aria-live="polite"></div>
     </div>
 
+    <canvas id="bg-canvas" aria-hidden="true"></canvas>
+
+    <div id="boot-overlay" aria-hidden="true">
+      <div id="boot-lines"></div>
+      <div id="boot-bar-container" class="boot-bar-wrap" style="display:none">
+        <div class="boot-bar-label">Starting Portfolio...</div>
+        <div class="boot-bar-track">
+          <div id="boot-bar-fill" class="boot-bar-fill"></div>
+        </div>
+      </div>
+      <div class="boot-skip-hint">Press any key or click to skip_</div>
+    </div>
+
     <main id="desktop" class="desktop desktop-shell" aria-label="Retro portfolio desktop">
       <button class="desktop-icon" data-open="about-window" style="--x: 3rem; --y: 4.5rem">
         <span class="icon emoji" aria-hidden="true">💾</span>
@@ -130,6 +143,30 @@
           <button class="close-btn" data-close="contact-window" aria-label="Close Contact">×</button>
         </header>
         <div class="window-content" data-window-src="windows/contact.html"></div>
+      </section>
+      <section
+        id="easter-error"
+        class="window"
+        style="--left: 28rem; --top: 18rem; --width: 26rem"
+        aria-labelledby="easter-error-title"
+      >
+        <header class="title-bar drag-handle">
+          <h2 id="easter-error-title">SYSTEM ERROR</h2>
+          <button class="close-btn" data-close="easter-error" aria-label="Close error dialog">×</button>
+        </header>
+        <div class="window-content">
+          <div class="error-dialog-body">
+            <span class="error-dialog-icon" aria-hidden="true">⚠️</span>
+            <p class="error-dialog-msg">
+              <strong>FATAL ERROR 0x0000COOL:</strong><br>
+              Visitor detected. Dangerously high levels of quality detected in this portfolio.<br><br>
+              Click OK to acknowledge and continue browsing.
+            </p>
+          </div>
+          <div class="error-dialog-actions">
+            <button class="retro-btn close-btn" data-close="easter-error" style="min-width:5rem">OK</button>
+          </div>
+        </div>
       </section>
     </main>
 

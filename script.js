@@ -146,6 +146,8 @@ function updateClock() {
   });
 }
 function bringToFront(win) {
+  windows.forEach((w) => w.classList.remove("focused"));
+  win.classList.add("focused");
   if (mobileLayoutQuery.matches) {
     activeWindowId = win.id;
     return;
@@ -157,6 +159,8 @@ function bringToFront(win) {
 function openWindow(id) {
   const win = document.getElementById(id);
   if (!win) return;
+  // Cancel any in-progress close animation
+  win.classList.remove("closing");
   if (mobileLayoutQuery.matches) {
     windows.forEach((windowEl) => {
       if (windowEl.id !== id) windowEl.classList.remove("open");
@@ -165,20 +169,35 @@ function openWindow(id) {
   if (id === "browser-window" && browserAddress?.value === "about:blank") {
     loadBrowserHomePage();
   }
+  const wasOpen = win.classList.contains("open");
   win.classList.add("open");
+  if (!wasOpen) {
+    requestAnimationFrame(() => {
+      win.classList.add("opening");
+      win.addEventListener("animationend", () => win.classList.remove("opening"), { once: true });
+    });
+    if (id === "about-window") startTypewriter();
+  }
   bringToFront(win);
 }
 function closeWindow(id) {
   const win = document.getElementById(id);
-  if (!win) return;
-  win.classList.remove("open");
+  if (!win || !win.classList.contains("open")) return;
+  // Transfer focus immediately
   if (activeWindowId === id) {
+    win.classList.remove("focused");
     const topOpenWindow = windows
-      .filter((windowEl) => windowEl.classList.contains("open"))
+      .filter((w) => w.classList.contains("open") && w.id !== id)
       .sort((a, b) => Number(a.style.zIndex || 0) - Number(b.style.zIndex || 0))
       .pop();
     activeWindowId = topOpenWindow?.id || null;
+    if (topOpenWindow) topOpenWindow.classList.add("focused");
   }
+  // Animate close
+  win.classList.add("closing");
+  win.addEventListener("animationend", () => {
+    win.classList.remove("open", "closing");
+  }, { once: true });
 }
 // Only URLs explicitly listed in the app files (or the home URL) may load
 // in the iframe. All other navigation attempts are blocked.
@@ -530,12 +549,148 @@ window.addGithubRepos = function (repos) {
   newRepos.forEach((r) => { if (r.url) ALLOWED_URLS.add(r.url); });
   renderProjects();
 };
+// ── Boot sequence ──────────────────────────────────────────────
+function runBootSequence() {
+  const overlay = document.getElementById("boot-overlay");
+  if (!overlay) return;
+  const linesEl = document.getElementById("boot-lines");
+  const barContainer = document.getElementById("boot-bar-container");
+  const barFill = document.getElementById("boot-bar-fill");
+  let done = false;
+
+  function finish() {
+    if (done) return;
+    done = true;
+    overlay.classList.add("fade-out");
+    overlay.addEventListener("transitionend", () => overlay.classList.add("hidden"), { once: true });
+  }
+
+  overlay.addEventListener("click", finish, { once: true });
+  document.addEventListener("keydown", finish, { once: true });
+
+  const lines = [
+    { text: "PORTFOLIO BIOS v1.0 (1993)", highlight: true, delay: 0 },
+    { text: "Copyright (C) Sanjin Systems Inc.", delay: 120 },
+    { text: "", delay: 220 },
+    { text: "CPU: Sanjin-1000 @ 500 MHz ............ OK", delay: 380 },
+    { text: "Memory test: 640 KB ................... OK", delay: 560 },
+    { text: "Extended memory: 524288 KB ............ OK", delay: 720 },
+    { text: "Detecting drives ...................... 1 found", delay: 900 },
+    { text: "Initializing display adapter .......... OK", delay: 1060 },
+    { text: "Loading experience module ............. OK", delay: 1200 },
+    { text: "", delay: 1340 },
+    { text: "System check complete. No errors detected.", delay: 1420 },
+  ];
+
+  lines.forEach(({ text, highlight, delay }) => {
+    setTimeout(() => {
+      if (done) return;
+      const p = document.createElement("p");
+      p.className = "boot-line" + (highlight ? " highlight" : "");
+      p.textContent = text;
+      linesEl.appendChild(p);
+    }, delay);
+  });
+
+  setTimeout(() => {
+    if (done) return;
+    barContainer.style.display = "";
+    requestAnimationFrame(() => requestAnimationFrame(() => { barFill.style.width = "100%"; }));
+  }, 1600);
+
+  setTimeout(finish, 2900);
+}
+
+// ── Pixel rain canvas ──────────────────────────────────────────
+function initPixelRain() {
+  const canvas = document.getElementById("bg-canvas");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const CHARS = "01アイウエオカキクケコ#$%&<>[]{}".split("");
+  const COL_W = 16;
+  let cols = [];
+  let frameCount = 0;
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight - canvas.getBoundingClientRect().top;
+    cols = Array.from({ length: Math.floor(canvas.width / COL_W) }, () =>
+      Math.floor(Math.random() * -(canvas.height / 16))
+    );
+  }
+
+  function draw() {
+    if (document.hidden) { requestAnimationFrame(draw); return; }
+    frameCount++;
+    if (frameCount % 2 !== 0) { requestAnimationFrame(draw); return; }
+
+    ctx.fillStyle = "rgba(0, 0, 0, 0.07)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    cols.forEach((y, i) => {
+      const ch = CHARS[Math.floor(Math.random() * CHARS.length)];
+      const x = i * COL_W;
+      // Bright head
+      ctx.fillStyle = "rgba(160, 255, 210, 0.9)";
+      ctx.font = `14px "VT323", monospace`;
+      ctx.fillText(ch, x, y * 16);
+      // Trail fades naturally via the black overlay
+
+      cols[i] = y > canvas.height / 16 + Math.random() * 20 ? Math.random() * -20 : y + 1;
+    });
+
+    requestAnimationFrame(draw);
+  }
+
+  resize();
+  window.addEventListener("resize", resize);
+  draw();
+}
+
+// ── Typewriter effect ──────────────────────────────────────────
+let typewriterDone = false;
+function startTypewriter() {
+  if (typewriterDone) return;
+  const target = document.getElementById("about-typewriter-text");
+  if (!target) return;
+  typewriterDone = true;
+
+  const fullText = target.textContent.trim();
+  target.textContent = "";
+
+  const cursor = document.createElement("span");
+  cursor.className = "typewriter-cursor";
+  cursor.setAttribute("aria-hidden", "true");
+  target.appendChild(cursor);
+
+  let i = 0;
+  function type() {
+    if (i >= fullText.length) {
+      // Remove cursor after a pause
+      setTimeout(() => cursor.remove(), 1800);
+      return;
+    }
+    target.insertBefore(document.createTextNode(fullText[i]), cursor);
+    i++;
+    setTimeout(type, 28 + Math.random() * 22);
+  }
+  // Small delay so window animation finishes first
+  setTimeout(type, 200);
+}
+
 async function initDesktop() {
+  runBootSequence();
+  initPixelRain();
   await loadWindowPartials();
   syncDynamicElements();
   bindDynamicContentEvents();
   renderProjects();
   await loadResumeTextFile();
   openWindow("about-window");
+  // Easter egg: fake error dialog after 45s
+  setTimeout(() => {
+    const errWin = document.getElementById("easter-error");
+    if (errWin && !errWin.classList.contains("open")) openWindow("easter-error");
+  }, 45000);
 }
 initDesktop();
