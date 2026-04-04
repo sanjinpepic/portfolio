@@ -13,6 +13,9 @@ const browserGo = document.getElementById("browser-go");
 const browserBack = document.getElementById("browser-back");
 const browserForward = document.getElementById("browser-forward");
 const browserHome = document.getElementById("browser-home");
+const browserReload = document.getElementById("browser-reload");
+const browserStop = document.getElementById("browser-stop");
+const browserThrobber = document.getElementById("browser-throbber");
 const browserStatus = document.getElementById("browser-status");
 const clock = document.getElementById("clock");
 
@@ -54,11 +57,29 @@ function closeWindow(id) {
   }
 }
 
+// Only URLs explicitly listed in the project links (or the home URL) may load
+// in the iframe. All other navigation attempts are blocked.
+const ALLOWED_URLS = new Set(["about:blank", "https://metalcre.vercel.app/"]);
+document.querySelectorAll(".project-link[data-browser-url]").forEach((el) => {
+  if (el.dataset.browserUrl) ALLOWED_URLS.add(el.dataset.browserUrl);
+});
+
+function isAllowedUrl(url) {
+  if (ALLOWED_URLS.has(url)) return true;
+  // Allow same-origin prefix match (e.g. sub-pages of a whitelisted origin)
+  for (const allowed of ALLOWED_URLS) {
+    if (allowed !== "about:blank" && url.startsWith(allowed)) return true;
+  }
+  return false;
+}
+
 function openInRetroBrowser(url, title) {
+  if (!isAllowedUrl(url)) return; // silently ignore; called only from project links
   if (browserFrame) browserFrame.src = url;
   if (browserAddress) browserAddress.value = url;
   if (browserStatus) browserStatus.textContent = `Loading ${url}...`;
-  if (browserTitle) browserTitle.textContent = `Retro Browser — ${title}`;
+  if (browserTitle) browserTitle.textContent = `Netscape Navigator — ${title}`;
+  if (browserThrobber) browserThrobber.classList.add("loading");
   openWindow("browser-window");
 }
 
@@ -66,10 +87,15 @@ function navigateBrowserTo(url) {
   if (!url) return;
   const hasProtocol = /^https?:\/\//i.test(url) || url.startsWith("about:");
   const normalizedUrl = hasProtocol ? url : `https://${url}`;
+  if (!isAllowedUrl(normalizedUrl)) {
+    if (browserStatus) browserStatus.textContent = "Navigation blocked: only linked projects may be loaded.";
+    return;
+  }
   if (browserAddress) browserAddress.value = normalizedUrl;
   if (browserFrame) browserFrame.src = normalizedUrl;
   if (browserStatus) browserStatus.textContent = `Loading ${normalizedUrl}...`;
-  if (browserTitle) browserTitle.textContent = "Retro Browser";
+  if (browserTitle) browserTitle.textContent = "Netscape Navigator";
+  if (browserThrobber) browserThrobber.classList.add("loading");
 }
 
 function closeFocusedWindow() {
@@ -125,18 +151,6 @@ projectLinks.forEach((projectLink) => {
   });
 });
 
-if (browserGo) {
-  browserGo.addEventListener("click", () => navigateBrowserTo(browserAddress?.value || ""));
-}
-
-if (browserAddress) {
-  browserAddress.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-      navigateBrowserTo(browserAddress.value);
-    }
-  });
-}
-
 if (browserHome) {
   browserHome.addEventListener("click", () => navigateBrowserTo("https://metalcre.vercel.app/"));
 }
@@ -155,9 +169,27 @@ if (browserForward) {
   });
 }
 
+if (browserReload) {
+  browserReload.addEventListener("click", () => {
+    if (browserFrame) {
+      browserFrame.src = browserFrame.src;
+      if (browserThrobber) browserThrobber.classList.add("loading");
+      if (browserStatus) browserStatus.textContent = "Reloading...";
+    }
+  });
+}
+
+if (browserStop) {
+  browserStop.addEventListener("click", () => {
+    if (browserThrobber) browserThrobber.classList.remove("loading");
+    if (browserStatus) browserStatus.textContent = "Transfer interrupted.";
+  });
+}
+
 if (browserFrame) {
   browserFrame.addEventListener("load", () => {
     if (browserStatus) browserStatus.textContent = "Document: Done";
+    if (browserThrobber) browserThrobber.classList.remove("loading");
   });
 }
 
@@ -171,10 +203,10 @@ windows.forEach((win) => {
     if (!dragging) return;
     const x = event.clientX - offsetX;
     const y = event.clientY - offsetY;
-    const maxX = window.innerWidth - win.offsetWidth;
-    const maxY = window.innerHeight - win.offsetHeight;
+    const maxX = desktop.offsetWidth - win.offsetWidth;
+    const maxY = desktop.offsetHeight - win.offsetHeight;
     win.style.left = `${Math.max(0, Math.min(x, maxX))}px`;
-    win.style.top = `${Math.max(33, Math.min(y, maxY))}px`;
+    win.style.top = `${Math.max(0, Math.min(y, maxY))}px`;
   }
 
   handle.addEventListener("pointerdown", (event) => {
@@ -182,8 +214,9 @@ windows.forEach((win) => {
     dragging = true;
     bringToFront(win);
     const rect = win.getBoundingClientRect();
-    offsetX = event.clientX - rect.left;
-    offsetY = event.clientY - rect.top;
+    const desktopRect = desktop.getBoundingClientRect();
+    offsetX = event.clientX - (rect.left - desktopRect.left);
+    offsetY = event.clientY - (rect.top - desktopRect.top);
     handle.setPointerCapture(event.pointerId);
   });
 
