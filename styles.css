@@ -530,6 +530,52 @@ a {
   color: #111;
   font-family: "VT323", monospace;
   font-size: 1.2rem;
-  line-height: 1.05;
-  white-space: pre;
+  line-height: 1.2;
+  white-space: normal;
+}
+
+.retro-text-file h1,
+.retro-text-file h2,
+.retro-text-file h3 {
+  margin: 0.55rem 0 0.3rem;
+  line-height: 1.1;
+}
+
+.retro-text-file h1 {
+  font-size: 1.65rem;
+  text-transform: uppercase;
+}
+
+.retro-text-file h2 {
+  font-size: 1.35rem;
+  text-transform: uppercase;
+}
+
+.retro-text-file h3 {
+  font-size: 1.2rem;
+}
+
+.retro-text-file p {
+  margin: 0 0 0.4rem;
+}
+
+.retro-text-file ul {
+  margin: 0 0 0.45rem 1.1rem;
+  padding: 0;
+}
+
+.retro-text-file li {
+  margin-bottom: 0.15rem;
+}
+
+.retro-text-file hr {
+  border: none;
+  border-top: 1px solid #555;
+  margin: 0.5rem 0;
+}
+
+.retro-text-file code {
+  border: 1px solid #777;
+  padding: 0 0.15rem;
+  background: #ececec;
 }
