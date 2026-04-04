@@ -204,29 +204,104 @@
       <section
         id="resume-window"
         class="window"
-        style="--left: 20rem; --top: 8rem; --width: 40rem"
+        style="--left: 20rem; --top: 8rem; --width: 48rem; --height: 34rem"
         aria-labelledby="resume-title"
       >
         <header class="title-bar drag-handle">
-          <h2 id="resume-title">Retro CV Reader</h2>
+          <h2 id="resume-title">Sanjin_Pepic_CV.txt</h2>
           <button class="close-btn" data-close="resume-window" aria-label="Close Resume">×</button>
         </header>
         <div class="window-content resume-content">
-          <p><strong>Loaded file:</strong> <code>assets/sanjin-cv-redacted.pdf</code></p>
-          <div class="pdf-toolbar" role="group" aria-label="PDF controls">
-            <button type="button" class="retro-btn" id="pdf-prev">◀ Prev</button>
-            <span id="pdf-page" class="pdf-page-label">Page 1 / 1</span>
-            <button type="button" class="retro-btn" id="pdf-next">Next ▶</button>
-            <button type="button" class="retro-btn" id="pdf-zoom-out">-</button>
-            <button type="button" class="retro-btn" id="pdf-zoom-in">+</button>
-          </div>
-          <div class="retro-pdf-frame">
-            <canvas id="pdf-canvas" class="retro-pdf-canvas" aria-label="CV PDF preview"></canvas>
-          </div>
-          <p class="resume-note" id="pdf-status">Loading PDF…</p>
-          <p class="resume-note">
-            If this cannot load, <a href="assets/sanjin-cv-redacted.pdf" target="_blank" rel="noopener">open CV PDF</a>.
-          </p>
+          <pre class="retro-text-file" aria-label="Sanjin Pepic CV text file">=======================================
+SANJIN PEPIC
+Paris, France
+sanjin@pepic.me | (+46) 73 593-3061
+LinkedIn: in/sanjin-pepic
+=======================================
+
+SUMMARY
+-------
+Strategy &amp; Business Analyst with 4+ years of experience
+bridging data analytics and strategic execution across
+energy, fintech, and industrial sectors.
+Skilled at delivering measurable impact through market
+expansion, transformation programs, and sustainable
+business solutions.
+
+EDUCATION
+---------
+M.Sc. Engineering, Industrial Management (2021)
+KTH Royal Institute of Technology, Stockholm
+- Thesis w/ Boliden: supply chain + financial decision
+  model to forecast &amp; optimize working capital/cash flow.
+
+B.Sc. Engineering, Material Science and Engineering (2019)
+KTH Royal Institute of Technology, Stockholm
+- Thesis w/ Voestalpine: optimized metal 3D printing.
+
+BBA (2021)
+Stockholm Business School, Stockholm
+- Supplement to M.Sc. Industrial Management.
+
+EXPERIENCE
+----------
+Head of Strategy Development | Erasteel
+Aug 2024 - Present | Paris, France
+- Led commercial strategy 2026 development.
+- Driving SEA/LATAM expansion via strategic analysis.
+- Built and lead first Transformation Office, coordinating
+  EUR 18M EBITDA initiatives cross-functionally.
+- Created executive KPI dashboards and governance reporting.
+
+Business Data Analyst | Tibber
+Sep 2022 - Aug 2024 | Stockholm
+- Improved smart charging efficiency; ~50M SEK annual savings.
+- Helped drive +32% product conversion.
+- Established charging analytics team and B2B pricing strategy.
+- Implemented modern analytics stack (Databricks, Rudderstack,
+  A/B tooling and visualization platform).
+
+Business Product Manager | Anyfin
+Dec 2021 - Sep 2022 | Stockholm
+- Drove app product strategy; user activity/retention doubled.
+- Led 13-person cross-functional delivery team.
+- Shipped savings + budgeting features (+20% activity,
+  +15% retention).
+- Rebuilt savings product; doubled avg saved balance/user.
+
+Business Data Analyst | Anyfin
+Aug 2021 - Dec 2021 | Stockholm
+- Owned engagement analytics in BigQuery.
+- Standardized A/B testing and event tracking.
+- Increased conversion by 26% through product improvements.
+
+Project Manager | Stockholm School of Economics
+Dec 2018 - Present | Stockholm
+- Project Manager &amp; Mentor, Network: Young Talent.
+- Coordinated recruitment, events, and industry partnerships.
+- Recruited/supporting partners include Spotify, Klarna,
+  and Norrsken Foundation.
+
+Earlier Experience
+- Boliden (2020-2021): Planner &amp; Contract Administrator.
+- Knowit x KTH (2020-2021): Digitalization Consultant.
+- Student Union: First Secretary; implemented sustainability
+  and gender-equality policies.
+
+INVOLVEMENTS
+------------
+KTH Royal Institute of Technology
+- Leadership roles in student union and event programs.
+- Managed partnerships and events with 300+ participants.
+
+SKILLS
+------
+Analytics: dbt, SQL, Amplitude, Redash, Python, Tableau,
+           Metabase, BigQuery, Databricks, Redshift, Power BI
+Software:  Excel, PowerPoint, Office 365, Google Suite
+Languages: Swedish (Native), English (Fluent), Bosnian (Native)
+
+          </pre>
         </div>
       </section>
 
@@ -241,18 +316,16 @@
           <button class="close-btn" data-close="contact-window" aria-label="Close Contact">×</button>
         </header>
         <div class="window-content">
-          <p>Contact details (moved out of the CV):</p>
+          <p>Contact details:</p>
           <ul>
-            <li>Email: <span id="contact-email">Add your email from CV</span></li>
-            <li>GitHub: <span id="contact-github">Add your GitHub from CV</span></li>
-            <li>LinkedIn: <span id="contact-linkedin">Add your LinkedIn from CV</span></li>
+            <li>Email: <span id="contact-email">sanjin@pepic.me</span></li>
+            <li>LinkedIn: <span id="contact-linkedin">in/sanjin-pepic</span></li>
+            <li>Phone: <span id="contact-phone">(+46) 73 593-3061</span></li>
           </ul>
-          <p class="resume-note">Phone number intentionally omitted.</p>
         </div>
       </section>
     </main>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.3.136/pdf.min.js" crossorigin="anonymous"></script>
     <script src="script.js"></script>
   </body>
 </html>
