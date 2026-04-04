@@ -8,6 +8,7 @@ const menuDropdowns = [...document.querySelectorAll(".menu-dropdown")];
 const portfolioApps = [...(window.PORTFOLIO_APPS || [])].sort((a, b) => (a.order || 0) - (b.order || 0));
 const clock = document.getElementById("clock");
 const BROWSER_HOME_URL = "about:home";
+const mobileLayoutQuery = window.matchMedia("(max-width: 900px)");
 let projectList = null;
 let browserFrame = null;
 let browserAddress = null;
@@ -143,6 +144,10 @@ function updateClock() {
   });
 }
 function bringToFront(win) {
+  if (mobileLayoutQuery.matches) {
+    activeWindowId = win.id;
+    return;
+  }
   topZ += 1;
   win.style.zIndex = String(topZ);
   activeWindowId = win.id;
@@ -150,6 +155,11 @@ function bringToFront(win) {
 function openWindow(id) {
   const win = document.getElementById(id);
   if (!win) return;
+  if (mobileLayoutQuery.matches) {
+    windows.forEach((windowEl) => {
+      if (windowEl.id !== id) windowEl.classList.remove("open");
+    });
+  }
   if (id === "browser-window" && browserAddress?.value === "about:blank") {
     loadBrowserHomePage();
   }
@@ -307,9 +317,14 @@ function closeAllWindows() {
   activeWindowId = null;
 }
 function openAllWindows() {
+  if (mobileLayoutQuery.matches) {
+    openWindow("about-window");
+    return;
+  }
   windows.forEach((win) => openWindow(win.id));
 }
 function cascadeWindows() {
+  if (mobileLayoutQuery.matches) return;
   let x = 210;
   let y = 75;
   windows
@@ -385,6 +400,7 @@ function bindDynamicContentEvents() {
 }
 windows.forEach((win) => {
   const handle = win.querySelector(".drag-handle");
+  if (!handle) return;
   let dragging = false;
   let offsetX = 0;
   let offsetY = 0;
@@ -398,6 +414,7 @@ windows.forEach((win) => {
     win.style.top = `${Math.max(0, Math.min(y, maxY))}px`;
   }
   handle.addEventListener("pointerdown", (event) => {
+    if (mobileLayoutQuery.matches) return;
     if (event.target.closest(".close-btn")) return;
     dragging = true;
     bringToFront(win);
@@ -420,7 +437,10 @@ windows.forEach((win) => {
     }
   });
   handle.addEventListener("pointermove", onMove);
-  win.addEventListener("mousedown", () => bringToFront(win));
+  win.addEventListener("mousedown", () => {
+    if (mobileLayoutQuery.matches) return;
+    bringToFront(win);
+  });
 });
 desktop.addEventListener("dblclick", (event) => {
   if (event.target === desktop) {
@@ -468,6 +488,16 @@ document.addEventListener("keydown", (event) => {
   }
   if (event.key === "Escape") closeMenus();
 });
+
+mobileLayoutQuery.addEventListener("change", () => {
+  if (!mobileLayoutQuery.matches) return;
+  const firstOpen = windows.find((win) => win.classList.contains("open"));
+  windows.forEach((win) => {
+    if (firstOpen && win.id !== firstOpen.id) win.classList.remove("open");
+  });
+  if (!firstOpen) openWindow("about-window");
+});
+
 setInterval(updateClock, 1000 * 15);
 updateClock();
 async function initDesktop() {
