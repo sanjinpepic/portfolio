@@ -269,6 +269,74 @@ body {
   cursor: pointer;
 }
 
+
+.cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0.2rem 0 0.75rem;
+}
+
+.primary-cta,
+.secondary-cta {
+  font: inherit;
+  border: 2px solid;
+  border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+  text-decoration: none;
+  padding: 0.2rem 0.55rem;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.primary-cta {
+  background: #1f4db4;
+  color: #fff;
+}
+
+.secondary-cta {
+  background: #d7d7d7;
+  color: #111;
+}
+
+.primary-cta:active,
+.secondary-cta:active {
+  border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+}
+
+.help-section {
+  margin-bottom: 0.8rem;
+}
+
+.help-section ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.project-item {
+  margin-bottom: 1rem;
+}
+
+.project-meta {
+  margin: 0;
+}
+
+.project-meta div {
+  margin-bottom: 0.4rem;
+}
+
+.project-meta dt {
+  font-weight: 700;
+}
+
+.project-meta dd {
+  margin: 0.1rem 0 0;
+}
+
+.project-meta ul {
+  margin: 0.15rem 0 0;
+  padding-left: 1rem;
+}
+
 .project-link:hover,
 .project-link:focus-visible {
   color: #0a2c70;
