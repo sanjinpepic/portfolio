@@ -124,14 +124,6 @@ body {
   inset: 2rem 0 0 0;
 }
 
-.desktop-icons {
-  position: relative;
-}
-
-.window-stack {
-  position: relative;
-}
-
 .desktop-icon {
   position: absolute;
   left: var(--x);
@@ -282,9 +274,10 @@ body {
     gap: 0.8rem;
   }
 
-  .desktop-icons {
+  .desktop-shell {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(8.75rem, 1fr));
+    align-items: start;
     gap: 0.55rem;
   }
 
@@ -311,16 +304,11 @@ body {
     font-size: 1.2rem;
   }
 
-  .window-stack {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
   .window {
     position: relative;
     left: auto;
     top: auto;
+    grid-column: 1 / -1;
     width: 100%;
     min-width: 0;
     max-height: none;
