@@ -73,7 +73,7 @@
           <button class="close-btn" data-close="about-window" aria-label="Close About Me">×</button>
         </header>
         <div class="window-content">
-          <p><strong>Hello, I’m Your Name.</strong></p>
+          <p><strong>Hello, I’m Sanjin.</strong></p>
           <p>
             I design and build thoughtful products, blending a love for clean interaction design with robust
             engineering.
@@ -116,21 +116,29 @@
       <section
         id="resume-window"
         class="window"
-        style="--left: 26rem; --top: 14rem; --width: 24rem"
+        style="--left: 20rem; --top: 8rem; --width: 40rem"
         aria-labelledby="resume-title"
       >
         <header class="title-bar drag-handle">
-          <h2 id="resume-title">Resume.txt</h2>
+          <h2 id="resume-title">Retro CV Reader</h2>
           <button class="close-btn" data-close="resume-window" aria-label="Close Resume">×</button>
         </header>
-        <div class="window-content">
-          <p><strong>Experience Highlights</strong></p>
-          <ul>
-            <li>Senior Product Engineer — 2023–Present</li>
-            <li>Frontend Engineer — 2020–2023</li>
-            <li>Interaction Designer — 2018–2020</li>
-          </ul>
-          <p><a href="#" onclick="return false;">Download full CV (PDF)</a></p>
+        <div class="window-content resume-content">
+          <p><strong>Loaded file:</strong> <code>assets/sanjin-cv-redacted.pdf</code></p>
+          <div class="pdf-toolbar" role="group" aria-label="PDF controls">
+            <button type="button" class="retro-btn" id="pdf-prev">◀ Prev</button>
+            <span id="pdf-page" class="pdf-page-label">Page 1 / 1</span>
+            <button type="button" class="retro-btn" id="pdf-next">Next ▶</button>
+            <button type="button" class="retro-btn" id="pdf-zoom-out">-</button>
+            <button type="button" class="retro-btn" id="pdf-zoom-in">+</button>
+          </div>
+          <div class="retro-pdf-frame">
+            <canvas id="pdf-canvas" class="retro-pdf-canvas" aria-label="CV PDF preview"></canvas>
+          </div>
+          <p class="resume-note" id="pdf-status">Loading PDF…</p>
+          <p class="resume-note">
+            If this cannot load, <a href="assets/sanjin-cv-redacted.pdf" target="_blank" rel="noopener">open CV PDF</a>.
+          </p>
         </div>
       </section>
 
@@ -145,16 +153,18 @@
           <button class="close-btn" data-close="contact-window" aria-label="Close Contact">×</button>
         </header>
         <div class="window-content">
-          <p>Let’s build something excellent.</p>
+          <p>Contact details (moved out of the CV):</p>
           <ul>
-            <li>Email: you@example.com</li>
-            <li>GitHub: github.com/yourname</li>
-            <li>LinkedIn: linkedin.com/in/yourname</li>
+            <li>Email: <span id="contact-email">Add your email from CV</span></li>
+            <li>GitHub: <span id="contact-github">Add your GitHub from CV</span></li>
+            <li>LinkedIn: <span id="contact-linkedin">Add your LinkedIn from CV</span></li>
           </ul>
+          <p class="resume-note">Phone number intentionally omitted.</p>
         </div>
       </section>
     </main>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.3.136/pdf.min.js" crossorigin="anonymous"></script>
     <script src="script.js"></script>
   </body>
 </html>
