@@ -21,6 +21,7 @@
           <ul id="file-menu" class="menu-dropdown" role="menu" aria-label="File menu">
             <li><button data-action="open-about">Open About</button></li>
             <li><button data-action="open-projects">Open Projects</button></li>
+            <li><button data-action="open-browser">Open Browser</button></li>
             <li><button data-action="open-resume">Open Resume</button></li>
             <li><button data-action="open-contact">Open Contact</button></li>
             <li><button data-action="close-focused">Close Focused (X)</button></li>
@@ -53,11 +54,15 @@
         <span class="icon emoji" aria-hidden="true">🗂️</span>
         <span class="label">Projects</span>
       </button>
-      <button class="desktop-icon" data-open="resume-window" style="--x: 3rem; --y: 20.5rem">
+      <button class="desktop-icon" data-open="browser-window" style="--x: 3rem; --y: 20.5rem">
+        <span class="icon emoji" aria-hidden="true">🌐</span>
+        <span class="label">Browser</span>
+      </button>
+      <button class="desktop-icon" data-open="resume-window" style="--x: 3rem; --y: 28.5rem">
         <span class="icon emoji" aria-hidden="true">📄</span>
         <span class="label">Resume</span>
       </button>
-      <button class="desktop-icon" data-open="contact-window" style="--x: 3rem; --y: 28.5rem">
+      <button class="desktop-icon" data-open="contact-window" style="--x: 3rem; --y: 36.5rem">
         <span class="icon emoji" aria-hidden="true">☎️</span>
         <span class="label">Contact</span>
       </button>
@@ -88,7 +93,7 @@
       <section
         id="projects-window"
         class="window"
-        style="--left: 31rem; --top: 9rem; --width: 30rem"
+        style="--left: 31rem; --top: 9rem; --width: 32rem"
         aria-labelledby="projects-title"
       >
         <header class="title-bar drag-handle">
@@ -98,18 +103,74 @@
         <div class="window-content">
           <ul class="project-list">
             <li>
-              <h3>01 — Product Analytics Dashboard</h3>
+              <h3>
+                01 —
+                <button
+                  class="project-link"
+                  type="button"
+                  data-browser-url="https://metalcre.vercel.app/"
+                  data-browser-title="MetalCore"
+                >
+                  MetalCore
+                </button>
+              </h3>
+              <p>
+                Live project website.
+                <a href="https://metalcre.vercel.app/" target="_blank" rel="noopener">Open in new tab</a>
+              </p>
+            </li>
+            <li>
+              <h3>02 — Product Analytics Dashboard</h3>
               <p>Real-time KPI system with event pipelines, custom charting, and anomaly alerts.</p>
             </li>
             <li>
-              <h3>02 — Commerce Design System</h3>
+              <h3>03 — Commerce Design System</h3>
               <p>Built reusable UI primitives and accessibility standards used across 4 teams.</p>
             </li>
             <li>
-              <h3>03 — AI Support Assistant</h3>
+              <h3>04 — AI Support Assistant</h3>
               <p>Implemented a retrieval-augmented support flow that reduced response time by 37%.</p>
             </li>
           </ul>
+        </div>
+      </section>
+
+      <section
+        id="browser-window"
+        class="window"
+        style="--left: 19rem; --top: 7.5rem; --width: 44rem; --height: 31rem"
+        aria-labelledby="browser-title"
+      >
+        <header class="title-bar drag-handle">
+          <h2 id="browser-title">Retro Browser</h2>
+          <button class="close-btn" data-close="browser-window" aria-label="Close Browser">×</button>
+        </header>
+        <div class="window-content browser-content">
+          <div class="browser-menubar" aria-hidden="true">File Edit View Go Bookmarks Options Directory Window Help</div>
+          <div class="browser-chrome" role="group" aria-label="Retro browser chrome">
+            <div class="browser-nav-buttons">
+              <button id="browser-back" class="browser-nav-btn" type="button">◀</button>
+              <button id="browser-forward" class="browser-nav-btn" type="button">▶</button>
+              <button id="browser-home" class="browser-nav-btn" type="button">Home</button>
+            </div>
+            <label for="browser-url" class="browser-label">Location:</label>
+            <input id="browser-url" class="browser-address" type="text" value="about:blank" />
+            <button id="browser-go" class="browser-go-btn" type="button">Go</button>
+          </div>
+          <iframe
+            id="browser-frame"
+            class="retro-browser-frame"
+            src="about:blank"
+            title="Retro Browser Content"
+            loading="lazy"
+          ></iframe>
+          <div class="browser-status-bar">
+            <span id="browser-status">Document: Done</span>
+            <span class="browser-brand">Netscape-ish 1.0</span>
+          </div>
+          <p class="resume-note">
+            If the embedded site blocks iframes, use the “Open in new tab” link from Projects.
+          </p>
         </div>
       </section>
 
