@@ -26,6 +26,8 @@
     };
   }
 
+  const normalize = (s) => s.toLowerCase().replace(/[-\s]/g, "");
+
   const manualRepoUrls = new Set(
     (window.PORTFOLIO_APPS || [])
       .map((a) => a.githubUrl)
@@ -33,11 +35,16 @@
       .map((u) => u.toLowerCase().replace(/\/$/, ""))
   );
 
+  const manualTitles = new Set(
+    (window.PORTFOLIO_APPS || []).map((a) => normalize(a.title))
+  );
+
   function shouldInclude(repo) {
     if (repo.fork) return false;
     if (repo.name === "portfolio") return false;
     if (!repo.description || repo.description.trim() === "") return false;
     if (manualRepoUrls.has(repo.html_url.toLowerCase().replace(/\/$/, ""))) return false;
+    if (manualTitles.has(normalize(repo.name))) return false;
     return true;
   }
 
