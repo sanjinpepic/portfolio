@@ -77,7 +77,7 @@ function closeMenus() {
 }
 
 openers.forEach((icon) => {
-  icon.addEventListener("dblclick", () => {
+  icon.addEventListener("click", () => {
     openWindow(icon.dataset.open);
   });
 
@@ -120,7 +120,16 @@ windows.forEach((win) => {
 
   handle.addEventListener("pointerup", (event) => {
     dragging = false;
-    handle.releasePointerCapture(event.pointerId);
+    if (handle.hasPointerCapture(event.pointerId)) {
+      handle.releasePointerCapture(event.pointerId);
+    }
+  });
+
+  handle.addEventListener("pointercancel", (event) => {
+    dragging = false;
+    if (handle.hasPointerCapture(event.pointerId)) {
+      handle.releasePointerCapture(event.pointerId);
+    }
   });
 
   handle.addEventListener("pointermove", onMove);
