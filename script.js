@@ -301,6 +301,7 @@ function navigateBrowserTo(url) {
     return;
   }
   if (browserAddress) browserAddress.value = normalizedUrl;
+  if (browserFrame) browserFrame.removeAttribute("srcdoc");
   if (browserFrame) browserFrame.src = normalizedUrl;
   if (browserStatus) browserStatus.textContent = `Loading ${normalizedUrl}...`;
   if (browserTitle) browserTitle.textContent = "Netscape Navigator";
