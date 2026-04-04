@@ -1,0 +1,209 @@
+:root {
+  --desktop-green: #1d857b;
+  --menu-gray: #d9d9d9;
+  --panel-gray: #c9c9c9;
+  --border-dark: #3f3f3f;
+  --border-mid: #7a7a7a;
+  --border-light: #ffffff;
+  --text-main: #101010;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+body {
+  font-family: "VT323", monospace;
+  font-size: 1.45rem;
+  color: var(--text-main);
+  background: repeating-linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.06) 0 2px,
+      rgba(0, 0, 0, 0.02) 2px 4px
+    ),
+    var(--desktop-green);
+}
+
+.menu-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--menu-gray);
+  border-bottom: 1px solid var(--border-dark);
+  box-shadow: 0 1px 0 var(--border-light);
+  z-index: 9999;
+  padding: 0 0.75rem;
+}
+
+.menu-left {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.apple {
+  font-weight: bold;
+  margin-right: 0.5rem;
+}
+
+.menu-item {
+  border: none;
+  background: transparent;
+  font: inherit;
+  cursor: default;
+  padding: 0.1rem 0.35rem;
+}
+
+.menu-item:hover,
+.menu-item:focus-visible {
+  background: #1f4db4;
+  color: #fff;
+  outline: none;
+}
+
+.desktop {
+  position: fixed;
+  inset: 2rem 0 0 0;
+}
+
+.desktop-icon {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: 5.25rem;
+  border: none;
+  background: transparent;
+  color: #fff;
+  display: grid;
+  justify-items: center;
+  gap: 0.35rem;
+  cursor: default;
+  padding: 0.15rem;
+}
+
+.icon {
+  width: 3rem;
+  height: 3rem;
+  display: grid;
+  place-items: center;
+  font-size: 2rem;
+  background: #f2f2f2;
+  color: #000;
+  border: 2px solid;
+  border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+}
+
+.label {
+  text-shadow: 1px 1px #1b2f33;
+  line-height: 1;
+}
+
+.desktop-icon:focus-visible .icon,
+.desktop-icon:hover .icon {
+  outline: 1px dashed #fff;
+  outline-offset: 2px;
+}
+
+.window {
+  position: absolute;
+  left: var(--left);
+  top: var(--top);
+  width: min(var(--width), calc(100vw - 3rem));
+  min-width: 18rem;
+  max-height: calc(100vh - 4rem);
+  background: var(--panel-gray);
+  border: 2px solid;
+  border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+  box-shadow: 2px 2px 0 #000;
+  display: none;
+}
+
+.window.open {
+  display: block;
+}
+
+.title-bar {
+  height: 2rem;
+  background: repeating-linear-gradient(
+    90deg,
+    #4c4c4c,
+    #4c4c4c 2px,
+    #8a8a8a 2px,
+    #8a8a8a 4px
+  );
+  border-bottom: 2px solid var(--border-dark);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0.5rem;
+  cursor: move;
+  user-select: none;
+}
+
+.title-bar h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  letter-spacing: 0.03em;
+}
+
+.close-btn {
+  width: 1.4rem;
+  height: 1.4rem;
+  border: 2px solid;
+  border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+  background: #d7d7d7;
+  font: inherit;
+  display: grid;
+  place-items: center;
+  line-height: 1;
+  padding: 0;
+}
+
+.close-btn:active {
+  border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+}
+
+.window-content {
+  padding: 0.85rem 1rem 1rem;
+  overflow: auto;
+  max-height: calc(100vh - 11rem);
+}
+
+.window-content p,
+.window-content li,
+.window-content h3 {
+  margin: 0 0 0.65rem;
+}
+
+.project-list {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+a {
+  color: #133f9a;
+}
+
+@media (max-width: 800px) {
+  .desktop-icon {
+    width: 4.8rem;
+  }
+
+  .window {
+    min-width: 16rem;
+  }
+}
