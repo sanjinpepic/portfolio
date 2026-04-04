@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Retro Desktop Portfolio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=VT323&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="menu-bar" role="banner">
+      <div class="menu-left">
+        <span class="apple"></span>
+        <button class="menu-item">File</button>
+        <button class="menu-item">Edit</button>
+        <button class="menu-item">View</button>
+        <button class="menu-item">Special</button>
+      </div>
+      <div class="menu-right" id="clock" aria-live="polite"></div>
+    </div>
+
+    <main id="desktop" class="desktop" aria-label="Retro portfolio desktop">
+      <button class="desktop-icon" data-open="about-window" style="--x: 3rem; --y: 4.5rem">
+        <span class="icon emoji" aria-hidden="true">💾</span>
+        <span class="label">About Me</span>
+      </button>
+      <button class="desktop-icon" data-open="projects-window" style="--x: 3rem; --y: 12.5rem">
+        <span class="icon emoji" aria-hidden="true">🗂️</span>
+        <span class="label">Projects</span>
+      </button>
+      <button class="desktop-icon" data-open="resume-window" style="--x: 3rem; --y: 20.5rem">
+        <span class="icon emoji" aria-hidden="true">📄</span>
+        <span class="label">Resume</span>
+      </button>
+      <button class="desktop-icon" data-open="contact-window" style="--x: 3rem; --y: 28.5rem">
+        <span class="icon emoji" aria-hidden="true">☎️</span>
+        <span class="label">Contact</span>
+      </button>
+
+      <section
+        id="about-window"
+        class="window"
+        style="--left: 18rem; --top: 6rem; --width: 26rem"
+        aria-labelledby="about-title"
+      >
+        <header class="title-bar drag-handle">
+          <h2 id="about-title">About Me</h2>
+          <button class="close-btn" data-close="about-window" aria-label="Close About Me">×</button>
+        </header>
+        <div class="window-content">
+          <p><strong>Hello, I’m Your Name.</strong></p>
+          <p>
+            I design and build thoughtful products, blending a love for clean interaction design with robust
+            engineering.
+          </p>
+          <p>
+            This portfolio is inspired by classic Macintosh systems, where each icon opens a dedicated
+            workspace.
+          </p>
+        </div>
+      </section>
+
+      <section
+        id="projects-window"
+        class="window"
+        style="--left: 31rem; --top: 9rem; --width: 30rem"
+        aria-labelledby="projects-title"
+      >
+        <header class="title-bar drag-handle">
+          <h2 id="projects-title">Projects Folder</h2>
+          <button class="close-btn" data-close="projects-window" aria-label="Close Projects">×</button>
+        </header>
+        <div class="window-content">
+          <ul class="project-list">
+            <li>
+              <h3>01 — Product Analytics Dashboard</h3>
+              <p>Real-time KPI system with event pipelines, custom charting, and anomaly alerts.</p>
+            </li>
+            <li>
+              <h3>02 — Commerce Design System</h3>
+              <p>Built reusable UI primitives and accessibility standards used across 4 teams.</p>
+            </li>
+            <li>
+              <h3>03 — AI Support Assistant</h3>
+              <p>Implemented a retrieval-augmented support flow that reduced response time by 37%.</p>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section
+        id="resume-window"
+        class="window"
+        style="--left: 26rem; --top: 14rem; --width: 24rem"
+        aria-labelledby="resume-title"
+      >
+        <header class="title-bar drag-handle">
+          <h2 id="resume-title">Resume.txt</h2>
+          <button class="close-btn" data-close="resume-window" aria-label="Close Resume">×</button>
+        </header>
+        <div class="window-content">
+          <p><strong>Experience Highlights</strong></p>
+          <ul>
+            <li>Senior Product Engineer — 2023–Present</li>
+            <li>Frontend Engineer — 2020–2023</li>
+            <li>Interaction Designer — 2018–2020</li>
+          </ul>
+          <p><a href="#" onclick="return false;">Download full CV (PDF)</a></p>
+        </div>
+      </section>
+
+      <section
+        id="contact-window"
+        class="window"
+        style="--left: 38rem; --top: 18rem; --width: 24rem"
+        aria-labelledby="contact-title"
+      >
+        <header class="title-bar drag-handle">
+          <h2 id="contact-title">Contact Panel</h2>
+          <button class="close-btn" data-close="contact-window" aria-label="Close Contact">×</button>
+        </header>
+        <div class="window-content">
+          <p>Let’s build something excellent.</p>
+          <ul>
+            <li>Email: you@example.com</li>
+            <li>GitHub: github.com/yourname</li>
+            <li>LinkedIn: linkedin.com/in/yourname</li>
+          </ul>
+        </div>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
