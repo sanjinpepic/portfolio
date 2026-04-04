@@ -51,6 +51,8 @@
   async function fetchAndMerge() {
     if (typeof window.addGithubRepos !== "function") return;
     const loadingEl = document.getElementById("github-loading");
+    const projectList = document.getElementById("project-list");
+    if (loadingEl && projectList && projectList.children.length > 0) loadingEl.remove();
     try {
       const response = await fetch(API_URL);
       if (!response.ok) {
