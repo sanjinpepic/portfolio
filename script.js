@@ -13,6 +13,9 @@ const browserGo = document.getElementById("browser-go");
 const browserBack = document.getElementById("browser-back");
 const browserForward = document.getElementById("browser-forward");
 const browserHome = document.getElementById("browser-home");
+const browserReload = document.getElementById("browser-reload");
+const browserStop = document.getElementById("browser-stop");
+const browserThrobber = document.getElementById("browser-throbber");
 const browserStatus = document.getElementById("browser-status");
 const clock = document.getElementById("clock");
 
@@ -58,7 +61,8 @@ function openInRetroBrowser(url, title) {
   if (browserFrame) browserFrame.src = url;
   if (browserAddress) browserAddress.value = url;
   if (browserStatus) browserStatus.textContent = `Loading ${url}...`;
-  if (browserTitle) browserTitle.textContent = `Retro Browser — ${title}`;
+  if (browserTitle) browserTitle.textContent = `Netscape Navigator — ${title}`;
+  if (browserThrobber) browserThrobber.classList.add("loading");
   openWindow("browser-window");
 }
 
@@ -69,7 +73,8 @@ function navigateBrowserTo(url) {
   if (browserAddress) browserAddress.value = normalizedUrl;
   if (browserFrame) browserFrame.src = normalizedUrl;
   if (browserStatus) browserStatus.textContent = `Loading ${normalizedUrl}...`;
-  if (browserTitle) browserTitle.textContent = "Retro Browser";
+  if (browserTitle) browserTitle.textContent = "Netscape Navigator";
+  if (browserThrobber) browserThrobber.classList.add("loading");
 }
 
 function closeFocusedWindow() {
@@ -155,9 +160,27 @@ if (browserForward) {
   });
 }
 
+if (browserReload) {
+  browserReload.addEventListener("click", () => {
+    if (browserFrame) {
+      browserFrame.src = browserFrame.src;
+      if (browserThrobber) browserThrobber.classList.add("loading");
+      if (browserStatus) browserStatus.textContent = "Reloading...";
+    }
+  });
+}
+
+if (browserStop) {
+  browserStop.addEventListener("click", () => {
+    if (browserThrobber) browserThrobber.classList.remove("loading");
+    if (browserStatus) browserStatus.textContent = "Transfer interrupted.";
+  });
+}
+
 if (browserFrame) {
   browserFrame.addEventListener("load", () => {
     if (browserStatus) browserStatus.textContent = "Document: Done";
+    if (browserThrobber) browserThrobber.classList.remove("loading");
   });
 }
 
@@ -171,10 +194,10 @@ windows.forEach((win) => {
     if (!dragging) return;
     const x = event.clientX - offsetX;
     const y = event.clientY - offsetY;
-    const maxX = window.innerWidth - win.offsetWidth;
-    const maxY = window.innerHeight - win.offsetHeight;
+    const maxX = desktop.offsetWidth - win.offsetWidth;
+    const maxY = desktop.offsetHeight - win.offsetHeight;
     win.style.left = `${Math.max(0, Math.min(x, maxX))}px`;
-    win.style.top = `${Math.max(33, Math.min(y, maxY))}px`;
+    win.style.top = `${Math.max(0, Math.min(y, maxY))}px`;
   }
 
   handle.addEventListener("pointerdown", (event) => {
@@ -182,8 +205,9 @@ windows.forEach((win) => {
     dragging = true;
     bringToFront(win);
     const rect = win.getBoundingClientRect();
-    offsetX = event.clientX - rect.left;
-    offsetY = event.clientY - rect.top;
+    const desktopRect = desktop.getBoundingClientRect();
+    offsetX = event.clientX - (rect.left - desktopRect.left);
+    offsetY = event.clientY - (rect.top - desktopRect.top);
     handle.setPointerCapture(event.pointerId);
   });
 
