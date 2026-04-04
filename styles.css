@@ -8,6 +8,10 @@
   --text-main: #101010;
 }
 
+body.dark-desktop {
+  --desktop-green: #1a2a45;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -54,6 +58,10 @@ body {
   gap: 0.2rem;
 }
 
+.menu-group {
+  position: relative;
+}
+
 .apple {
   font-weight: bold;
   margin-right: 0.5rem;
@@ -69,6 +77,41 @@ body {
 
 .menu-item:hover,
 .menu-item:focus-visible {
+  background: #1f4db4;
+  color: #fff;
+  outline: none;
+}
+
+.menu-dropdown {
+  position: absolute;
+  top: 1.65rem;
+  left: 0;
+  margin: 0;
+  padding: 0.2rem;
+  list-style: none;
+  min-width: 11rem;
+  background: var(--panel-gray);
+  border: 2px solid;
+  border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+  display: none;
+  z-index: 10000;
+}
+
+.menu-dropdown.open {
+  display: block;
+}
+
+.menu-dropdown button {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  font: inherit;
+  padding: 0.2rem 0.4rem;
+}
+
+.menu-dropdown button:hover,
+.menu-dropdown button:focus-visible {
   background: #1f4db4;
   color: #fff;
   outline: none;

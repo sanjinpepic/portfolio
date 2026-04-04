@@ -16,10 +16,30 @@
     <div class="menu-bar" role="banner">
       <div class="menu-left">
         <span class="apple"></span>
-        <button class="menu-item">File</button>
-        <button class="menu-item">Edit</button>
-        <button class="menu-item">View</button>
-        <button class="menu-item">Special</button>
+        <div class="menu-group">
+          <button class="menu-item" data-menu="file-menu">File</button>
+          <ul id="file-menu" class="menu-dropdown" role="menu" aria-label="File menu">
+            <li><button data-action="open-about">Open About</button></li>
+            <li><button data-action="open-projects">Open Projects</button></li>
+            <li><button data-action="open-resume">Open Resume</button></li>
+            <li><button data-action="open-contact">Open Contact</button></li>
+            <li><button data-action="close-focused">Close Focused (X)</button></li>
+          </ul>
+        </div>
+        <div class="menu-group">
+          <button class="menu-item" data-menu="view-menu">View</button>
+          <ul id="view-menu" class="menu-dropdown" role="menu" aria-label="View menu">
+            <li><button data-action="open-all">Open All Windows</button></li>
+            <li><button data-action="close-all">Close All Windows</button></li>
+          </ul>
+        </div>
+        <div class="menu-group">
+          <button class="menu-item" data-menu="special-menu">Special</button>
+          <ul id="special-menu" class="menu-dropdown" role="menu" aria-label="Special menu">
+            <li><button data-action="cascade">Cascade Windows</button></li>
+            <li><button data-action="toggle-theme">Toggle Dark Desktop</button></li>
+          </ul>
+        </div>
       </div>
       <div class="menu-right" id="clock" aria-live="polite"></div>
     </div>
