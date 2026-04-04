@@ -26,10 +26,18 @@
     };
   }
 
+  const manualRepoUrls = new Set(
+    (window.PORTFOLIO_APPS || [])
+      .map((a) => a.githubUrl)
+      .filter(Boolean)
+      .map((u) => u.toLowerCase().replace(/\/$/, ""))
+  );
+
   function shouldInclude(repo) {
     if (repo.fork) return false;
     if (repo.name === "portfolio") return false;
     if (!repo.description || repo.description.trim() === "") return false;
+    if (manualRepoUrls.has(repo.html_url.toLowerCase().replace(/\/$/, ""))) return false;
     return true;
   }
 
