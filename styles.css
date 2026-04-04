@@ -240,6 +240,18 @@ body {
   margin: 0 0 0.65rem;
 }
 
+.about-header {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.about-avatar {
+  width: 8rem;
+  height: auto;
+  image-rendering: pixelated;
+  margin: 0 0 0.5rem 0.75rem;
+}
+
 .project-list {
   margin: 0;
   padding-left: 1rem;
