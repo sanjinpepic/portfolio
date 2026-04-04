@@ -145,7 +145,7 @@ body {
   display: grid;
   place-items: center;
   font-size: 2rem;
-  background: #f2f2f2;
+  background: transparent;
   color: #000;
   border: 2px solid;
   border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
