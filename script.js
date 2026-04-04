@@ -491,7 +491,6 @@ async function initDesktop() {
   renderProjects();
   await loadResumeTextFile();
   openWindow("about-window");
-  openWindow("projects-window");
 }
 
 initDesktop();
