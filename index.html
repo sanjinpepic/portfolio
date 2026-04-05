@@ -38,6 +38,7 @@
             <li role="none"><button role="menuitem" tabindex="-1" data-action="open-contact">Open Contact</button></li>
             <li role="none"><button role="menuitem" tabindex="-1" data-action="open-dashboard">Open Dashboard</button></li>
             <li role="none"><button role="menuitem" tabindex="-1" data-action="open-winamp">Open Winamp TV</button></li>
+            <li role="none"><button role="menuitem" tabindex="-1" data-action="open-doom">Open DOOM</button></li>
             <li role="none"><button role="menuitem" tabindex="-1" data-action="open-terminal">Open Terminal</button></li>
             <li role="none"><button role="menuitem" tabindex="-1" data-action="close-focused">Close Focused (X)</button></li>
           </ul>
@@ -158,6 +159,10 @@
       <button class="desktop-icon" data-open="terminal-window" style="--x: 3rem; --y: 76.5rem">
         <span class="icon" aria-hidden="true"><img class="icon-image" src="https://gitlab.com/metsatron/BeOS-r5-Icons/-/raw/master/apps/128/BeOS_terminal.png" alt="" /></span>
         <span class="label">Terminal</span>
+      </button>
+      <button class="desktop-icon" data-open="doom-window" style="--x: 3rem; --y: 84.5rem">
+        <span class="icon" aria-hidden="true"><img class="icon-image doom-icon-image" src="assets/doom_1.png" data-fallback-src="assets/icon-fallback.svg" alt="" /></span>
+        <span class="label">DOOM</span>
       </button>
       </div>
 
@@ -616,6 +621,31 @@
   <p class="resume-note">Source: YouTube embed (no-cookie). Ads cannot be fully controlled by this site.</p>
 </div>
 <!-- END:inline windows/winamp-tv.html --></div>
+      </section>
+
+      <section
+        id="doom-window"
+        class="window"
+        style="--left: 1rem; --top: 2.5rem; --width: 999rem; --height: calc(100vh - 4.5rem)"
+        aria-labelledby="doom-title"
+      >
+        <header class="title-bar drag-handle">
+          <h2 id="doom-title">DOOM (WASM)</h2>
+          <button class="close-btn" data-close="doom-window" aria-label="Close DOOM">×</button>
+        </header>
+        <div class="window-content doom-content" ><!-- START:inline windows/doom.html -->
+<div class="doom-shell">
+  <iframe
+    id="doom-frame"
+    class="doom-frame"
+    src="https://silentspacemarine.com"
+    title="DOOM WASM"
+    loading="lazy"
+    allow="fullscreen; gamepad; keyboard-map"
+    referrerpolicy="no-referrer"
+  ></iframe>
+</div>
+<!-- END:inline windows/doom.html --></div>
       </section>
 
       <!-- ── Terminal window ──────────────────────────────────── -->
