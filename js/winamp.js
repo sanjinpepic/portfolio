@@ -53,6 +53,23 @@ function updateWinampUi() {
   }
 }
 
+export function stopWinampPlayback({ terminate = true } = {}) {
+  if (S.winampFlutterTimer) {
+    window.clearInterval(S.winampFlutterTimer);
+    S.winampFlutterTimer = null;
+  }
+  if (S.winampPlayer) {
+    if (terminate && typeof S.winampPlayer.stopVideo === "function") {
+      S.winampPlayer.stopVideo();
+    } else if (typeof S.winampPlayer.pauseVideo === "function") {
+      S.winampPlayer.pauseVideo();
+    }
+  }
+  S.winampPlaying = false;
+  vintageSpeaker.mute();
+  updateWinampUi();
+}
+
 function syncWinampAudioState() {
   if (!S.winampPlayer) return;
   const currentVolume = Number(S.winampPlayer.getVolume?.());

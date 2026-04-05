@@ -13,6 +13,8 @@ import { loadBrowserHomePage } from "./browser.js";
 // Late-bound reference to avoid circular dependency with winamp.js
 let _restartWinampFlutter = null;
 export function setRestartWinampFlutter(fn) { _restartWinampFlutter = fn; }
+let _stopWinampPlayback = null;
+export function setStopWinampPlayback(fn) { _stopWinampPlayback = fn; }
 
 // ── Internal helpers ──────────────────────────────────────────
 
@@ -224,6 +226,9 @@ export function openWindow(id) {
 export function closeWindow(id) {
   const win = document.getElementById(id);
   if (!win || !win.classList.contains("open")) return;
+  if (id === "winamp-window" && _stopWinampPlayback) {
+    _stopWinampPlayback({ terminate: true });
+  }
   // Transfer focus immediately
   if (S.activeWindowId === id) {
     win.classList.remove("focused");
