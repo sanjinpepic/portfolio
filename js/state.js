@@ -31,6 +31,7 @@ export const THEME_PROFILES = {
   sunset: { clickGain: 1.15, flutterRange: 5, flutterInterval: 860 },
 };
 export const mobileLayoutQuery = window.matchMedia("(max-width: 900px)");
+export const WINAMP_PLAYLIST_URL = "./assets/winamp-playlist.txt";
 export const WINAMP_PLAYLIST = [
   { id: "K0HSD_i2DvA", title: "Daft Punk - Around The World (Official Music Video Remastered)" },
   { id: "0w-jjbE3Q9o", title: "Loading title…" },

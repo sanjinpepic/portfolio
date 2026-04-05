@@ -1,0 +1,11 @@
+# Winamp YouTube playlist
+# - Add one YouTube URL (or 11-char video ID) per line.
+# - Optional custom label format: <url_or_id> | Your custom title
+# - Lines that start with # are ignored.
+
+https://www.youtube.com/watch?v=K0HSD_i2DvA
+https://www.youtube.com/watch?v=0w-jjbE3Q9o
+https://www.youtube.com/watch?v=NqEGc7g5-J0
+https://www.youtube.com/watch?v=bueFTrwHFEs
+https://www.youtube.com/watch?v=Eo-KmOd3i7s
+https://www.youtube.com/watch?v=9Ht5RZpzPqw
