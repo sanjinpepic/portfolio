@@ -1,6 +1,6 @@
 // js/winamp.js — Winamp player module
 
-import { S, WINAMP_PLAYLIST } from "./state.js";
+import { S, WINAMP_PLAYLIST, WINAMP_PLAYLIST_URL } from "./state.js";
 import { clamp } from "./utils.js";
 import { vintageSpeaker } from "./sounds.js";
 
@@ -14,6 +14,62 @@ async function fetchYouTubeTitle(videoId) {
     return typeof payload.title === "string" && payload.title.trim() ? payload.title.trim() : null;
   } catch {
     return null;
+  }
+}
+
+function extractYouTubeVideoId(rawInput = "") {
+  const candidate = rawInput.trim();
+  if (!candidate) return null;
+  const idPattern = /^[a-zA-Z0-9_-]{11}$/;
+  if (idPattern.test(candidate)) return candidate;
+  try {
+    const parsedUrl = new URL(candidate);
+    const host = parsedUrl.hostname.replace(/^www\./, "");
+    if (host === "youtube.com" || host === "m.youtube.com" || host === "music.youtube.com") {
+      const watchId = parsedUrl.searchParams.get("v");
+      if (watchId && idPattern.test(watchId)) return watchId;
+      const shortsId = parsedUrl.pathname.match(/^\/shorts\/([a-zA-Z0-9_-]{11})/);
+      if (shortsId) return shortsId[1];
+    }
+    if (host === "youtu.be") {
+      const shortId = parsedUrl.pathname.split("/").filter(Boolean)[0];
+      if (shortId && idPattern.test(shortId)) return shortId;
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+function parsePlaylistText(playlistText = "") {
+  return playlistText
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith("#"))
+    .map((line) => {
+      const [videoValue, customTitle] = line.split("|").map((part) => part.trim());
+      const id = extractYouTubeVideoId(videoValue);
+      if (!id) return null;
+      return {
+        id,
+        title: customTitle || "Loading title…",
+      };
+    })
+    .filter(Boolean);
+}
+
+async function loadWinampPlaylistFromFile() {
+  try {
+    const response = await fetch(WINAMP_PLAYLIST_URL, { cache: "no-store" });
+    if (!response.ok) return false;
+    const playlistText = await response.text();
+    const parsedPlaylist = parsePlaylistText(playlistText);
+    if (!parsedPlaylist.length) return false;
+    WINAMP_PLAYLIST.splice(0, WINAMP_PLAYLIST.length, ...parsedPlaylist);
+    S.winampActiveIndex = Math.min(S.winampActiveIndex, WINAMP_PLAYLIST.length - 1);
+    return true;
+  } catch {
+    return false;
   }
 }
 
@@ -205,9 +261,13 @@ function initWinampPlayer() {
 
 // ── Exported functions ────────────────────────────────────────
 
-export function bindWinampControls() {
+export async function bindWinampControls() {
+  const loadedCustomPlaylist = await loadWinampPlaylistFromFile();
   setupWinampPlaylistUi();
   hydrateWinampPlaylistTitles();
+  if (!loadedCustomPlaylist && S.winampStatus) {
+    S.winampStatus.textContent = "Using built-in channels. Add URLs to assets/winamp-playlist.txt to customize.";
+  }
   if (S.winampPrev) {
     S.winampPrev.addEventListener("click", () => {
       const previous = (S.winampActiveIndex - 1 + WINAMP_PLAYLIST.length) % WINAMP_PLAYLIST.length;

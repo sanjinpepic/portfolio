@@ -32,6 +32,20 @@ node scripts/build-index.mjs
 
 This replaces each `<!-- START:inline ... -->` block in `index.html` with the latest contents from the matching standalone file.
 
+## Updating the Winamp YouTube Playlist
+
+The Winamp TV channel list is editable via:
+
+`assets/winamp-playlist.txt`
+
+- Put **one YouTube URL per line** (or a plain 11-character video ID).
+- To set your own label in the channel list, use:
+  - `<url_or_id> | My Custom Title`
+- Remove any line to remove that channel.
+- Lines beginning with `#` are treated as comments.
+
+When the page loads, Winamp reads this file and builds the channel lineup automatically.
+
 ## Tech Stack
 
 - HTML5
