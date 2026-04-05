@@ -949,14 +949,22 @@ function bindDynamicContentEvents() {
   }
   if (browserBack) {
     browserBack.addEventListener("click", () => {
-      const frameWindow = browserFrame?.contentWindow;
-      frameWindow?.history.back();
+      try {
+        const frameWindow = browserFrame?.contentWindow;
+        frameWindow?.history.back();
+      } catch {
+        if (browserStatus) browserStatus.textContent = "Back unavailable for cross-origin embedded pages.";
+      }
     });
   }
   if (browserForward) {
     browserForward.addEventListener("click", () => {
-      const frameWindow = browserFrame?.contentWindow;
-      frameWindow?.history.forward();
+      try {
+        const frameWindow = browserFrame?.contentWindow;
+        frameWindow?.history.forward();
+      } catch {
+        if (browserStatus) browserStatus.textContent = "Forward unavailable for cross-origin embedded pages.";
+      }
     });
   }
   if (browserReload) {
