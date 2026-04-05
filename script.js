@@ -740,7 +740,9 @@ function selectWinampChannel(index, { autoPlay = true } = {}) {
 }
 function getWinampGroupLabel(trackTitle = "") {
   const artistName = trackTitle.split(" - ")[0]?.trim();
-  return artistName || "Misc";
+  if (!artistName) return "Misc";
+  const firstChar = artistName.charAt(0).toUpperCase();
+  return /[A-Z]/.test(firstChar) ? firstChar : "#";
 }
 function setupWinampPlaylistUi() {
   if (!winampChannelList) return;
@@ -752,21 +754,12 @@ function setupWinampPlaylistUi() {
   if (!filteredPlaylist.length) {
     winampChannelList.innerHTML = '<p class="winamp-channel-empty">No channels match your filter.</p>';
   } else {
-    const playlistGroups = new Map();
-    filteredPlaylist.forEach((track) => {
-      const groupLabel = getWinampGroupLabel(track.title);
-      if (!playlistGroups.has(groupLabel)) playlistGroups.set(groupLabel, []);
-      playlistGroups.get(groupLabel).push(track);
-    });
-    winampChannelList.innerHTML = [...playlistGroups.entries()].map(([groupLabel, tracks], groupIndex) => {
-      const groupId = `winamp-group-${groupIndex}`;
-      const groupButtons = tracks.map(({ title, index }) =>
-        `<button type="button" class="retro-btn winamp-channel-btn" data-winamp-index="${index}" role="option">CH ${String(index + 1).padStart(2, "0")} · ${title}</button>`
-      ).join("\n");
-      return `<section class="winamp-channel-group" role="group" aria-labelledby="${groupId}">
-        <p id="${groupId}" class="winamp-channel-group-title">${groupLabel}</p>
-        <div class="winamp-channel-group-items">${groupButtons}</div>
-      </section>`;
+    let previousGroup = "";
+    winampChannelList.innerHTML = filteredPlaylist.map(({ title, index }) => {
+      const groupLabel = getWinampGroupLabel(title);
+      const groupHeader = groupLabel !== previousGroup ? `<p class="winamp-channel-group">${groupLabel}</p>` : "";
+      previousGroup = groupLabel;
+      return `${groupHeader}<button type="button" class="retro-btn winamp-channel-btn" data-winamp-index="${index}" role="option">CH ${String(index + 1).padStart(2, "0")} · ${title}</button>`;
     }).join("\n");
   }
 
