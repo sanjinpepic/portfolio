@@ -14,31 +14,61 @@
   </head>
   <body>
     <div class="menu-bar" role="banner">
-      <div class="menu-left">
+      <div class="menu-left" role="menubar" aria-label="Desktop menu">
         <span class="apple"></span>
-        <div class="menu-group">
-          <button class="menu-item" data-menu="file-menu">File</button>
-          <ul id="file-menu" class="menu-dropdown" role="menu" aria-label="File menu">
-            <li><button data-action="open-about">Open About</button></li>
-            <li><button data-action="open-projects">Open Projects</button></li>
-            <li><button data-action="open-browser">Open Browser</button></li>
-            <li><button data-action="open-resume">Open Resume</button></li>
-            <li><button data-action="open-contact">Open Contact</button></li>
-            <li><button data-action="close-focused">Close Focused (X)</button></li>
+        <div class="menu-group" role="none">
+          <button
+            id="menu-button-file"
+            class="menu-item"
+            data-menu="file-menu"
+            role="menuitem"
+            aria-haspopup="true"
+            aria-expanded="false"
+            aria-controls="file-menu"
+          >
+            File
+          </button>
+          <ul id="file-menu" class="menu-dropdown" role="menu" aria-labelledby="menu-button-file">
+            <li role="none"><button role="menuitem" tabindex="-1" data-action="open-about">Open About</button></li>
+            <li role="none"><button role="menuitem" tabindex="-1" data-action="open-projects">Open Projects</button></li>
+            <li role="none"><button role="menuitem" tabindex="-1" data-action="open-browser">Open Browser</button></li>
+            <li role="none"><button role="menuitem" tabindex="-1" data-action="open-resume">Open Resume</button></li>
+            <li role="none"><button role="menuitem" tabindex="-1" data-action="open-contact">Open Contact</button></li>
+            <li role="none"><button role="menuitem" tabindex="-1" data-action="close-focused">Close Focused (X)</button></li>
           </ul>
         </div>
-        <div class="menu-group">
-          <button class="menu-item" data-menu="view-menu">View</button>
-          <ul id="view-menu" class="menu-dropdown" role="menu" aria-label="View menu">
-            <li><button data-action="open-all">Open All Windows</button></li>
-            <li><button data-action="close-all">Close All Windows</button></li>
+        <div class="menu-group" role="none">
+          <button
+            id="menu-button-view"
+            class="menu-item"
+            data-menu="view-menu"
+            role="menuitem"
+            aria-haspopup="true"
+            aria-expanded="false"
+            aria-controls="view-menu"
+          >
+            View
+          </button>
+          <ul id="view-menu" class="menu-dropdown" role="menu" aria-labelledby="menu-button-view">
+            <li role="none"><button role="menuitem" tabindex="-1" data-action="open-all">Open All Windows</button></li>
+            <li role="none"><button role="menuitem" tabindex="-1" data-action="close-all">Close All Windows</button></li>
           </ul>
         </div>
-        <div class="menu-group">
-          <button class="menu-item" data-menu="special-menu">Special</button>
-          <ul id="special-menu" class="menu-dropdown" role="menu" aria-label="Special menu">
-            <li><button data-action="cascade">Cascade Windows</button></li>
-            <li><button data-action="toggle-theme">Toggle Dark Desktop</button></li>
+        <div class="menu-group" role="none">
+          <button
+            id="menu-button-special"
+            class="menu-item"
+            data-menu="special-menu"
+            role="menuitem"
+            aria-haspopup="true"
+            aria-expanded="false"
+            aria-controls="special-menu"
+          >
+            Special
+          </button>
+          <ul id="special-menu" class="menu-dropdown" role="menu" aria-labelledby="menu-button-special">
+            <li role="none"><button role="menuitem" tabindex="-1" data-action="cascade">Cascade Windows</button></li>
+            <li role="none"><button role="menuitem" tabindex="-1" data-action="toggle-theme">Toggle Dark Desktop</button></li>
           </ul>
         </div>
       </div>
@@ -60,23 +90,23 @@
 
     <main id="desktop" class="desktop desktop-shell" aria-label="Retro portfolio desktop">
       <button class="desktop-icon" data-open="about-window" style="--x: 3rem; --y: 4.5rem">
-        <span class="icon emoji" aria-hidden="true">💾</span>
+        <span class="icon" aria-hidden="true"><img class="icon-image" src="https://gitlab.com/metsatron/BeOS-r5-Icons/-/raw/master/apps/128/BeOS_people.png" alt="" /></span>
         <span class="label">About Me</span>
       </button>
       <button class="desktop-icon" data-open="projects-window" style="--x: 3rem; --y: 12.5rem">
-        <span class="icon emoji" aria-hidden="true">🗂️</span>
+        <span class="icon" aria-hidden="true"><img class="icon-image" src="https://gitlab.com/metsatron/BeOS-r5-Icons/-/raw/master/apps/128/BeOS_folder_documents.png" alt="" /></span>
         <span class="label">Projects</span>
       </button>
       <button class="desktop-icon" data-open="browser-window" style="--x: 3rem; --y: 20.5rem">
-        <span class="icon emoji" aria-hidden="true">🌐</span>
+        <span class="icon" aria-hidden="true"><img class="icon-image" src="https://gitlab.com/metsatron/BeOS-r5-Icons/-/raw/master/apps/128/surfing_BeOS_browser_netpositive.png" alt="" /></span>
         <span class="label">Browser</span>
       </button>
       <button class="desktop-icon" data-open="resume-window" style="--x: 3rem; --y: 28.5rem">
-        <span class="icon emoji" aria-hidden="true">📄</span>
+        <span class="icon" aria-hidden="true"><img class="icon-image" src="https://gitlab.com/metsatron/BeOS-r5-Icons/-/raw/master/apps/128/BeOS_text.png" alt="" /></span>
         <span class="label">Resume</span>
       </button>
       <button class="desktop-icon" data-open="contact-window" style="--x: 3rem; --y: 36.5rem">
-        <span class="icon emoji" aria-hidden="true">☎️</span>
+        <span class="icon" aria-hidden="true"><img class="icon-image" src="https://gitlab.com/metsatron/BeOS-r5-Icons/-/raw/master/apps/128/BeOS_email.png" alt="" /></span>
         <span class="label">Contact</span>
       </button>
 

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Fallback icon">
+  <rect width="128" height="128" fill="#d7d7d7"/>
+  <rect x="10" y="10" width="108" height="108" fill="#ffffff" stroke="#575757" stroke-width="4"/>
+  <text x="64" y="74" text-anchor="middle" font-family="monospace" font-size="48" fill="#2f2f2f">?</text>
+</svg>
