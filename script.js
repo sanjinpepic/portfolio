@@ -180,12 +180,45 @@ function closeWindow(id) {
     activeWindowId = topOpenWindow?.id || null;
   }
 }
-// Only URLs explicitly listed in the app files (or the home URL) may load
-// in the iframe. All other navigation attempts are blocked.
+// Threat model: treat browser-window navigation as untrusted input.
+// Only explicitly allowlisted project URLs (plus local home/about pages) can load,
+// so typo-squats, user-pasted phishing links, and open-redirect chains are blocked.
 const ALLOWED_URLS = new Set(["about:blank"]);
 portfolioApps.forEach((app) => {
   if (app.url) ALLOWED_URLS.add(app.url);
 });
+function normalizeBrowserUrl(rawUrl) {
+  if (typeof rawUrl !== "string") return null;
+  const trimmedUrl = rawUrl.trim();
+  if (!trimmedUrl) return null;
+  if (trimmedUrl === "about:blank" || trimmedUrl === BROWSER_HOME_URL) return trimmedUrl;
+
+  const hasProtocol = /^https?:\/\//i.test(trimmedUrl) || trimmedUrl.startsWith("about:");
+  const looksLikeLocalPath =
+    /^\.{0,2}\//.test(trimmedUrl) || trimmedUrl.startsWith("/") || /^[\w-]+\/[\w./-]+$/.test(trimmedUrl);
+  const preparedUrl = hasProtocol || looksLikeLocalPath ? trimmedUrl : `https://${trimmedUrl}`;
+
+  let parsed;
+  try {
+    parsed = new URL(preparedUrl, window.location.href);
+  } catch {
+    return null;
+  }
+
+  if (!/^https?:$/.test(parsed.protocol)) return null;
+
+  parsed.hash = "";
+  if ((parsed.protocol === "https:" && parsed.port === "443") || (parsed.protocol === "http:" && parsed.port === "80")) {
+    parsed.port = "";
+  }
+
+  return parsed.toString();
+}
+const ALLOWED_NORMALIZED_URLS = new Set(
+  [...ALLOWED_URLS]
+    .map((url) => normalizeBrowserUrl(url))
+    .filter((url) => Boolean(url) && url !== BROWSER_HOME_URL)
+);
 function renderProjects() {
   if (!projectList) return;
   const items = portfolioApps.map((app, index) => {
@@ -238,19 +271,19 @@ function buildBrowserHomeMarkup() {
 </html>`;
 }
 function isAllowedUrl(url) {
-  if (url === "about:blank" || url === BROWSER_HOME_URL) return true;
-  if (ALLOWED_URLS.has(url)) return true;
+  const normalizedCandidate = normalizeBrowserUrl(url);
+  if (!normalizedCandidate) return false;
+  if (normalizedCandidate === "about:blank" || normalizedCandidate === BROWSER_HOME_URL) return true;
+  if (ALLOWED_NORMALIZED_URLS.has(normalizedCandidate)) return true;
 
   let candidate;
   try {
-    candidate = new URL(url);
+    candidate = new URL(normalizedCandidate);
   } catch {
     return false;
   }
 
-  for (const allowed of ALLOWED_URLS) {
-    if (allowed === "about:blank" || allowed === BROWSER_HOME_URL) continue;
-
+  for (const allowed of ALLOWED_NORMALIZED_URLS) {
     let allowedParsed;
     try {
       allowedParsed = new URL(allowed);
@@ -259,22 +292,24 @@ function isAllowedUrl(url) {
     }
 
     if (candidate.origin !== allowedParsed.origin) continue;
-    if (candidate.pathname.startsWith(allowedParsed.pathname)) return true;
+    const allowedPathPrefix = allowedParsed.pathname.endsWith("/") ? allowedParsed.pathname : `${allowedParsed.pathname}/`;
+    if (candidate.pathname === allowedParsed.pathname || candidate.pathname.startsWith(allowedPathPrefix)) return true;
   }
 
   return false;
 }
 function openInRetroBrowser(url, title) {
-  if (!isAllowedUrl(url)) return; // silently ignore; called only from project links
-  if (url === BROWSER_HOME_URL) {
+  const normalizedUrl = normalizeBrowserUrl(url);
+  if (!normalizedUrl || !isAllowedUrl(normalizedUrl)) return; // silently ignore; called only from project links
+  if (normalizedUrl === BROWSER_HOME_URL) {
     loadBrowserHomePage();
     openWindow("browser-window");
     return;
   }
   if (browserFrame) browserFrame.removeAttribute("srcdoc");
-  if (browserFrame) browserFrame.src = url;
-  if (browserAddress) browserAddress.value = url;
-  if (browserStatus) browserStatus.textContent = `Loading ${url}...`;
+  if (browserFrame) browserFrame.src = normalizedUrl;
+  if (browserAddress) browserAddress.value = normalizedUrl;
+  if (browserStatus) browserStatus.textContent = `Loading ${normalizedUrl}...`;
   if (browserTitle) browserTitle.textContent = `Netscape Navigator — ${title}`;
   if (browserThrobber) browserThrobber.classList.add("loading");
   openWindow("browser-window");
@@ -288,13 +323,8 @@ function loadBrowserHomePage() {
   if (browserThrobber) browserThrobber.classList.remove("loading");
 }
 function navigateBrowserTo(url) {
-  if (!url) return;
-  const trimmedUrl = url.trim();
-  if (!trimmedUrl) return;
-  const hasProtocol = /^https?:\/\//i.test(trimmedUrl) || trimmedUrl.startsWith("about:");
-  const looksLikeLocalPath =
-    /^\.{0,2}\//.test(trimmedUrl) || trimmedUrl.startsWith("/") || /^[\w-]+\/[\w./-]+$/.test(trimmedUrl);
-  const normalizedUrl = hasProtocol || looksLikeLocalPath ? trimmedUrl : `https://${trimmedUrl}`;
+  const normalizedUrl = normalizeBrowserUrl(url);
+  if (!normalizedUrl) return;
 
   if (normalizedUrl === BROWSER_HOME_URL) {
     loadBrowserHomePage();
@@ -314,6 +344,19 @@ function navigateBrowserTo(url) {
   if (browserStatus) browserStatus.textContent = `Loading ${normalizedUrl}...`;
   if (browserTitle) browserTitle.textContent = "Netscape Navigator";
   if (browserThrobber) browserThrobber.classList.add("loading");
+}
+function bindIconFallbackHandlers() {
+  const icons = [...document.querySelectorAll(".icon-image")];
+  icons.forEach((icon) => {
+    icon.addEventListener("error", () => {
+      const fallbackSrc = icon.dataset.fallbackSrc;
+      if (!fallbackSrc || icon.src.endsWith(fallbackSrc)) {
+        icon.style.visibility = "hidden";
+        return;
+      }
+      icon.src = fallbackSrc;
+    });
+  });
 }
 function closeFocusedWindow() {
   if (activeWindowId) closeWindow(activeWindowId);
@@ -527,12 +570,18 @@ window.addGithubRepos = function (repos) {
   const newRepos = repos.filter((r) => !existingIds.has(r.id));
   if (newRepos.length === 0) return;
   portfolioApps = [...portfolioApps, ...newRepos].sort((a, b) => (a.order || 0) - (b.order || 0));
-  newRepos.forEach((r) => { if (r.url) ALLOWED_URLS.add(r.url); });
+  newRepos.forEach((r) => {
+    if (!r.url) return;
+    ALLOWED_URLS.add(r.url);
+    const normalizedUrl = normalizeBrowserUrl(r.url);
+    if (normalizedUrl && normalizedUrl !== BROWSER_HOME_URL) ALLOWED_NORMALIZED_URLS.add(normalizedUrl);
+  });
   renderProjects();
 };
 async function initDesktop() {
   await loadWindowPartials();
   syncDynamicElements();
+  bindIconFallbackHandlers();
   bindDynamicContentEvents();
   renderProjects();
   await loadResumeTextFile();
