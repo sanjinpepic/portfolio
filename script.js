@@ -1059,52 +1059,6 @@ function runBootSequence() {
   setTimeout(finish, 2900);
 }
 
-// ── Pixel rain canvas ──────────────────────────────────────────
-function initPixelRain() {
-  const canvas = document.getElementById("bg-canvas");
-  if (!canvas) return;
-  const ctx = canvas.getContext("2d");
-  const CHARS = "01アイウエオカキクケコ#$%&<>[]{}".split("");
-  const COL_W = 16;
-  let cols = [];
-  let frameCount = 0;
-
-  function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight - canvas.getBoundingClientRect().top;
-    cols = Array.from({ length: Math.floor(canvas.width / COL_W) }, () =>
-      Math.floor(Math.random() * -(canvas.height / 16))
-    );
-  }
-
-  function draw() {
-    if (document.hidden) { requestAnimationFrame(draw); return; }
-    frameCount++;
-    if (frameCount % 2 !== 0) { requestAnimationFrame(draw); return; }
-
-    ctx.fillStyle = "rgba(0, 0, 0, 0.07)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    cols.forEach((y, i) => {
-      const ch = CHARS[Math.floor(Math.random() * CHARS.length)];
-      const x = i * COL_W;
-      // Bright head
-      ctx.fillStyle = "rgba(160, 255, 210, 0.9)";
-      ctx.font = `14px "VT323", monospace`;
-      ctx.fillText(ch, x, y * 16);
-      // Trail fades naturally via the black overlay
-
-      cols[i] = y > canvas.height / 16 + Math.random() * 20 ? Math.random() * -20 : y + 1;
-    });
-
-    requestAnimationFrame(draw);
-  }
-
-  resize();
-  window.addEventListener("resize", resize);
-  draw();
-}
-
 // ── Typewriter effect ──────────────────────────────────────────
 let typewriterDone = false;
 function startTypewriter() {
@@ -1138,7 +1092,6 @@ function startTypewriter() {
 
 async function initDesktop() {
   runBootSequence();
-  initPixelRain();
   await loadWindowPartials();
   syncDynamicElements();
   bindIconFallbackHandlers();
