@@ -1118,11 +1118,28 @@ if (mobileCloseBtn) {
 }
 function bindDynamicContentEvents() {
   if (timelineWindowContent && !timelineWindowContent.dataset.bound) {
+    const timelineTrack = timelineWindowContent.querySelector(".timeline-track");
     timelineWindowContent.addEventListener("click", (event) => {
       const clickedNode = event.target.closest("[data-timeline-node]");
       if (!clickedNode || !timelineWindowContent.contains(clickedNode)) return;
       setActiveTimelineNode(clickedNode.dataset.timelineNode);
     });
+    if (timelineTrack) {
+      timelineTrack.addEventListener(
+        "wheel",
+        (event) => {
+          if (mobileLayoutQuery.matches) return;
+          const canScrollHorizontally = timelineTrack.scrollWidth > timelineTrack.clientWidth;
+          if (!canScrollHorizontally) return;
+          const horizontalDelta = event.deltaY !== 0 ? event.deltaY : event.deltaX;
+          if (!horizontalDelta) return;
+          const previousScrollLeft = timelineTrack.scrollLeft;
+          timelineTrack.scrollLeft += horizontalDelta;
+          if (timelineTrack.scrollLeft !== previousScrollLeft) event.preventDefault();
+        },
+        { passive: false }
+      );
+    }
     timelineWindowContent.dataset.bound = "true";
   }
   if (projectList) {
