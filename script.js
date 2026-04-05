@@ -290,11 +290,13 @@ function openWindow(id) {
   const wasOpen = win.classList.contains("open");
   win.classList.add("open");
   if (!wasOpen) {
+    RetroSounds.open();
     requestAnimationFrame(() => {
       win.classList.add("opening");
       win.addEventListener("animationend", () => win.classList.remove("opening"), { once: true });
     });
     if (id === "about-window") startTypewriter();
+    if (id === "easter-error") RetroSounds.error();
   }
   bringToFront(win);
   if (mobileLayoutQuery.matches) updateMobileNav(win);
@@ -316,6 +318,7 @@ function closeWindow(id) {
   // On mobile, hide the app nav when closing
   if (mobileLayoutQuery.matches) updateMobileNav(null);
   // Animate close
+  RetroSounds.close();
   win.classList.add("closing");
   win.addEventListener("animationend", () => {
     win.classList.remove("open", "closing");
@@ -1191,12 +1194,14 @@ menuButtons.forEach((button) => {
   });
 });
 function runMenuAction(action) {
+  RetroSounds.click();
   if (action === "open-about") openWindow("about-window");
   if (action === "open-projects") openWindow("projects-window");
   if (action === "open-browser") openWindow("browser-window");
   if (action === "open-resume") openWindow("resume-window");
   if (action === "open-contact") openWindow("contact-window");
   if (action === "open-winamp") openWindow("winamp-window");
+  if (action === "open-terminal") openWindow("terminal-window");
   if (action === "close-focused") closeFocusedWindow();
   if (action === "close-all") closeAllWindows();
   if (action === "open-all") openAllWindows();
@@ -1205,6 +1210,8 @@ function runMenuAction(action) {
     document.body.classList.toggle("dark-desktop");
     saveDesktopState();
   }
+  if (action === "toggle-sounds") RetroSounds.toggle();
+  if (action === "new-sticky") createStickyNote();
   closeMenus();
 }
 menuActions.forEach((actionButton) => {
@@ -1261,8 +1268,14 @@ document.addEventListener("click", (event) => {
   if (!event.target.closest(".menu-group")) closeMenus();
 });
 document.addEventListener("keydown", (event) => {
+  // BSOD: Ctrl+Alt+B — skip when typing in inputs
+  if (event.ctrlKey && event.altKey && event.key.toLowerCase() === "b") {
+    const tag = document.activeElement?.tagName;
+    if (tag !== "INPUT" && tag !== "TEXTAREA") triggerBsod();
+  }
   if (event.key.toLowerCase() === "x") {
-    closeFocusedWindow();
+    const tag = document.activeElement?.tagName;
+    if (tag !== "INPUT" && tag !== "TEXTAREA") closeFocusedWindow();
   }
   if (event.key === "Escape") {
     if (activeMenuButton) {
@@ -1511,12 +1524,478 @@ const vintageSpeaker = (() => {
   };
 })();
 
+// ── Retro Sound Effects (Web Audio API) ───────────────────────
+const RetroSounds = (() => {
+  let ctx = null;
+  let enabled = localStorage.getItem("portfolio.sounds") === "on";
+
+  function getCtx() {
+    if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+    return ctx;
+  }
+
+  function play(notes) {
+    if (!enabled) return;
+    try {
+      const ac = getCtx();
+      ac.resume().catch(() => {});
+      notes.forEach(({ freq, start, dur, type = "square", vol = 0.055 }) => {
+        const osc = ac.createOscillator();
+        const g = ac.createGain();
+        osc.type = type;
+        osc.frequency.value = freq;
+        const t = ac.currentTime + start;
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(vol, t + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+        osc.connect(g);
+        g.connect(ac.destination);
+        osc.start(t);
+        osc.stop(t + dur + 0.01);
+      });
+    } catch (_) {}
+  }
+
+  return {
+    open:  () => play([{ freq: 523, start: 0, dur: 0.07 }, { freq: 659, start: 0.06, dur: 0.1 }]),
+    close: () => play([{ freq: 330, start: 0, dur: 0.08 }, { freq: 220, start: 0.06, dur: 0.1 }]),
+    click: () => play([{ freq: 440, start: 0, dur: 0.06, vol: 0.035 }]),
+    error: () => play([{ freq: 180, start: 0, dur: 0.18, type: "sawtooth" }, { freq: 140, start: 0.15, dur: 0.22, type: "sawtooth" }]),
+    toggle() {
+      enabled = !enabled;
+      localStorage.setItem("portfolio.sounds", enabled ? "on" : "off");
+      const btn = document.getElementById("sounds-menu-item");
+      if (btn) btn.textContent = `Sounds: ${enabled ? "On" : "Off"}`;
+      return enabled;
+    },
+    isEnabled: () => enabled,
+    syncLabel() {
+      const btn = document.getElementById("sounds-menu-item");
+      if (btn) btn.textContent = `Sounds: ${enabled ? "On" : "Off"}`;
+    },
+  };
+})();
+
+// ── Terminal window ────────────────────────────────────────────
+const TERMINAL_HELP = `Available commands:
+  help          Show this help
+  whoami        About Sanjin
+  ls            List filesystem
+  ls projects   List portfolio projects
+  cat about.txt About section
+  cat skills.txt Skills list
+  cat readme.md Welcome message
+  open <id>     Open a window
+  close <id>    Close a window
+  date          Current date/time
+  uname -a      System info
+  clear         Clear terminal
+  exit          Close terminal`;
+
+const TERMINAL_WINDOWS = {
+  about:    "about-window",
+  projects: "projects-window",
+  browser:  "browser-window",
+  resume:   "resume-window",
+  contact:  "contact-window",
+  winamp:   "winamp-window",
+  terminal: "terminal-window",
+  error:    "easter-error",
+};
+
+let terminalOutput = null;
+let terminalInput = null;
+let terminalHistory = [];
+let terminalHistoryIdx = -1;
+
+function terminalPrint(text, cls = "t-out") {
+  if (!terminalOutput) return;
+  const line = document.createElement("span");
+  line.className = `t-line ${cls}`;
+  line.textContent = text;
+  terminalOutput.appendChild(line);
+  terminalOutput.scrollTop = terminalOutput.scrollHeight;
+}
+
+function terminalRunCommand(raw) {
+  const input = raw.trim();
+  if (!input) return;
+  terminalPrint(`C:\\PORTFOLIO> ${input}`, "t-cmd");
+  terminalHistory.unshift(input);
+  if (terminalHistory.length > 50) terminalHistory.pop();
+  terminalHistoryIdx = -1;
+
+  const [cmd, ...args] = input.toLowerCase().split(/\s+/);
+
+  if (cmd === "clear") {
+    if (terminalOutput) terminalOutput.innerHTML = "";
+    return;
+  }
+  if (cmd === "exit") {
+    closeWindow("terminal-window");
+    return;
+  }
+  if (cmd === "help") {
+    terminalPrint(TERMINAL_HELP);
+    return;
+  }
+  if (cmd === "whoami") {
+    terminalPrint("Sanjin Pepic");
+    terminalPrint("Strategy & Product Leader — Industrial + Sustainability");
+    terminalPrint("Stockholm, Sweden · sanjin@pepic.me");
+    return;
+  }
+  if (cmd === "date") {
+    terminalPrint(new Date().toString());
+    return;
+  }
+  if (cmd === "uname" && args[0] === "-a") {
+    terminalPrint("PortfolioOS 1.0 (Retro Edition) #1 SMP 1993-01-01 i486");
+    terminalPrint("CPU: Sanjin-1000 @ 500 MHz   RAM: 640 KB   VRAM: 256 KB");
+    return;
+  }
+  if (cmd === "ls") {
+    if (args[0] === "projects") {
+      terminalPrint("Projects/");
+      portfolioApps.forEach((app, i) => {
+        const num = String(app.order || i + 1).padStart(2, "0");
+        terminalPrint(`  ${num}  ${app.title}`);
+      });
+      return;
+    }
+    terminalPrint("Volume: PORTFOLIO");
+    terminalPrint(" Directory of C:\\PORTFOLIO");
+    terminalPrint("");
+    terminalPrint("  about.txt      resume.txt     skills.txt");
+    terminalPrint("  readme.md      projects/      apps/");
+    terminalPrint("");
+    terminalPrint(`${portfolioApps.length} project(s) — ${windows.length} window(s) available`);
+    return;
+  }
+  if (cmd === "dir") {
+    terminalPrint("Use 'ls' or 'ls projects'");
+    return;
+  }
+  if (cmd === "cat") {
+    const file = args[0] || "";
+    if (file === "about.txt") {
+      terminalPrint("Strategy and product leader delivering measurable");
+      terminalPrint("commercial growth and operational transformation in");
+      terminalPrint("industrial and sustainability-driven businesses.");
+      terminalPrint("I align business strategy, product execution, and");
+      terminalPrint("analytics adoption to move teams from insights to");
+      terminalPrint("shipped outcomes.");
+      return;
+    }
+    if (file === "skills.txt") {
+      terminalPrint("Data & Analytics: dbt, SQL, Python, BigQuery, Tableau");
+      terminalPrint("Product: Strategy, Roadmapping, A/B Testing, Analytics");
+      terminalPrint("Domains: Metallurgy (Erasteel), Energy (Tibber),");
+      terminalPrint("         Fintech (Anyfin), Education (SSE)");
+      terminalPrint("Tools:   BI platforms, dbt Cloud, GCP, GitHub");
+      return;
+    }
+    if (file === "readme.md") {
+      terminalPrint("# Welcome to Sanjin's Portfolio OS");
+      terminalPrint("");
+      terminalPrint("This is a retro OS-themed portfolio built in");
+      terminalPrint("vanilla HTML, CSS, and JavaScript. No frameworks.");
+      terminalPrint("Just raw craft and a fondness for the 90s.");
+      terminalPrint("");
+      terminalPrint("Try: open projects, open resume, ls projects");
+      terminalPrint("     sudo hire sanjin");
+      return;
+    }
+    terminalPrint(`cat: ${file}: No such file or directory`, "t-err");
+    return;
+  }
+  if (cmd === "open") {
+    const key = args[0] || "";
+    const winId = TERMINAL_WINDOWS[key] || (windows.find(w => w.id === key) ? key : null);
+    if (winId) {
+      openWindow(winId);
+      terminalPrint(`Opening ${key}...`);
+    } else {
+      terminalPrint(`open: unknown window '${key}'. Try: ${Object.keys(TERMINAL_WINDOWS).join(", ")}`, "t-err");
+    }
+    return;
+  }
+  if (cmd === "close") {
+    const key = args[0] || "";
+    const winId = TERMINAL_WINDOWS[key] || (windows.find(w => w.id === key) ? key : null);
+    if (winId) {
+      closeWindow(winId);
+      terminalPrint(`Closed ${key}.`);
+    } else {
+      terminalPrint(`close: unknown window '${key}'`, "t-err");
+    }
+    return;
+  }
+  if (cmd === "sudo") {
+    if (args[0] === "hire" && args[1] === "sanjin") {
+      terminalPrint("Granting elevated hiring privileges...");
+      terminalPrint("Access granted. Excellent taste confirmed.");
+      terminalPrint("Please reach out: sanjin@pepic.me");
+      return;
+    }
+    if (args.join(" ") === "rm -rf /") {
+      terminalPrint("Permission denied. Nice try.", "t-err");
+      return;
+    }
+    terminalPrint(`sudo: command not found: ${args.join(" ")}`, "t-err");
+    return;
+  }
+
+  terminalPrint(`'${cmd}' is not recognized. Type 'help' for commands.`, "t-err");
+}
+
+function bindTerminal() {
+  terminalOutput = document.getElementById("terminal-output");
+  terminalInput  = document.getElementById("terminal-input");
+  if (!terminalInput) return;
+
+  // Welcome message
+  terminalPrint("Portfolio Terminal v1.0 — Type 'help' to get started.", "t-dim");
+  terminalPrint("", "t-dim");
+
+  terminalInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      const val = terminalInput.value;
+      terminalInput.value = "";
+      terminalRunCommand(val);
+    }
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      terminalHistoryIdx = Math.min(terminalHistoryIdx + 1, terminalHistory.length - 1);
+      terminalInput.value = terminalHistory[terminalHistoryIdx] || "";
+    }
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      terminalHistoryIdx = Math.max(terminalHistoryIdx - 1, -1);
+      terminalInput.value = terminalHistoryIdx >= 0 ? terminalHistory[terminalHistoryIdx] : "";
+    }
+  });
+
+  // Click anywhere in terminal to focus input
+  const termContent = document.querySelector(".terminal-content");
+  if (termContent) {
+    termContent.addEventListener("click", () => terminalInput.focus());
+  }
+}
+
+// ── Right-click context menu ───────────────────────────────────
+function bindContextMenu() {
+  const menu = document.getElementById("context-menu");
+  if (!menu) return;
+
+  desktop.addEventListener("contextmenu", (event) => {
+    if (event.target.closest(".window") || event.target.closest(".menu-bar")) return;
+    event.preventDefault();
+    const x = Math.min(event.clientX, window.innerWidth  - menu.offsetWidth  - 8);
+    const y = Math.min(event.clientY, window.innerHeight - menu.offsetHeight - 8);
+    menu.style.left = `${x}px`;
+    menu.style.top  = `${y}px`;
+    menu.removeAttribute("aria-hidden");
+    menu.classList.add("open");
+    const first = menu.querySelector("button");
+    if (first) first.focus();
+  });
+
+  menu.addEventListener("click", (event) => {
+    const btn = event.target.closest("[data-ctx-action]");
+    if (!btn) return;
+    menu.classList.remove("open");
+    menu.setAttribute("aria-hidden", "true");
+    runMenuAction(btn.dataset.ctxAction);
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!event.target.closest("#context-menu")) {
+      menu.classList.remove("open");
+      menu.setAttribute("aria-hidden", "true");
+    }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      menu.classList.remove("open");
+      menu.setAttribute("aria-hidden", "true");
+    }
+  });
+}
+
+// ── Sticky notes ───────────────────────────────────────────────
+const STICKIES_KEY = "portfolio.stickies.v1";
+const STICKY_COLORS = ["#ffffa5", "#c5e8ff", "#ffd6e7"];
+let stickyColorIndex = 0;
+
+function saveStickyNotes() {
+  const notes = [...document.querySelectorAll(".sticky-note")].map((n) => ({
+    id: n.dataset.stickyId,
+    x: parseInt(n.style.left) || 100,
+    y: parseInt(n.style.top)  || 100,
+    w: n.offsetWidth,
+    h: n.offsetHeight,
+    text: n.querySelector("textarea").value,
+    color: n.dataset.stickyColor || STICKY_COLORS[0],
+  }));
+  try { localStorage.setItem(STICKIES_KEY, JSON.stringify(notes)); } catch (_) {}
+}
+
+function createStickyNote({ id, x, y, w, h, text, color } = {}) {
+  const noteId = id || `sticky-${Date.now()}`;
+  const noteColor = color || STICKY_COLORS[stickyColorIndex % STICKY_COLORS.length];
+  stickyColorIndex++;
+
+  const el = document.createElement("div");
+  el.className = "sticky-note";
+  el.dataset.stickyId = noteId;
+  el.dataset.stickyColor = noteColor;
+  el.style.left  = `${x || Math.round(window.innerWidth  / 2 - 90)}px`;
+  el.style.top   = `${y || Math.round(window.innerHeight / 2 - 70)}px`;
+  el.style.width  = `${w || 180}px`;
+  el.style.height = `${h || 140}px`;
+  el.style.background = noteColor;
+  el.style.zIndex = String(++topZ);
+
+  // Darken header colour slightly
+  el.innerHTML = `
+    <div class="sticky-note-header" style="background:${noteColor}; filter:brightness(0.85)">
+      <span>📌 Note</span>
+      <button class="sticky-note-close" aria-label="Delete sticky note">×</button>
+    </div>
+    <textarea class="sticky-note-body" placeholder="Type here…">${escapeHtml(text || "")}</textarea>
+  `;
+
+  // Drag on header
+  const header = el.querySelector(".sticky-note-header");
+  let dragging = false, offX = 0, offY = 0;
+
+  header.addEventListener("pointerdown", (e) => {
+    if (mobileLayoutQuery.matches) return;
+    if (e.target.closest(".sticky-note-close")) return;
+    dragging = true;
+    el.style.zIndex = String(++topZ);
+    const rect = el.getBoundingClientRect();
+    offX = e.clientX - rect.left;
+    offY = e.clientY - rect.top;
+    header.setPointerCapture(e.pointerId);
+  });
+  header.addEventListener("pointermove", (e) => {
+    if (!dragging) return;
+    const desktopRect = desktop.getBoundingClientRect();
+    const nx = e.clientX - offX - desktopRect.left;
+    const ny = e.clientY - offY - desktopRect.top;
+    el.style.left = `${Math.max(0, nx)}px`;
+    el.style.top  = `${Math.max(0, ny)}px`;
+  });
+  header.addEventListener("pointerup", (e) => {
+    dragging = false;
+    if (header.hasPointerCapture(e.pointerId)) header.releasePointerCapture(e.pointerId);
+    saveStickyNotes();
+  });
+  header.addEventListener("pointercancel", (e) => {
+    dragging = false;
+    if (header.hasPointerCapture(e.pointerId)) header.releasePointerCapture(e.pointerId);
+  });
+
+  // Delete
+  el.querySelector(".sticky-note-close").addEventListener("click", () => {
+    el.remove();
+    saveStickyNotes();
+  });
+
+  // Save on text change
+  const ta = el.querySelector("textarea");
+  ta.addEventListener("input", saveStickyNotes);
+
+  // Save on resize
+  new ResizeObserver(saveStickyNotes).observe(el);
+
+  desktop.appendChild(el);
+}
+
+function loadStickyNotes() {
+  try {
+    const data = JSON.parse(localStorage.getItem(STICKIES_KEY) || "[]");
+    if (Array.isArray(data)) data.forEach((n) => createStickyNote(n));
+  } catch (_) {}
+}
+
+// ── Screen saver ───────────────────────────────────────────────
+let screensaverTimer = null;
+const SCREENSAVER_DELAY = 90 * 1000; // 90 seconds
+
+function showScreensaver() {
+  const ss = document.getElementById("screensaver");
+  if (!ss) return;
+  ss.removeAttribute("aria-hidden");
+  ss.classList.add("active");
+}
+
+function hideScreensaver() {
+  const ss = document.getElementById("screensaver");
+  if (!ss || !ss.classList.contains("active")) return;
+  ss.classList.remove("active");
+  ss.setAttribute("aria-hidden", "true");
+}
+
+function resetScreensaverTimer() {
+  clearTimeout(screensaverTimer);
+  if (document.getElementById("screensaver")?.classList.contains("active")) {
+    hideScreensaver();
+    return;
+  }
+  screensaverTimer = setTimeout(showScreensaver, SCREENSAVER_DELAY);
+}
+
+function bindScreensaver() {
+  const events = ["mousemove", "keydown", "pointerdown", "scroll"];
+  events.forEach((ev) => document.addEventListener(ev, resetScreensaverTimer, { passive: true }));
+  resetScreensaverTimer();
+}
+
+// ── BSOD Easter egg ────────────────────────────────────────────
+let bsodActive = false;
+
+function triggerBsod() {
+  if (bsodActive) return;
+  const overlay = document.getElementById("bsod-overlay");
+  if (!overlay) return;
+  bsodActive = true;
+  RetroSounds.error();
+  overlay.removeAttribute("aria-hidden");
+  overlay.classList.add("visible");
+
+  function dismiss() {
+    overlay.classList.add("fade-out");
+    overlay.addEventListener("transitionend", () => {
+      overlay.classList.remove("visible", "fade-out");
+      overlay.setAttribute("aria-hidden", "true");
+      bsodActive = false;
+    }, { once: true });
+    document.removeEventListener("keydown", onKey);
+  }
+
+  function onKey(e) {
+    if (bsodActive) dismiss();
+  }
+
+  document.addEventListener("keydown", onKey);
+  setTimeout(dismiss, 6000);
+}
+
 async function initDesktop() {
   runBootSequence();
   syncDynamicElements();
   bindIconFallbackHandlers();
   bindDynamicContentEvents();
   bindWinampControls();
+  bindTerminal();
+  bindContextMenu();
+  bindScreensaver();
+  loadStickyNotes();
+  RetroSounds.syncLabel();
   renderProjects();
   await loadResumeTextFile();
   openWindow("about-window");
