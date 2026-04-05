@@ -492,6 +492,57 @@
       aria-label="Projected global pizza consumption per month"
     ></canvas>
   </section>
+
+  <section class="dashboard-volcano" aria-labelledby="tech-debt-volcano-heading">
+    <div class="dashboard-section-head">
+      <h3 id="tech-debt-volcano-heading">Tech debt volcano</h3>
+      <span class="volcano-risk-badge" id="volcano-risk-badge">Monitoring</span>
+    </div>
+    <div class="volcano-kpi-grid" aria-label="Tech debt volcano KPIs">
+      <article class="volcano-kpi">
+        <h4>Magma level</h4>
+        <p class="volcano-kpi-value" id="volcano-magma-level">--</p>
+      </article>
+      <article class="volcano-kpi">
+        <h4>Eruption risk</h4>
+        <p class="volcano-kpi-value" id="volcano-eruption-risk">--</p>
+      </article>
+      <article class="volcano-kpi">
+        <h4>Lava cooled</h4>
+        <p class="volcano-kpi-value" id="volcano-lava-cooled">--</p>
+      </article>
+    </div>
+    <canvas
+      class="volcano-chart"
+      id="tech-debt-volcano-chart"
+      width="760"
+      height="250"
+      aria-label="Technical debt added versus paid down with net debt trend"
+    ></canvas>
+  </section>
+
+  <section class="dashboard-mouse" aria-labelledby="mouse-speed-heading">
+    <h3 id="mouse-speed-heading">Mouse speed zoomies tracker</h3>
+    <div class="mouse-kpi-grid" aria-label="Mouse speed KPIs">
+      <article class="mouse-kpi">
+        <h4>Live speed</h4>
+        <p class="mouse-kpi-value" id="mouse-live-speed">0.00 m/s</p>
+      </article>
+      <article class="mouse-kpi">
+        <h4>Peak speed</h4>
+        <p class="mouse-kpi-value" id="mouse-peak-speed">0.00 m/s</p>
+      </article>
+      <article class="mouse-kpi">
+        <h4>Average active speed</h4>
+        <p class="mouse-kpi-value" id="mouse-average-speed">0.00 m/s</p>
+      </article>
+      <article class="mouse-kpi">
+        <h4>Zoomies index</h4>
+        <p class="mouse-kpi-value" id="mouse-zoomies-index">0 / 100</p>
+      </article>
+    </div>
+    <p class="mouse-kpi-mode" id="mouse-speed-mode">Meditation mode 🧘</p>
+  </section>
 </div>
 <!-- END:inline windows/dashboard.html --></div>
       </section>
