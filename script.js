@@ -648,12 +648,6 @@ function navigateBrowserTo(url) {
     return;
   }
 
-  if (!isAllowedUrl(normalizedUrl)) {
-    if (browserStatus) {
-      browserStatus.textContent = `Blocked: ${normalizedUrl} is not in the allowed project list.`;
-    }
-    return;
-  }
   if (browserFrame) browserFrame.removeAttribute("srcdoc");
   if (browserAddress) browserAddress.value = normalizedUrl;
   if (browserFrame) browserFrame.src = normalizedUrl;
