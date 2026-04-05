@@ -868,6 +868,151 @@ a {
   background: #ececec;
 }
 
+.timeline-workbench {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  height: 100%;
+}
+
+.timeline-track {
+  position: relative;
+  display: flex;
+  gap: 0.6rem;
+  overflow-x: auto;
+  padding: 0.2rem 0.1rem 0.55rem;
+}
+
+.timeline-track::before {
+  content: "";
+  position: absolute;
+  left: 0.3rem;
+  right: 0.3rem;
+  top: calc(50% - 1px);
+  border-top: 2px dotted var(--border-mid);
+  pointer-events: none;
+}
+
+.timeline-node {
+  position: relative;
+  z-index: 1;
+  min-width: 11.5rem;
+  max-width: 14rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  text-align: left;
+  font: inherit;
+  color: #111;
+  background: #e7e7e7;
+  border: 2px solid;
+  border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+  padding: 0.35rem 0.45rem;
+  cursor: pointer;
+}
+
+.timeline-node::before {
+  content: "";
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background: #d7d7d7;
+  border: 2px solid var(--border-dark);
+  position: absolute;
+  top: -0.6rem;
+  left: 0.45rem;
+}
+
+.timeline-node.active {
+  background: #f5f5f5;
+}
+
+.timeline-node.active::before {
+  background: #1f4db4;
+}
+
+.timeline-node:focus-visible {
+  outline: 2px solid #1f4db4;
+  outline-offset: 2px;
+}
+
+.timeline-role {
+  font-size: 1.02rem;
+}
+
+.timeline-company {
+  color: #143d8a;
+}
+
+.timeline-years,
+.timeline-outcome {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.timeline-detail-stack {
+  flex: 1;
+  min-height: 0;
+}
+
+.timeline-detail-card {
+  height: 100%;
+  overflow: auto;
+  border: 2px solid;
+  border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+  background: #f5f5f5;
+  padding: 0.55rem 0.7rem;
+}
+
+.timeline-detail-card h3 {
+  margin: 0.3rem 0 0.2rem;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+}
+
+.timeline-detail-card p,
+.timeline-detail-card ul {
+  margin: 0 0 0.45rem;
+}
+
+.timeline-detail-card ul {
+  padding-left: 1rem;
+}
+
+.timeline-proof-links {
+  border-top: 1px dashed var(--border-mid);
+  padding-top: 0.35rem;
+}
+
+@media (max-width: 900px) {
+  .timeline-track {
+    flex-direction: column;
+    overflow-x: visible;
+    overflow-y: auto;
+    padding: 0 0 0 0.8rem;
+    max-height: 12rem;
+  }
+
+  .timeline-track::before {
+    left: 0.45rem;
+    right: auto;
+    top: 0.1rem;
+    bottom: 0.1rem;
+    border-top: none;
+    border-left: 2px dotted var(--border-mid);
+  }
+
+  .timeline-node {
+    min-width: 0;
+    max-width: none;
+  }
+
+  .timeline-node::before {
+    left: -0.92rem;
+    top: 0.7rem;
+  }
+}
+
 /* ── Boot sequence ───────────────────────────────────────────── */
 #boot-overlay {
   position: fixed;

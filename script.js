@@ -44,6 +44,7 @@ let winampVolume = null;
 let winampChannelList = null;
 let winampChannelFilter = null;
 let winampStatus = null;
+let timelineWindowContent = null;
 let winampActiveIndex = 0;
 let winampPlaying = false;
 let winampMuted = true;
@@ -155,6 +156,7 @@ function syncDynamicElements() {
   winampChannelList = document.getElementById("winamp-channel-list");
   winampChannelFilter = document.getElementById("winamp-channel-filter");
   winampStatus = document.getElementById("winamp-status");
+  timelineWindowContent = document.getElementById("timeline-window-content");
 }
 let topZ = 10;
 let activeWindowId = null;
@@ -1039,6 +1041,14 @@ if (mobileCloseBtn) {
   });
 }
 function bindDynamicContentEvents() {
+  if (timelineWindowContent && !timelineWindowContent.dataset.bound) {
+    timelineWindowContent.addEventListener("click", (event) => {
+      const clickedNode = event.target.closest("[data-timeline-node]");
+      if (!clickedNode || !timelineWindowContent.contains(clickedNode)) return;
+      setActiveTimelineNode(clickedNode.dataset.timelineNode);
+    });
+    timelineWindowContent.dataset.bound = "true";
+  }
   if (projectList) {
     projectList.addEventListener("click", (event) => {
       const projectLink = event.target.closest(".project-link[data-browser-url]");
@@ -1106,6 +1116,21 @@ function bindDynamicContentEvents() {
       if (browserThrobber) browserThrobber.classList.remove("loading");
     });
   }
+}
+function setActiveTimelineNode(nodeId) {
+  if (!timelineWindowContent || !nodeId) return;
+  const timelineNodes = [...timelineWindowContent.querySelectorAll("[data-timeline-node]")];
+  const timelineCards = [...timelineWindowContent.querySelectorAll("[data-timeline-card]")];
+  timelineNodes.forEach((node) => {
+    const isActive = node.dataset.timelineNode === nodeId;
+    node.classList.toggle("active", isActive);
+    node.setAttribute("aria-selected", String(isActive));
+  });
+  timelineCards.forEach((card) => {
+    const isActive = card.dataset.timelineCard === nodeId;
+    card.classList.toggle("active", isActive);
+    card.hidden = !isActive;
+  });
 }
 windows.forEach((win) => {
   const handle = win.querySelector(".drag-handle");
@@ -1199,6 +1224,7 @@ function runMenuAction(action) {
   if (action === "open-projects") openWindow("projects-window");
   if (action === "open-browser") openWindow("browser-window");
   if (action === "open-resume") openWindow("resume-window");
+  if (action === "open-timeline") openWindow("timeline-window");
   if (action === "open-contact") openWindow("contact-window");
   if (action === "open-winamp") openWindow("winamp-window");
   if (action === "open-terminal") openWindow("terminal-window");
@@ -1597,6 +1623,7 @@ const TERMINAL_WINDOWS = {
   projects: "projects-window",
   browser:  "browser-window",
   resume:   "resume-window",
+  timeline: "timeline-window",
   contact:  "contact-window",
   winamp:   "winamp-window",
   terminal: "terminal-window",
