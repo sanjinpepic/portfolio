@@ -4,6 +4,34 @@
     and scale data-led delivery across industrial and sustainability-focused teams.
   </p>
 
+  <section class="dashboard-facts" aria-labelledby="dashboard-facts-heading">
+    <div class="dashboard-section-head">
+      <h3 id="dashboard-facts-heading">Live internet facts (fun mode)</h3>
+      <button type="button" class="dashboard-refresh" id="dashboard-refresh-facts">Refresh</button>
+    </div>
+    <p class="dashboard-facts-note">
+      Pulling from random fact, numbers, cat, ISS position, and astronauts APIs. Showing a few of the funniest.
+    </p>
+    <ul class="fact-list" id="dashboard-fact-list" aria-live="polite">
+      <li class="fact-item fact-item--loading">Loading fresh facts...</li>
+    </ul>
+  </section>
+
+  <section class="dashboard-pizza" aria-labelledby="pizza-forecast-heading">
+    <h3 id="pizza-forecast-heading">Global pizza forecast (super simple)</h3>
+    <p class="dashboard-facts-note">
+      Baseline: ~5B pizzas/year. Simple projection uses baseline monthly demand with a fun growth pulse inspired by
+      ~158 pizzas/second.
+    </p>
+    <canvas
+      class="pizza-chart"
+      id="pizza-forecast-chart"
+      width="760"
+      height="220"
+      aria-label="Projected global pizza consumption per month"
+    ></canvas>
+  </section>
+
   <div class="dashboard-grid" role="list" aria-label="Sample KPI cards">
     <article class="kpi-card" role="listitem">
       <h3>Growth Index</h3>
