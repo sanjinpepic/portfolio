@@ -19,7 +19,14 @@
   ];
 
   const CACHE_MS = 4 * 60 * 1000;
+  const STALE_CACHE_MS = 30 * 60 * 1000;
   const MAX_ITEMS = 16;
+  const FEED_TIMEOUT_MS = 7000;
+  const MAX_PER_FEED = 8;
+  const FEED_PROXY_BUILDERS = [
+    (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    (url) => `https://r.jina.ai/http://${url.replace(/^https?:\/\//i, "")}`
+  ];
   let initialized = false;
   let cachedItems = [];
   let cachedAt = 0;
@@ -84,31 +91,63 @@
     return value.replace(/\s+/g, " ").trim();
   }
 
-  async function fetchFeed(feed) {
-    const targetUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(feed.url)}`;
+  function parseItemsFromXml(feed, xmlText) {
+    const xmlDoc = new DOMParser().parseFromString(xmlText, "application/xml");
+    const parserError = xmlDoc.querySelector("parsererror");
+    if (parserError) return [];
+
+    const rssItems = [...xmlDoc.querySelectorAll("item")];
+    const atomEntries = [...xmlDoc.querySelectorAll("entry")];
+    const nodes = rssItems.length ? rssItems : atomEntries;
+
+    return nodes.slice(0, MAX_PER_FEED).map((itemNode) => {
+      const title = textOrEmpty(itemNode, "title") || "Untitled headline";
+      const linkNode = itemNode.querySelector("link");
+      const linkAttr = linkNode?.getAttribute("href") || "";
+      const linkText = textOrEmpty(itemNode, "link");
+      const link = linkAttr || linkText;
+      const description = textOrEmpty(itemNode, "description")
+        || textOrEmpty(itemNode, "summary")
+        || textOrEmpty(itemNode, "content");
+      const pubDate = textOrEmpty(itemNode, "pubDate")
+        || textOrEmpty(itemNode, "published")
+        || textOrEmpty(itemNode, "updated");
+
+      return {
+        source: feed.name,
+        title,
+        link,
+        description: description.slice(0, 240),
+        pubDate
+      };
+    }).filter((item) => item.link);
+  }
+
+  async function fetchWithTimeout(url, timeoutMs) {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
-      const response = await fetch(targetUrl, { cache: "no-store", signal: controller.signal });
-      if (!response.ok) return [];
-
-      const xmlText = await response.text();
-      const xmlDoc = new DOMParser().parseFromString(xmlText, "application/xml");
-      const items = [...xmlDoc.querySelectorAll("item")].slice(0, 8).map((itemNode) => ({
-        source: feed.name,
-        title: textOrEmpty(itemNode, "title") || "Untitled headline",
-        link: textOrEmpty(itemNode, "link"),
-        description: textOrEmpty(itemNode, "description").slice(0, 240),
-        pubDate: textOrEmpty(itemNode, "pubDate")
-      })).filter((item) => item.link);
-
-      return items;
+      const response = await fetch(url, { cache: "no-store", signal: controller.signal });
+      if (!response.ok) return "";
+      return await response.text();
     } catch {
-      return [];
+      return "";
     } finally {
       clearTimeout(timeoutId);
     }
+  }
+
+  async function fetchFeed(feed) {
+    for (const buildProxyUrl of FEED_PROXY_BUILDERS) {
+      const xmlText = await fetchWithTimeout(buildProxyUrl(feed.url), FEED_TIMEOUT_MS);
+      if (!xmlText) continue;
+
+      const parsedItems = parseItemsFromXml(feed, xmlText);
+      if (parsedItems.length) return parsedItems;
+    }
+
+    return [];
   }
 
   async function loadNews({ forceRefresh = false } = {}) {
@@ -135,15 +174,18 @@
       return timeB - timeA;
     });
 
-    cachedItems = merged.slice(0, MAX_ITEMS);
-    cachedAt = Date.now();
-
-    renderItems(cachedItems);
-
-    if (cachedItems.length) {
+    if (merged.length) {
+      cachedItems = merged.slice(0, MAX_ITEMS);
+      cachedAt = Date.now();
+      renderItems(cachedItems);
       setMetaText(`Updated ${new Date(cachedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · ${cachedItems.length} headlines`);
+    } else if (cachedItems.length && now - cachedAt < STALE_CACHE_MS) {
+      renderItems(cachedItems);
+      setMetaText(`Live refresh failed · showing cached headlines from ${new Date(cachedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`);
     } else {
+      cachedItems = [];
       setMetaText("Feeds unavailable right now. Please try again in a minute.");
+      renderItems(cachedItems);
     }
 
     if (refreshBtn) refreshBtn.disabled = false;
