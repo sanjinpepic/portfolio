@@ -12,11 +12,11 @@ const DESKTOP_STATE_KEY = "portfolio.desktop.state.v1";
 const mobileLayoutQuery = window.matchMedia("(max-width: 900px)");
 const WINAMP_PLAYLIST = [
   { id: "K0HSD_i2DvA", title: "Daft Punk - Around The World (Official Music Video Remastered)" },
-  { id: "0w-jjbE3Q9o", title: "Channel 02" },
-  { id: "NqEGc7g5-J0", title: "Channel 03" },
-  { id: "bueFTrwHFEs", title: "Channel 04" },
-  { id: "Eo-KmOd3i7s", title: "Channel 05" },
-  { id: "9Ht5RZpzPqw", title: "Channel 06" }
+  { id: "0w-jjbE3Q9o", title: "Loading title…" },
+  { id: "NqEGc7g5-J0", title: "Loading title…" },
+  { id: "bueFTrwHFEs", title: "Loading title…" },
+  { id: "Eo-KmOd3i7s", title: "Loading title…" },
+  { id: "9Ht5RZpzPqw", title: "Loading title…" }
 ];
 let projectList = null;
 let browserFrame = null;
@@ -41,6 +41,7 @@ let winampChannelList = null;
 let winampStatus = null;
 let winampActiveIndex = 0;
 let winampPlaying = false;
+let winampPlaylistBound = false;
 let activeMenuButton = null;
 function escapeHtml(value) {
   return value
@@ -672,6 +673,38 @@ function navigateBrowserTo(url) {
   if (browserTitle) browserTitle.textContent = "Netscape Navigator";
   if (browserThrobber) browserThrobber.classList.add("loading");
 }
+async function fetchYouTubeTitle(videoId) {
+  try {
+    const response = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
+    if (!response.ok) return null;
+    const payload = await response.json();
+    return typeof payload.title === "string" && payload.title.trim() ? payload.title.trim() : null;
+  } catch {
+    return null;
+  }
+}
+async function hydrateWinampPlaylistTitles() {
+  const updates = await Promise.all(
+    WINAMP_PLAYLIST.map(async (track, index) => {
+      const fetchedTitle = await fetchYouTubeTitle(track.id);
+      return { index, fetchedTitle };
+    })
+  );
+
+  let hasChanges = false;
+  updates.forEach(({ index, fetchedTitle }) => {
+    if (!fetchedTitle || fetchedTitle === WINAMP_PLAYLIST[index].title) return;
+    WINAMP_PLAYLIST[index].title = fetchedTitle;
+    hasChanges = true;
+  });
+
+  if (!hasChanges) return;
+  setupWinampPlaylistUi();
+  if (winampStatus && WINAMP_PLAYLIST[winampActiveIndex]) {
+    winampStatus.textContent = `Now tuned to: ${WINAMP_PLAYLIST[winampActiveIndex].title}`;
+  }
+}
+
 function updateWinampUi() {
   if (winampToggle) winampToggle.textContent = winampPlaying ? "⏸ Pause" : "▶ Play";
   if (winampMuteToggle) {
@@ -699,11 +732,14 @@ function setupWinampPlaylistUi() {
     `<button type="button" class="retro-btn winamp-channel-btn" data-winamp-index="${index}" role="option">CH ${String(index + 1).padStart(2, "0")} · ${track.title}</button>`
   ).join("\n");
 
-  winampChannelList.addEventListener("click", (event) => {
-    const channelButton = event.target.closest(".winamp-channel-btn");
-    if (!channelButton) return;
-    selectWinampChannel(Number(channelButton.dataset.winampIndex));
-  });
+  if (!winampPlaylistBound) {
+    winampChannelList.addEventListener("click", (event) => {
+      const channelButton = event.target.closest(".winamp-channel-btn");
+      if (!channelButton) return;
+      selectWinampChannel(Number(channelButton.dataset.winampIndex));
+    });
+    winampPlaylistBound = true;
+  }
   updateWinampUi();
 }
 function initWinampPlayer() {
@@ -755,6 +791,7 @@ function initWinampPlayer() {
 }
 function bindWinampControls() {
   setupWinampPlaylistUi();
+  hydrateWinampPlaylistTitles();
   if (winampPrev) {
     winampPrev.addEventListener("click", () => {
       const previous = (winampActiveIndex - 1 + WINAMP_PLAYLIST.length) % WINAMP_PLAYLIST.length;
