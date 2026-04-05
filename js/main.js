@@ -96,6 +96,7 @@ function runMenuAction(action) {
   if (action === "open-about") openWindow("about-window");
   if (action === "open-projects") openWindow("projects-window");
   if (action === "open-browser") openWindow("browser-window");
+  if (action === "open-news") openWindow("news-window");
   if (action === "open-resume") openWindow("resume-window");
   if (action === "open-timeline") openWindow("timeline-window");
   if (action === "open-contact") openWindow("contact-window");

@@ -216,6 +216,9 @@ export function openWindow(id) {
     if (id === "dashboard-window" && typeof window.initializeDashboard === "function") {
       window.initializeDashboard();
     }
+    if (id === "news-window" && typeof window.initializeNewsFeed === "function") {
+      window.initializeNewsFeed();
+    }
     if (id === "easter-error") RetroSounds.error();
   }
   bringToFront(win);
