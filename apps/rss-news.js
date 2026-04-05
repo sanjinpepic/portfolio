@@ -6,7 +6,7 @@
     },
     {
       name: "CNN",
-      url: "http://rss.cnn.com/rss/edition_world.rss"
+      url: "https://rss.cnn.com/rss/edition_world.rss"
     },
     {
       name: "The Guardian",
@@ -19,12 +19,15 @@
   ];
 
   const CACHE_MS = 4 * 60 * 1000;
-  const STALE_CACHE_MS = 30 * 60 * 1000;
+  const STALE_CACHE_MS = 6 * 60 * 60 * 1000;
   const MAX_ITEMS = 16;
-  const FEED_TIMEOUT_MS = 7000;
+  const FEED_TIMEOUT_MS = 12000;
+  const FEED_RETRIES = 2;
+  const RETRY_DELAY_MS = 500;
   const MAX_PER_FEED = 8;
   const FEED_PROXY_BUILDERS = [
     (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
     (url) => `https://r.jina.ai/http://${url.replace(/^https?:\/\//i, "")}`
   ];
   let initialized = false;
@@ -123,6 +126,55 @@
     }).filter((item) => item.link);
   }
 
+  function getItemTimestamp(item) {
+    const timestamp = new Date(item.pubDate).getTime();
+    return Number.isNaN(timestamp) ? 0 : timestamp;
+  }
+
+  function mixFeedItems(groupedFeeds, maxItems) {
+    const buckets = groupedFeeds
+      .map((items) => items
+        .slice()
+        .sort((a, b) => getItemTimestamp(b) - getItemTimestamp(a)))
+      .filter((items) => items.length)
+      .map((items) => ({
+        items,
+        index: 0
+      }));
+    const results = [];
+    const seenLinks = new Set();
+
+    while (results.length < maxItems) {
+      const available = buckets
+        .filter((bucket) => bucket.index < bucket.items.length)
+        .sort((a, b) => {
+          const nextA = getItemTimestamp(a.items[a.index]);
+          const nextB = getItemTimestamp(b.items[b.index]);
+          return nextB - nextA;
+        });
+
+      if (!available.length) break;
+
+      let addedInRound = false;
+      for (const bucket of available) {
+        if (results.length >= maxItems) break;
+
+        const item = bucket.items[bucket.index];
+        bucket.index += 1;
+
+        if (seenLinks.has(item.link)) continue;
+
+        seenLinks.add(item.link);
+        results.push(item);
+        addedInRound = true;
+      }
+
+      if (!addedInRound) break;
+    }
+
+    return results;
+  }
+
   async function fetchWithTimeout(url, timeoutMs) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -138,13 +190,23 @@
     }
   }
 
-  async function fetchFeed(feed) {
-    for (const buildProxyUrl of FEED_PROXY_BUILDERS) {
-      const xmlText = await fetchWithTimeout(buildProxyUrl(feed.url), FEED_TIMEOUT_MS);
-      if (!xmlText) continue;
+  function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
 
-      const parsedItems = parseItemsFromXml(feed, xmlText);
-      if (parsedItems.length) return parsedItems;
+  async function fetchFeed(feed) {
+    for (let attempt = 0; attempt < FEED_RETRIES; attempt += 1) {
+      for (const buildProxyUrl of FEED_PROXY_BUILDERS) {
+        const xmlText = await fetchWithTimeout(buildProxyUrl(feed.url), FEED_TIMEOUT_MS);
+        if (!xmlText) continue;
+
+        const parsedItems = parseItemsFromXml(feed, xmlText);
+        if (parsedItems.length) return parsedItems;
+      }
+
+      if (attempt < FEED_RETRIES - 1) {
+        await sleep(RETRY_DELAY_MS);
+      }
     }
 
     return [];
@@ -166,16 +228,10 @@
 
     setMetaText("Refreshing headlines from all sources…");
     const grouped = await Promise.all(FEEDS.map((feed) => fetchFeed(feed)));
-    const merged = grouped.flat();
-
-    merged.sort((a, b) => {
-      const timeA = new Date(a.pubDate).getTime() || 0;
-      const timeB = new Date(b.pubDate).getTime() || 0;
-      return timeB - timeA;
-    });
+    const merged = mixFeedItems(grouped, MAX_ITEMS);
 
     if (merged.length) {
-      cachedItems = merged.slice(0, MAX_ITEMS);
+      cachedItems = merged;
       cachedAt = Date.now();
       renderItems(cachedItems);
       setMetaText(`Updated ${new Date(cachedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · ${cachedItems.length} headlines`);
