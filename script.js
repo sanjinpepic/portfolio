@@ -1469,10 +1469,5 @@ async function initDesktop() {
   renderProjects();
   await loadResumeTextFile();
   openWindow("about-window");
-  // Easter egg: fake error dialog after 45s
-  setTimeout(() => {
-    const errWin = document.getElementById("easter-error");
-    if (errWin && !errWin.classList.contains("open")) openWindow("easter-error");
-  }, 45000);
 }
 initDesktop();
