@@ -1,0 +1,305 @@
+// js/main.js — Entry point: menu system, event binding, and desktop init
+
+import {
+  desktop, windows, openers, closers, menuButtons, menuActions,
+  menuDropdowns, mobileCloseBtn, mobileLayoutQuery, S,
+  syncDynamicElements, BROWSER_HOME_URL
+} from "./state.js";
+import { RetroSounds } from "./sounds.js";
+import {
+  openWindow, closeWindow, closeFocusedWindow, closeAllWindows,
+  openAllWindows, cascadeWindows, saveDesktopState, updateClock,
+  updateMobileNav, bindIconFallbackHandlers, initDragHandlers,
+  loadResumeTextFile
+} from "./window-manager.js";
+import {
+  renderProjects, bindDynamicContentEvents, ALLOWED_URLS,
+  ALLOWED_NORMALIZED_URLS, normalizeBrowserUrl
+} from "./browser.js";
+import { bindWinampControls } from "./winamp.js";
+import { bindTerminal } from "./terminal.js";
+import {
+  runBootSequence, bindScreensaver, triggerBsod,
+  bindContextMenu, loadStickyNotes, createStickyNote
+} from "./extras.js";
+
+// ── Menu system ──────────────────────────────────────────────
+
+function getMenuItems(menu) {
+  return [...menu.querySelectorAll('[role="menuitem"]')];
+}
+
+function focusWindow(win) {
+  if (!win?.classList.contains("open")) return;
+  const focusTarget =
+    win.querySelector(".title-bar .close-btn") ||
+    win.querySelector(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    );
+  focusTarget?.focus();
+}
+
+function focusTopMenuButton(index) {
+  const normalized = (index + menuButtons.length) % menuButtons.length;
+  menuButtons[normalized]?.focus();
+}
+
+function openMenu(button, { focusFirstItem = false } = {}) {
+  if (!button) return;
+  const targetMenu = document.getElementById(button.dataset.menu);
+  if (!targetMenu) return;
+  menuDropdowns.forEach((dropdown) => dropdown.classList.remove("open"));
+  menuButtons.forEach((menuButton) => menuButton.setAttribute("aria-expanded", "false"));
+  targetMenu.classList.add("open");
+  button.setAttribute("aria-expanded", "true");
+  S.activeMenuButton = button;
+  if (focusFirstItem) getMenuItems(targetMenu)[0]?.focus();
+}
+
+function closeMenus({ returnFocus = false } = {}) {
+  menuDropdowns.forEach((dropdown) => dropdown.classList.remove("open"));
+  menuButtons.forEach((button) => button.setAttribute("aria-expanded", "false"));
+  if (returnFocus && S.activeMenuButton) {
+    S.activeMenuButton.focus();
+  }
+  S.activeMenuButton = null;
+}
+
+function moveMenuItemFocus(currentButton, direction) {
+  const menu = currentButton.closest(".menu-dropdown");
+  if (!menu) return;
+  const items = getMenuItems(menu);
+  const currentIndex = items.indexOf(currentButton);
+  if (currentIndex < 0) return;
+  const nextIndex = (currentIndex + direction + items.length) % items.length;
+  items[nextIndex]?.focus();
+}
+
+function switchMenuFromDropdown(currentButton, direction) {
+  const currentMenu = currentButton.closest(".menu-dropdown");
+  if (!currentMenu) return;
+  const currentTopButton = menuButtons.find((button) => button.dataset.menu === currentMenu.id);
+  const topIndex = menuButtons.indexOf(currentTopButton);
+  if (topIndex < 0) return;
+  const nextTopIndex = (topIndex + direction + menuButtons.length) % menuButtons.length;
+  const nextTopButton = menuButtons[nextTopIndex];
+  openMenu(nextTopButton, { focusFirstItem: true });
+}
+
+function runMenuAction(action) {
+  RetroSounds.click();
+  if (action === "open-about") openWindow("about-window");
+  if (action === "open-projects") openWindow("projects-window");
+  if (action === "open-browser") openWindow("browser-window");
+  if (action === "open-resume") openWindow("resume-window");
+  if (action === "open-contact") openWindow("contact-window");
+  if (action === "open-winamp") openWindow("winamp-window");
+  if (action === "open-terminal") openWindow("terminal-window");
+  if (action === "close-focused") closeFocusedWindow();
+  if (action === "close-all") closeAllWindows();
+  if (action === "open-all") openAllWindows();
+  if (action === "cascade") cascadeWindows();
+  if (action === "toggle-theme") {
+    document.body.classList.toggle("dark-desktop");
+    saveDesktopState();
+  }
+  if (action === "toggle-sounds") RetroSounds.toggle();
+  if (action === "new-sticky") createStickyNote();
+  closeMenus();
+}
+
+// ── Event binding ────────────────────────────────────────────
+
+openers.forEach((icon) => {
+  icon.addEventListener("click", () => {
+    openWindow(icon.dataset.open);
+  });
+  icon.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      openWindow(icon.dataset.open);
+    }
+  });
+});
+
+closers.forEach((btn) => {
+  btn.addEventListener("click", () => closeWindow(btn.dataset.close));
+});
+
+if (mobileCloseBtn) {
+  mobileCloseBtn.addEventListener("click", () => {
+    if (S.activeWindowId) closeWindow(S.activeWindowId);
+  });
+}
+
+desktop.addEventListener("dblclick", (event) => {
+  if (event.target === desktop) {
+    closeAllWindows();
+  }
+});
+
+menuButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    const targetMenu = document.getElementById(button.dataset.menu);
+    const alreadyOpen = targetMenu?.classList.contains("open");
+    if (alreadyOpen) {
+      closeMenus({ returnFocus: true });
+      return;
+    }
+    openMenu(button, { focusFirstItem: false });
+  });
+  button.addEventListener("keydown", (event) => {
+    const index = menuButtons.indexOf(button);
+    if (event.key === "ArrowRight") {
+      event.preventDefault();
+      closeMenus();
+      focusTopMenuButton(index + 1);
+    }
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      closeMenus();
+      focusTopMenuButton(index - 1);
+    }
+    if (event.key === "ArrowDown" || event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      openMenu(button, { focusFirstItem: true });
+    }
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeMenus({ returnFocus: true });
+    }
+  });
+});
+
+menuActions.forEach((actionButton) => {
+  actionButton.addEventListener("click", () => {
+    runMenuAction(actionButton.dataset.action);
+  });
+  actionButton.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      moveMenuItemFocus(actionButton, 1);
+    }
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      moveMenuItemFocus(actionButton, -1);
+    }
+    if (event.key === "Home") {
+      event.preventDefault();
+      const menu = actionButton.closest(".menu-dropdown");
+      getMenuItems(menu)[0]?.focus();
+    }
+    if (event.key === "End") {
+      event.preventDefault();
+      const menu = actionButton.closest(".menu-dropdown");
+      const items = getMenuItems(menu);
+      items[items.length - 1]?.focus();
+    }
+    if (event.key === "ArrowRight") {
+      event.preventDefault();
+      switchMenuFromDropdown(actionButton, 1);
+    }
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      switchMenuFromDropdown(actionButton, -1);
+    }
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      runMenuAction(actionButton.dataset.action);
+    }
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeMenus({ returnFocus: true });
+    }
+    if (event.key === "Tab") {
+      closeMenus();
+    }
+  });
+});
+
+desktop?.addEventListener("click", (event) => {
+  const actionTrigger = event.target.closest("[data-action]");
+  if (!actionTrigger || menuActions.includes(actionTrigger)) return;
+  runMenuAction(actionTrigger.dataset.action);
+});
+
+document.addEventListener("click", (event) => {
+  if (!event.target.closest(".menu-group")) closeMenus();
+});
+
+document.addEventListener("keydown", (event) => {
+  // BSOD: Ctrl+Alt+B — skip when typing in inputs
+  if (event.ctrlKey && event.altKey && event.key.toLowerCase() === "b") {
+    const tag = document.activeElement?.tagName;
+    if (tag !== "INPUT" && tag !== "TEXTAREA") triggerBsod();
+  }
+  if (event.key.toLowerCase() === "x") {
+    const tag = document.activeElement?.tagName;
+    if (tag !== "INPUT" && tag !== "TEXTAREA") closeFocusedWindow();
+  }
+  if (event.key === "Escape") {
+    if (S.activeMenuButton) {
+      closeMenus({ returnFocus: true });
+      return;
+    }
+    closeMenus();
+  }
+});
+
+mobileLayoutQuery.addEventListener("change", () => {
+  if (!mobileLayoutQuery.matches) {
+    updateMobileNav(null);
+    return;
+  }
+  const firstOpen = windows.find((win) => win.classList.contains("open"));
+  windows.forEach((win) => {
+    if (firstOpen && win.id !== firstOpen.id) win.classList.remove("open");
+  });
+  if (!firstOpen) openWindow("about-window");
+  else updateMobileNav(firstOpen);
+});
+
+// ── Clock ────────────────────────────────────────────────────
+
+setInterval(updateClock, 1000 * 15);
+updateClock();
+
+// ── GitHub repo integration (called from apps/github-repos.js) ─
+
+window.addGithubRepos = function (repos) {
+  const existingIds = new Set(S.portfolioApps.map((a) => a.id));
+  const newRepos = repos.filter((r) => !existingIds.has(r.id));
+  if (newRepos.length === 0) return;
+  S.portfolioApps = [...S.portfolioApps, ...newRepos].sort(
+    (a, b) => (a.order || 0) - (b.order || 0)
+  );
+  newRepos.forEach((r) => {
+    if (!r.url) return;
+    ALLOWED_URLS.add(r.url);
+    const normalizedUrl = normalizeBrowserUrl(r.url);
+    if (normalizedUrl && normalizedUrl !== BROWSER_HOME_URL) {
+      ALLOWED_NORMALIZED_URLS.add(normalizedUrl);
+    }
+  });
+  renderProjects();
+};
+
+// ── Desktop init ─────────────────────────────────────────────
+
+async function initDesktop() {
+  runBootSequence();
+  syncDynamicElements();
+  bindIconFallbackHandlers();
+  initDragHandlers();
+  bindDynamicContentEvents();
+  bindWinampControls();
+  bindTerminal();
+  bindContextMenu(runMenuAction);
+  bindScreensaver();
+  loadStickyNotes();
+  RetroSounds.syncLabel();
+  renderProjects();
+  await loadResumeTextFile();
+  openWindow("about-window");
+}
+
+initDesktop();

@@ -292,8 +292,6 @@
     <input id="winamp-volume" type="range" min="0" max="100" value="0" step="1" />
   </div>
 
-  <label class="sr-only" for="winamp-channel-filter">Filter channels</label>
-  <input id="winamp-channel-filter" class="winamp-channel-filter" type="search" placeholder="Filter channels by artist or title…" autocomplete="off" />
   <div id="winamp-channel-list" class="winamp-channel-list" role="listbox" aria-label="Video channels"></div>
   <p id="winamp-status" class="resume-note">Loading curated channel lineup…</p>
   <p class="resume-note">Source: YouTube embed (no-cookie). Ads cannot be fully controlled by this site.</p>
@@ -364,7 +362,7 @@
     <script src="apps/metalcore.js"></script>
     <script src="apps/pixel-runner.js"></script>
     <script src="https://www.youtube.com/iframe_api"></script>
-    <script src="script.js"></script>
+    <script type="module" src="js/main.js"></script>
     <script src="apps/github-repos.js"></script>
   </body>
 </html>
