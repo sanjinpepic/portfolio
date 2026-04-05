@@ -326,6 +326,7 @@ body {
   .desktop-icon:nth-child(3) { --x: 0.3rem; --y: 10.3rem; }
   .desktop-icon:nth-child(4) { --x: 0.3rem; --y: 15.2rem; }
   .desktop-icon:nth-child(5) { --x: 0.3rem; --y: 20.1rem; }
+  .desktop-icon:nth-child(6) { --x: 0.3rem; --y: 25rem; }
 
   .icon {
     width: 2.8rem;
@@ -1061,13 +1062,28 @@ a {
   overflow: hidden;
 }
 
+.winamp-screen-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.02) 0 2px,
+    rgba(0, 0, 0, 0.08) 2px 4px
+  );
+  mix-blend-mode: soft-light;
+}
+
 .winamp-player,
 .winamp-player iframe {
   width: 100%;
   height: 100%;
   border: 0;
   image-rendering: pixelated;
-  filter: contrast(1.1) saturate(0.9) hue-rotate(-4deg);
+  filter: contrast(1.14) saturate(0.82) hue-rotate(-6deg) blur(0.45px);
+  transform: scale(1.012);
+  transform-origin: center;
 }
 
 .winamp-crt-overlay {
@@ -1077,7 +1093,7 @@ a {
   background:
     radial-gradient(circle at 50% -35%, rgba(255, 255, 255, 0.2), transparent 55%),
     repeating-linear-gradient(180deg, rgba(0, 0, 0, 0) 0 2px, rgba(0, 0, 0, 0.2) 2px 4px),
-    repeating-linear-gradient(90deg, rgba(255, 0, 0, 0.04) 0 1px, rgba(0, 255, 255, 0.04) 1px 2px, rgba(0, 0, 255, 0.04) 2px 3px);
+    repeating-linear-gradient(90deg, rgba(255, 0, 0, 0.045) 0 1px, rgba(0, 255, 255, 0.045) 1px 2px, rgba(0, 0, 255, 0.045) 2px 3px);
   mix-blend-mode: screen;
   animation: crt-flicker 120ms steps(2, end) infinite;
 }
@@ -1113,14 +1129,18 @@ a {
 }
 
 .winamp-channel-list {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.35rem;
-  overflow: auto;
-  padding-bottom: 0.2rem;
+  overflow: hidden;
 }
 
 .winamp-channel-btn {
+  width: 100%;
+  text-align: left;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .winamp-channel-btn.active {

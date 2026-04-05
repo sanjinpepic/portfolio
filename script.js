@@ -41,6 +41,9 @@ let winampChannelList = null;
 let winampStatus = null;
 let winampActiveIndex = 0;
 let winampPlaying = false;
+let winampMuted = true;
+let winampLastVolume = 35;
+let winampFlutterTimer = null;
 let winampPlaylistBound = false;
 let activeMenuButton = null;
 function escapeHtml(value) {
@@ -692,8 +695,7 @@ async function hydrateWinampPlaylistTitles() {
 function updateWinampUi() {
   if (winampToggle) winampToggle.textContent = winampPlaying ? "⏸ Pause" : "▶ Play";
   if (winampMuteToggle) {
-    const muted = winampPlayer?.isMuted?.() ?? true;
-    winampMuteToggle.textContent = muted ? "🔇 Muted" : "🔊 Sound On";
+    winampMuteToggle.textContent = winampMuted ? "🔇 Muted" : "🔊 Sound On";
   }
   if (winampChannelList) {
     [...winampChannelList.querySelectorAll(".winamp-channel-btn")].forEach((button, index) => {
@@ -701,6 +703,29 @@ function updateWinampUi() {
       button.classList.toggle("active", index === winampActiveIndex);
     });
   }
+}
+function syncWinampAudioState() {
+  if (!winampPlayer) return;
+  const currentVolume = Number(winampPlayer.getVolume?.());
+  if (Number.isFinite(currentVolume)) {
+    if (winampVolume) winampVolume.value = String(currentVolume);
+    if (currentVolume > 0) winampLastVolume = currentVolume;
+  }
+  const playerMuted = winampPlayer.isMuted?.() ?? winampMuted;
+  winampMuted = Boolean(playerMuted) || (Number.isFinite(currentVolume) && currentVolume === 0);
+}
+function restartWinampFlutter() {
+  if (winampFlutterTimer) {
+    window.clearInterval(winampFlutterTimer);
+    winampFlutterTimer = null;
+  }
+  if (!winampPlayer || winampMuted || !winampPlaying || winampLastVolume <= 0) return;
+  winampFlutterTimer = window.setInterval(() => {
+    if (!winampPlayer || winampMuted || !winampPlaying) return;
+    const flutterAmount = Math.round((Math.random() - 0.5) * 4);
+    const adjustedVolume = clamp(winampLastVolume + flutterAmount, 1, 100);
+    winampPlayer.setVolume(adjustedVolume);
+  }, 900);
 }
 function selectWinampChannel(index, { autoPlay = true } = {}) {
   if (!winampPlayer || !WINAMP_PLAYLIST[index]) return;
@@ -750,12 +775,16 @@ function initWinampPlayer() {
         event.target.mute();
         event.target.setVolume(0);
         if (winampVolume) winampVolume.value = "0";
+        winampMuted = true;
         if (winampStatus) winampStatus.textContent = `Now tuned to: ${WINAMP_PLAYLIST[0].title}`;
         updateWinampUi();
+        restartWinampFlutter();
         event.target.playVideo();
       },
       onStateChange: (event) => {
         winampPlaying = event.data === window.YT.PlayerState.PLAYING;
+        syncWinampAudioState();
+        restartWinampFlutter();
         if (event.data === window.YT.PlayerState.ENDED) {
           const next = (winampActiveIndex + 1) % WINAMP_PLAYLIST.length;
           selectWinampChannel(next);
@@ -801,10 +830,18 @@ function bindWinampControls() {
   if (winampMuteToggle) {
     winampMuteToggle.addEventListener("click", () => {
       if (!winampPlayer) return;
-      if (winampPlayer.isMuted()) {
+      syncWinampAudioState();
+      if (winampMuted) {
+        const restoreVolume = Math.max(1, winampLastVolume);
+        winampPlayer.setVolume(restoreVolume);
+        if (winampVolume) winampVolume.value = String(restoreVolume);
         winampPlayer.unMute();
+        winampMuted = false;
+        restartWinampFlutter();
       } else {
         winampPlayer.mute();
+        winampMuted = true;
+        restartWinampFlutter();
       }
       updateWinampUi();
     });
@@ -814,8 +851,15 @@ function bindWinampControls() {
       if (!winampPlayer) return;
       const volume = Number(winampVolume.value);
       winampPlayer.setVolume(volume);
-      if (volume > 0) winampPlayer.unMute();
-      if (volume === 0) winampPlayer.mute();
+      if (volume > 0) {
+        winampLastVolume = volume;
+        winampPlayer.unMute();
+        winampMuted = false;
+      } else {
+        winampPlayer.mute();
+        winampMuted = true;
+      }
+      restartWinampFlutter();
       updateWinampUi();
     });
   }
