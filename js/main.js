@@ -102,6 +102,7 @@ function runMenuAction(action) {
   if (action === "open-contact") openWindow("contact-window");
   if (action === "open-dashboard") openWindow("dashboard-window");
   if (action === "open-winamp") openWindow("winamp-window");
+  if (action === "open-doom") openWindow("doom-window");
   if (action === "open-terminal") openWindow("terminal-window");
   if (action === "close-focused") closeFocusedWindow();
   if (action === "close-all") closeAllWindows();
