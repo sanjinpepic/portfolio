@@ -2,37 +2,89 @@
   let dashboardBootstrapped = false;
   let cachedFact = null;
   let cachedFactAt = 0;
-  const FACT_CACHE_MS = 60 * 1000;
+  let factProviderIndex = Math.floor(Math.random() * 5);
+  let pizzaRefreshTimer = null;
+  const FACT_CACHE_MS = 90 * 1000;
 
   function normalizeFact(text) {
     if (typeof text !== "string") return "";
     return text.replace(/\s+/g, " ").trim();
   }
 
-  async function fetchFact() {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3200);
+  async function fetchJsonWithFallback(urls, timeoutMs = 1800) {
+    for (const url of urls) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
-    try {
-      const response = await fetch("https://uselessfacts.jsph.pl/api/v2/facts/random?language=en", {
-        cache: "no-store",
-        signal: controller.signal
-      });
-      if (!response.ok) return null;
-
-      const data = await response.json();
-      const text = normalizeFact(data?.text);
-      if (!text) return null;
-
-      return {
-        source: "Internet Fact",
-        text
-      };
-    } catch {
-      return null;
-    } finally {
-      clearTimeout(timeout);
+      try {
+        const response = await fetch(url, { cache: "no-store", signal: controller.signal });
+        if (!response.ok) continue;
+        return await response.json();
+      } catch {
+        // try next url
+      } finally {
+        clearTimeout(timeout);
+      }
     }
+
+    return null;
+  }
+
+  const FACT_PROVIDERS = [
+    {
+      source: "Useless Fact",
+      load: async () => {
+        const data = await fetchJsonWithFallback(["https://uselessfacts.jsph.pl/api/v2/facts/random?language=en"]);
+        return normalizeFact(data?.text);
+      }
+    },
+    {
+      source: "Numbers API",
+      load: async () => {
+        const data = await fetchJsonWithFallback(["https://numbersapi.com/random/year?json"]);
+        return normalizeFact(data?.text);
+      }
+    },
+    {
+      source: "Cat Fact",
+      load: async () => {
+        const data = await fetchJsonWithFallback(["https://catfact.ninja/fact"]);
+        return normalizeFact(data?.fact);
+      }
+    },
+    {
+      source: "ISS Now",
+      load: async () => {
+        const data = await fetchJsonWithFallback(["https://api.wheretheiss.at/v1/satellites/25544"]);
+        if (typeof data?.latitude !== "number" || typeof data?.longitude !== "number") return "";
+        return `The ISS is currently near latitude ${data.latitude.toFixed(2)}, longitude ${data.longitude.toFixed(2)}.`;
+      }
+    },
+    {
+      source: "Astronaut Roll Call",
+      load: async () => {
+        const data = await fetchJsonWithFallback(["https://api.allorigins.win/raw?url=http://api.open-notify.org/astros.json"]);
+
+        if (!data?.number || !Array.isArray(data.people) || !data.people.length) return "";
+        const names = data.people.slice(0, 4).map((person) => person.name).join(", ");
+        const plusMore = data.people.length > 4 ? " and others" : "";
+        return `${data.number} humans are currently in space, including ${names}${plusMore}.`;
+      }
+    }
+  ];
+
+  async function fetchFactFromMixedApis() {
+    for (let attempt = 0; attempt < FACT_PROVIDERS.length; attempt += 1) {
+      const provider = FACT_PROVIDERS[(factProviderIndex + attempt) % FACT_PROVIDERS.length];
+      const text = normalizeFact(await provider.load());
+      if (text) {
+        factProviderIndex = (factProviderIndex + attempt + 1) % FACT_PROVIDERS.length;
+        return { source: provider.source, text };
+      }
+    }
+
+    factProviderIndex = (factProviderIndex + 1) % FACT_PROVIDERS.length;
+    return null;
   }
 
   function renderFactList(factListNode, fact) {
@@ -62,7 +114,7 @@
       renderFactList(factListNode, cachedFact);
     }
 
-    const freshFact = await fetchFact();
+    const freshFact = await fetchFactFromMixedApis();
     if (freshFact) {
       cachedFact = freshFact;
       cachedFactAt = Date.now();
@@ -77,15 +129,18 @@
     const monthlyValues = [];
     const baseMonthly = 5000000000 / 12;
     const monthlyTrend = 0.012;
+    const monthProgress = now.getUTCDate() / new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0)).getUTCDate();
 
     for (let index = 0; index < 12; index += 1) {
       const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + index, 1));
-      monthLabels.push(date.toLocaleDateString("en-US", { month: "short" }));
+      const monthLabel = date.toLocaleDateString("en-US", { month: "short" });
+      monthLabels.push(index === 0 ? `${monthLabel} (now)` : monthLabel);
 
       const trendValue = baseMonthly * Math.pow(1 + monthlyTrend, index);
-      const seasonalPulse = 1 + Math.sin(index * 1.15) * 0.04;
-      const shortWave = 1 + Math.cos(index * 2.25) * 0.015;
-      monthlyValues.push(trendValue * seasonalPulse * shortWave);
+      const seasonalPulse = 1 + Math.sin((index + monthProgress) * 1.15) * 0.04;
+      const shortWave = 1 + Math.cos((index + monthProgress) * 2.25) * 0.015;
+      const currentMonthLiveAdjustment = index === 0 ? 1 + (monthProgress - 0.5) * 0.03 : 1;
+      monthlyValues.push(trendValue * seasonalPulse * shortWave * currentMonthLiveAdjustment);
     }
 
     return { monthLabels, monthlyValues };
@@ -154,15 +209,15 @@
       const normalized = (value - minValue) / valueRange;
       const y = paddingTop + plotHeight - normalized * plotHeight;
 
-      ctx.fillStyle = "#102f80";
+      ctx.fillStyle = index === 0 ? "#c65a1f" : "#102f80";
       ctx.beginPath();
-      ctx.arc(x, y, 2.8, 0, Math.PI * 2);
+      ctx.arc(x, y, index === 0 ? 3.4 : 2.8, 0, Math.PI * 2);
       ctx.fill();
 
-      if (index % 2 === 0 || index === monthlyValues.length - 1) {
+      if (index % 2 === 0 || index === monthlyValues.length - 1 || index === 0) {
         ctx.fillStyle = "#233a75";
         ctx.font = "14px VT323";
-        ctx.fillText(monthLabels[index], x - 10, height - 8);
+        ctx.fillText(monthLabels[index], x - 18, height - 8);
       }
     });
   }
@@ -183,6 +238,7 @@
     const pizzaForecastCanvas = dashboardWindow.querySelector("#pizza-forecast-chart");
     if (pizzaForecastCanvas) {
       drawPizzaForecast(pizzaForecastCanvas);
+      pizzaRefreshTimer = window.setInterval(() => drawPizzaForecast(pizzaForecastCanvas), 60 * 60 * 1000);
     }
   }
 
@@ -191,4 +247,8 @@
     dashboardBootstrapped = true;
     bootDashboard();
   };
+
+  window.addEventListener("beforeunload", () => {
+    if (pizzaRefreshTimer) window.clearInterval(pizzaRefreshTimer);
+  });
 })();
