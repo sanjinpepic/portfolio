@@ -10,6 +10,14 @@ const clock = document.getElementById("clock");
 const BROWSER_HOME_URL = "about:home";
 const DESKTOP_STATE_KEY = "portfolio.desktop.state.v1";
 const mobileLayoutQuery = window.matchMedia("(max-width: 900px)");
+const WINAMP_PLAYLIST = [
+  { id: "K0HSD_i2DvA", title: "Daft Punk - Around The World (Official Music Video Remastered)" },
+  { id: "0w-jjbE3Q9o", title: "Channel 02" },
+  { id: "NqEGc7g5-J0", title: "Channel 03" },
+  { id: "bueFTrwHFEs", title: "Channel 04" },
+  { id: "Eo-KmOd3i7s", title: "Channel 05" },
+  { id: "9Ht5RZpzPqw", title: "Channel 06" }
+];
 let projectList = null;
 let browserFrame = null;
 let browserAddress = null;
@@ -23,6 +31,16 @@ let browserGo = null;
 let browserThrobber = null;
 let browserStatus = null;
 let resumeText = null;
+let winampPlayer = null;
+let winampToggle = null;
+let winampPrev = null;
+let winampNext = null;
+let winampMuteToggle = null;
+let winampVolume = null;
+let winampChannelList = null;
+let winampStatus = null;
+let winampActiveIndex = 0;
+let winampPlaying = false;
 let activeMenuButton = null;
 function escapeHtml(value) {
   return value
@@ -136,6 +154,13 @@ function syncDynamicElements() {
   browserThrobber = document.getElementById("browser-throbber");
   browserStatus = document.getElementById("browser-status");
   resumeText = document.getElementById("resume-text");
+  winampToggle = document.getElementById("winamp-toggle");
+  winampPrev = document.getElementById("winamp-prev");
+  winampNext = document.getElementById("winamp-next");
+  winampMuteToggle = document.getElementById("winamp-mute-toggle");
+  winampVolume = document.getElementById("winamp-volume");
+  winampChannelList = document.getElementById("winamp-channel-list");
+  winampStatus = document.getElementById("winamp-status");
 }
 let topZ = 10;
 let activeWindowId = null;
@@ -647,6 +672,139 @@ function navigateBrowserTo(url) {
   if (browserTitle) browserTitle.textContent = "Netscape Navigator";
   if (browserThrobber) browserThrobber.classList.add("loading");
 }
+function updateWinampUi() {
+  if (winampToggle) winampToggle.textContent = winampPlaying ? "⏸ Pause" : "▶ Play";
+  if (winampMuteToggle) {
+    const muted = winampPlayer?.isMuted?.() ?? true;
+    winampMuteToggle.textContent = muted ? "🔇 Muted" : "🔊 Sound On";
+  }
+  if (winampChannelList) {
+    [...winampChannelList.querySelectorAll(".winamp-channel-btn")].forEach((button, index) => {
+      button.setAttribute("aria-selected", index === winampActiveIndex ? "true" : "false");
+      button.classList.toggle("active", index === winampActiveIndex);
+    });
+  }
+}
+function selectWinampChannel(index, { autoPlay = true } = {}) {
+  if (!winampPlayer || !WINAMP_PLAYLIST[index]) return;
+  winampActiveIndex = index;
+  winampPlayer.loadVideoById(WINAMP_PLAYLIST[index].id);
+  if (autoPlay) winampPlayer.playVideo();
+  if (winampStatus) winampStatus.textContent = `Now tuned to: ${WINAMP_PLAYLIST[index].title}`;
+  updateWinampUi();
+}
+function setupWinampPlaylistUi() {
+  if (!winampChannelList) return;
+  winampChannelList.innerHTML = WINAMP_PLAYLIST.map((track, index) =>
+    `<button type="button" class="retro-btn winamp-channel-btn" data-winamp-index="${index}" role="option">CH ${String(index + 1).padStart(2, "0")} · ${track.title}</button>`
+  ).join("\n");
+
+  winampChannelList.addEventListener("click", (event) => {
+    const channelButton = event.target.closest(".winamp-channel-btn");
+    if (!channelButton) return;
+    selectWinampChannel(Number(channelButton.dataset.winampIndex));
+  });
+  updateWinampUi();
+}
+function initWinampPlayer() {
+  if (winampPlayer || !window.YT || !window.YT.Player || !document.getElementById("winamp-youtube-player")) return;
+  winampPlayer = new window.YT.Player("winamp-youtube-player", {
+    width: "100%",
+    height: "100%",
+    videoId: WINAMP_PLAYLIST[0].id,
+    host: "https://www.youtube-nocookie.com",
+    playerVars: {
+      autoplay: 1,
+      controls: 0,
+      disablekb: 1,
+      fs: 0,
+      iv_load_policy: 3,
+      modestbranding: 1,
+      playsinline: 1,
+      rel: 0,
+      origin: window.location.origin,
+    },
+    events: {
+      onReady: (event) => {
+        event.target.setPlaybackQuality("small");
+        event.target.mute();
+        event.target.setVolume(0);
+        if (winampVolume) winampVolume.value = "0";
+        if (winampStatus) winampStatus.textContent = `Now tuned to: ${WINAMP_PLAYLIST[0].title}`;
+        updateWinampUi();
+        event.target.playVideo();
+      },
+      onStateChange: (event) => {
+        winampPlaying = event.data === window.YT.PlayerState.PLAYING;
+        if (event.data === window.YT.PlayerState.ENDED) {
+          const next = (winampActiveIndex + 1) % WINAMP_PLAYLIST.length;
+          selectWinampChannel(next);
+          return;
+        }
+        updateWinampUi();
+      },
+      onError: () => {
+        if (winampStatus) {
+          winampStatus.textContent = "This channel is unavailable in embed mode. Skipping to next.";
+        }
+        const next = (winampActiveIndex + 1) % WINAMP_PLAYLIST.length;
+        setTimeout(() => selectWinampChannel(next), 800);
+      }
+    }
+  });
+}
+function bindWinampControls() {
+  setupWinampPlaylistUi();
+  if (winampPrev) {
+    winampPrev.addEventListener("click", () => {
+      const previous = (winampActiveIndex - 1 + WINAMP_PLAYLIST.length) % WINAMP_PLAYLIST.length;
+      selectWinampChannel(previous);
+    });
+  }
+  if (winampNext) {
+    winampNext.addEventListener("click", () => {
+      const next = (winampActiveIndex + 1) % WINAMP_PLAYLIST.length;
+      selectWinampChannel(next);
+    });
+  }
+  if (winampToggle) {
+    winampToggle.addEventListener("click", () => {
+      if (!winampPlayer) return;
+      if (winampPlaying) {
+        winampPlayer.pauseVideo();
+      } else {
+        winampPlayer.playVideo();
+      }
+    });
+  }
+  if (winampMuteToggle) {
+    winampMuteToggle.addEventListener("click", () => {
+      if (!winampPlayer) return;
+      if (winampPlayer.isMuted()) {
+        winampPlayer.unMute();
+      } else {
+        winampPlayer.mute();
+      }
+      updateWinampUi();
+    });
+  }
+  if (winampVolume) {
+    winampVolume.addEventListener("input", () => {
+      if (!winampPlayer) return;
+      const volume = Number(winampVolume.value);
+      winampPlayer.setVolume(volume);
+      if (volume > 0) winampPlayer.unMute();
+      if (volume === 0) winampPlayer.mute();
+      updateWinampUi();
+    });
+  }
+  if (window.YT && window.YT.Player) {
+    initWinampPlayer();
+  } else {
+    window.onYouTubeIframeAPIReady = initWinampPlayer;
+  }
+}
+
 function bindIconFallbackHandlers() {
   const icons = [...document.querySelectorAll(".icon-image")];
   icons.forEach((icon) => {
@@ -907,6 +1065,7 @@ function runMenuAction(action) {
   if (action === "open-browser") openWindow("browser-window");
   if (action === "open-resume") openWindow("resume-window");
   if (action === "open-contact") openWindow("contact-window");
+  if (action === "open-winamp") openWindow("winamp-window");
   if (action === "close-focused") closeFocusedWindow();
   if (action === "close-all") closeAllWindows();
   if (action === "open-all") openAllWindows();
@@ -1096,6 +1255,7 @@ async function initDesktop() {
   syncDynamicElements();
   bindIconFallbackHandlers();
   bindDynamicContentEvents();
+  bindWinampControls();
   renderProjects();
   await loadResumeTextFile();
   openWindow("about-window");

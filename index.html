@@ -34,6 +34,7 @@
             <li role="none"><button role="menuitem" tabindex="-1" data-action="open-browser">Open Browser</button></li>
             <li role="none"><button role="menuitem" tabindex="-1" data-action="open-resume">Open Resume</button></li>
             <li role="none"><button role="menuitem" tabindex="-1" data-action="open-contact">Open Contact</button></li>
+            <li role="none"><button role="menuitem" tabindex="-1" data-action="open-winamp">Open Winamp TV</button></li>
             <li role="none"><button role="menuitem" tabindex="-1" data-action="close-focused">Close Focused (X)</button></li>
           </ul>
         </div>
@@ -108,6 +109,11 @@
         <span class="label">Contact</span>
       </button>
 
+      <button class="desktop-icon" data-open="winamp-window" style="--x: 3rem; --y: 44.5rem">
+        <span class="icon" aria-hidden="true"><img class="icon-image" src="https://gitlab.com/metsatron/BeOS-r5-Icons/-/raw/master/apps/128/BeOS_MediaPlayer.png" alt="" /></span>
+        <span class="label">Winamp TV</span>
+      </button>
+
       <section
         id="about-window"
         class="window"
@@ -172,6 +178,20 @@
         </header>
         <div class="window-content" data-window-src="windows/contact.html"></div>
       </section>
+
+      <section
+        id="winamp-window"
+        class="window"
+        style="--left: 44rem; --top: 5rem; --width: 30rem; --height: 32rem"
+        aria-labelledby="winamp-title"
+      >
+        <header class="title-bar drag-handle">
+          <h2 id="winamp-title">Winamp TV</h2>
+          <button class="close-btn" data-close="winamp-window" aria-label="Close Winamp TV">×</button>
+        </header>
+        <div class="window-content winamp-content" data-window-src="windows/winamp-tv.html"></div>
+      </section>
+
       <section
         id="easter-error"
         class="window"
@@ -200,6 +220,7 @@
 
     <script src="apps/metalcore.js"></script>
     <script src="apps/pixel-runner.js"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
     <script src="script.js"></script>
     <script src="apps/github-repos.js"></script>
   </body>
