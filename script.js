@@ -8,6 +8,7 @@ const menuDropdowns = [...document.querySelectorAll(".menu-dropdown")];
 let portfolioApps = [...(window.PORTFOLIO_APPS || [])].sort((a, b) => (a.order || 0) - (b.order || 0));
 const clock = document.getElementById("clock");
 const BROWSER_HOME_URL = "about:home";
+const DESKTOP_STATE_KEY = "portfolio.desktop.state.v1";
 const mobileLayoutQuery = window.matchMedia("(max-width: 900px)");
 let projectList = null;
 let browserFrame = null;
@@ -22,6 +23,7 @@ let browserGo = null;
 let browserThrobber = null;
 let browserStatus = null;
 let resumeText = null;
+let activeMenuButton = null;
 function escapeHtml(value) {
   return value
     .replaceAll("&", "&amp;")
@@ -137,6 +139,87 @@ function syncDynamicElements() {
 }
 let topZ = 10;
 let activeWindowId = null;
+let isRestoringDesktopState = false;
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(value, max));
+}
+function parseNumericStyle(value) {
+  if (typeof value !== "string") return null;
+  const parsed = Number.parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+function applyClampedWindowPosition(win, left, top) {
+  if (!Number.isFinite(left) || !Number.isFinite(top)) return;
+  const maxX = Math.max(0, desktop.clientWidth - win.offsetWidth);
+  const maxY = Math.max(0, desktop.clientHeight - win.offsetHeight);
+  win.style.left = `${clamp(left, 0, maxX)}px`;
+  win.style.top = `${clamp(top, 0, maxY)}px`;
+}
+function collectDesktopState() {
+  const state = {
+    openWindowIds: windows.filter((win) => win.classList.contains("open")).map((win) => win.id),
+    windows: {},
+    darkDesktop: document.body.classList.contains("dark-desktop")
+  };
+  windows.forEach((win) => {
+    state.windows[win.id] = {
+      left: parseNumericStyle(win.style.left),
+      top: parseNumericStyle(win.style.top),
+      zIndex: parseNumericStyle(win.style.zIndex)
+    };
+  });
+  return state;
+}
+function saveDesktopState() {
+  if (isRestoringDesktopState) return;
+  try {
+    window.localStorage.setItem(DESKTOP_STATE_KEY, JSON.stringify(collectDesktopState()));
+  } catch {
+    // Ignore storage quota/privacy mode failures.
+  }
+}
+function restoreDesktopState() {
+  let parsed;
+  try {
+    parsed = JSON.parse(window.localStorage.getItem(DESKTOP_STATE_KEY) || "null");
+  } catch {
+    return false;
+  }
+  if (!parsed || typeof parsed !== "object") return false;
+  const windowState = parsed.windows && typeof parsed.windows === "object" ? parsed.windows : {};
+  const openIds = Array.isArray(parsed.openWindowIds) ? parsed.openWindowIds : [];
+  isRestoringDesktopState = true;
+  try {
+    document.body.classList.toggle("dark-desktop", Boolean(parsed.darkDesktop));
+    windows.forEach((win) => {
+      const info = windowState[win.id];
+      if (!info || typeof info !== "object") return;
+      applyClampedWindowPosition(win, Number(info.left), Number(info.top));
+      if (Number.isFinite(Number(info.zIndex))) {
+        win.style.zIndex = String(Number(info.zIndex));
+      }
+    });
+    windows.forEach((win) => win.classList.remove("open"));
+    const validOpenWindows = openIds
+      .map((id) => document.getElementById(id))
+      .filter((win) => win && windows.includes(win));
+    if (validOpenWindows.length === 0) return false;
+    const sortedByZ = [...validOpenWindows].sort(
+      (a, b) => Number(a.style.zIndex || 0) - Number(b.style.zIndex || 0)
+    );
+    sortedByZ.forEach((win) => openWindow(win.id));
+    const restoredTop = windows.reduce((maxZ, win) => Math.max(maxZ, Number(win.style.zIndex || 0)), 10);
+    topZ = restoredTop;
+    const topOpenWindow = windows
+      .filter((win) => win.classList.contains("open"))
+      .sort((a, b) => Number(a.style.zIndex || 0) - Number(b.style.zIndex || 0))
+      .pop();
+    activeWindowId = topOpenWindow?.id || null;
+    return true;
+  } finally {
+    isRestoringDesktopState = false;
+  }
+}
 function updateClock() {
   const now = new Date();
   clock.textContent = now.toLocaleString([], {
@@ -167,6 +250,7 @@ function openWindow(id) {
   }
   win.classList.add("open");
   bringToFront(win);
+  saveDesktopState();
 }
 function closeWindow(id) {
   const win = document.getElementById(id);
@@ -179,6 +263,7 @@ function closeWindow(id) {
       .pop();
     activeWindowId = topOpenWindow?.id || null;
   }
+  saveDesktopState();
 }
 // Threat model: treat browser-window navigation as untrusted input.
 // Only explicitly allowlisted project URLs (plus local home/about pages) can load,
@@ -243,30 +328,229 @@ function renderProjects() {
 function buildBrowserHomeMarkup() {
   const items = portfolioApps.map((app, index) => {
     const orderLabel = String(app.order || index + 1).padStart(2, "0");
-    const body = app.url ? `<a href="${app.url}">${orderLabel} — ${app.title}</a>` : `${orderLabel} — ${app.title}`;
-    return `<li>${body}</li>`;
+    const title = escapeHtml(app.title || `Product ${orderLabel}`);
+    const description = escapeHtml(app.description || "Retro project preview");
+    const safeUrl = app.url ? escapeHtml(app.url) : "";
+    const safeGithubUrl = app.githubUrl ? escapeHtml(app.githubUrl) : "";
+    const launchButton = app.url
+      ? `<a class="product-link" href="${safeUrl}">Launch</a>`
+      : `<span class="product-link disabled" aria-disabled="true">Offline</span>`;
+    const repoLink = app.githubUrl
+      ? `<a class="repo-link" href="${safeGithubUrl}">Source</a>`
+      : "";
+    return `<article class="product-card" style="--delay:${index * 90}ms">
+      <div class="card-glow" aria-hidden="true"></div>
+      <p class="product-index">${orderLabel}</p>
+      <h2>${title}</h2>
+      <p class="product-copy">${description}</p>
+      <div class="product-actions">${launchButton}${repoLink}</div>
+    </article>`;
   });
   return `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Projects Home</title>
-    <link rel="stylesheet" href="styles.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Retro Products Home</title>
     <style>
-      body { background: #f4f4f4; color: #111; margin: 0; padding: 1rem 1.25rem; font-size: 1.35rem; }
-      h1 { margin: 0 0 0.6rem; font-size: 1.8rem; }
-      p { margin: 0 0 0.7rem; }
-      ul { margin: 0; padding-left: 1.1rem; }
-      li { margin-bottom: 0.55rem; }
-      a { color: #133f9a; }
+      :root {
+        --bg-top: #28004d;
+        --bg-bottom: #04040f;
+        --crt-cyan: #3bf6ff;
+        --crt-magenta: #ff58cc;
+        --crt-lime: #b7ff33;
+        --panel: rgba(10, 10, 25, 0.72);
+        --line: rgba(255, 255, 255, 0.06);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "VT323", "Courier New", monospace;
+        color: #e9eeff;
+        background:
+          radial-gradient(circle at 20% 15%, rgba(255, 88, 204, 0.22), transparent 45%),
+          radial-gradient(circle at 80% 0%, rgba(59, 246, 255, 0.2), transparent 40%),
+          linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
+        overflow-x: hidden;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background: repeating-linear-gradient(
+          180deg,
+          transparent 0 2px,
+          var(--line) 2px 3px
+        );
+        opacity: 0.55;
+      }
+
+      .page {
+        position: relative;
+        z-index: 1;
+        padding: 1.1rem 1rem 2rem;
+      }
+
+      .hero {
+        border: 2px solid var(--crt-cyan);
+        background: var(--panel);
+        box-shadow: 0 0 0 2px rgba(59, 246, 255, 0.25), 0 0 24px rgba(59, 246, 255, 0.35);
+        padding: 0.8rem 1rem 0.65rem;
+        margin-bottom: 0.9rem;
+        animation: pulse-border 2.2s infinite ease-in-out;
+      }
+
+      .kicker {
+        color: var(--crt-lime);
+        letter-spacing: 0.08em;
+        margin: 0;
+        text-transform: uppercase;
+      }
+
+      .hero h1 {
+        margin: 0.2rem 0 0.3rem;
+        font-size: clamp(1.7rem, 4.5vw, 2.5rem);
+        color: var(--crt-cyan);
+        text-shadow: 0 0 7px rgba(59, 246, 255, 0.7);
+      }
+
+      .hero p {
+        margin: 0;
+      }
+
+      .marquee {
+        margin-top: 0.6rem;
+        overflow: hidden;
+        border-top: 1px solid rgba(255, 255, 255, 0.35);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.35);
+        padding: 0.2rem 0;
+        white-space: nowrap;
+      }
+
+      .marquee span {
+        display: inline-block;
+        padding-left: 100%;
+        color: var(--crt-magenta);
+        animation: marquee 15s linear infinite;
+      }
+
+      .products {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 0.8rem;
+      }
+
+      .product-card {
+        position: relative;
+        border: 2px solid #d6dbff;
+        background: linear-gradient(180deg, rgba(28, 35, 72, 0.9), rgba(5, 8, 22, 0.92));
+        box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.08), 0 5px 0 rgba(0, 0, 0, 0.4);
+        padding: 0.75rem;
+        overflow: hidden;
+        transform: translateY(8px);
+        opacity: 0;
+        animation: card-in 500ms steps(10, end) forwards;
+        animation-delay: var(--delay, 0ms);
+      }
+
+      .product-card:hover {
+        transform: translateY(-2px) scale(1.015);
+        transition: transform 130ms steps(4, end);
+      }
+
+      .card-glow {
+        position: absolute;
+        inset: -35% auto auto -20%;
+        width: 65%;
+        aspect-ratio: 1;
+        background: radial-gradient(circle, rgba(59, 246, 255, 0.25), transparent 70%);
+        pointer-events: none;
+        animation: drift 3.4s infinite alternate ease-in-out;
+      }
+
+      .product-index {
+        margin: 0;
+        color: var(--crt-lime);
+      }
+
+      h2 {
+        margin: 0.2rem 0;
+        font-size: 1.45rem;
+      }
+
+      .product-copy {
+        margin: 0 0 0.55rem;
+      }
+
+      .product-actions {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .product-link,
+      .repo-link {
+        text-decoration: none;
+        color: #0d1020;
+        background: #9fffff;
+        border: 2px solid #fff;
+        padding: 0.18rem 0.55rem;
+        box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5);
+      }
+
+      .repo-link {
+        background: #ffd3f1;
+      }
+
+      .product-link:hover,
+      .repo-link:hover {
+        filter: brightness(1.08);
+      }
+
+      .product-link.disabled {
+        opacity: 0.5;
+        pointer-events: none;
+      }
+
+      @keyframes marquee {
+        from { transform: translateX(0); }
+        to { transform: translateX(-100%); }
+      }
+
+      @keyframes pulse-border {
+        0%, 100% { box-shadow: 0 0 0 2px rgba(59, 246, 255, 0.25), 0 0 24px rgba(59, 246, 255, 0.35); }
+        50% { box-shadow: 0 0 0 2px rgba(255, 88, 204, 0.35), 0 0 26px rgba(255, 88, 204, 0.4); }
+      }
+
+      @keyframes drift {
+        from { transform: translate(0, 0); }
+        to { transform: translate(20%, 12%); }
+      }
+
+      @keyframes card-in {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
     </style>
   </head>
   <body>
-    <h1>Projects Home</h1>
-    <p>Select a project to view:</p>
-    <ul>
-      ${items.join("\n      ")}
-    </ul>
+    <main class="page">
+      <section class="hero">
+        <p class="kicker">Portfolio // Retro Product Deck</p>
+        <h1>Welcome to the Product Showcase</h1>
+        <p>Animated previews, neon palette, and old-school web energy.</p>
+        <div class="marquee"><span>Now Loading: Strategy • Analytics • Product Experiments • Interactive Demos •</span></div>
+      </section>
+      <section class="products" aria-label="Product grid">
+        ${items.join("\n        ")}
+      </section>
+    </main>
   </body>
 </html>`;
 }
@@ -364,6 +648,7 @@ function closeFocusedWindow() {
 function closeAllWindows() {
   windows.forEach((win) => win.classList.remove("open"));
   activeWindowId = null;
+  saveDesktopState();
 }
 function openAllWindows() {
   if (mobileLayoutQuery.matches) {
@@ -385,9 +670,61 @@ function cascadeWindows() {
       x += 34;
       y += 28;
     });
+  saveDesktopState();
 }
-function closeMenus() {
+function getMenuItems(menu) {
+  return [...menu.querySelectorAll('[role="menuitem"]')];
+}
+function focusWindow(win) {
+  if (!win?.classList.contains("open")) return;
+  const focusTarget =
+    win.querySelector(".title-bar .close-btn") ||
+    win.querySelector(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    );
+  focusTarget?.focus();
+}
+function focusTopMenuButton(index) {
+  const normalized = (index + menuButtons.length) % menuButtons.length;
+  menuButtons[normalized]?.focus();
+}
+function openMenu(button, { focusFirstItem = false } = {}) {
+  if (!button) return;
+  const targetMenu = document.getElementById(button.dataset.menu);
+  if (!targetMenu) return;
   menuDropdowns.forEach((dropdown) => dropdown.classList.remove("open"));
+  menuButtons.forEach((menuButton) => menuButton.setAttribute("aria-expanded", "false"));
+  targetMenu.classList.add("open");
+  button.setAttribute("aria-expanded", "true");
+  activeMenuButton = button;
+  if (focusFirstItem) getMenuItems(targetMenu)[0]?.focus();
+}
+function closeMenus({ returnFocus = false } = {}) {
+  menuDropdowns.forEach((dropdown) => dropdown.classList.remove("open"));
+  menuButtons.forEach((button) => button.setAttribute("aria-expanded", "false"));
+  if (returnFocus && activeMenuButton) {
+    activeMenuButton.focus();
+  }
+  activeMenuButton = null;
+}
+function moveMenuItemFocus(currentButton, direction) {
+  const menu = currentButton.closest(".menu-dropdown");
+  if (!menu) return;
+  const items = getMenuItems(menu);
+  const currentIndex = items.indexOf(currentButton);
+  if (currentIndex < 0) return;
+  const nextIndex = (currentIndex + direction + items.length) % items.length;
+  items[nextIndex]?.focus();
+}
+function switchMenuFromDropdown(currentButton, direction) {
+  const currentMenu = currentButton.closest(".menu-dropdown");
+  if (!currentMenu) return;
+  const currentTopButton = menuButtons.find((button) => button.dataset.menu === currentMenu.id);
+  const topIndex = menuButtons.indexOf(currentTopButton);
+  if (topIndex < 0) return;
+  const nextTopIndex = (topIndex + direction + menuButtons.length) % menuButtons.length;
+  const nextTopButton = menuButtons[nextTopIndex];
+  openMenu(nextTopButton, { focusFirstItem: true });
 }
 openers.forEach((icon) => {
   icon.addEventListener("click", () => {
@@ -494,12 +831,14 @@ windows.forEach((win) => {
     if (handle.hasPointerCapture(event.pointerId)) {
       handle.releasePointerCapture(event.pointerId);
     }
+    saveDesktopState();
   });
   handle.addEventListener("pointercancel", (event) => {
     dragging = false;
     if (handle.hasPointerCapture(event.pointerId)) {
       handle.releasePointerCapture(event.pointerId);
     }
+    saveDesktopState();
   });
   handle.addEventListener("pointermove", onMove);
   win.addEventListener("mousedown", () => {
@@ -514,11 +853,34 @@ desktop.addEventListener("dblclick", (event) => {
 });
 menuButtons.forEach((button) => {
   button.addEventListener("click", () => {
-    const targetId = button.dataset.menu;
-    const targetMenu = document.getElementById(targetId);
+    const targetMenu = document.getElementById(button.dataset.menu);
     const alreadyOpen = targetMenu?.classList.contains("open");
-    closeMenus();
-    if (targetMenu && !alreadyOpen) targetMenu.classList.add("open");
+    if (alreadyOpen) {
+      closeMenus({ returnFocus: true });
+      return;
+    }
+    openMenu(button, { focusFirstItem: false });
+  });
+  button.addEventListener("keydown", (event) => {
+    const index = menuButtons.indexOf(button);
+    if (event.key === "ArrowRight") {
+      event.preventDefault();
+      closeMenus();
+      focusTopMenuButton(index + 1);
+    }
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      closeMenus();
+      focusTopMenuButton(index - 1);
+    }
+    if (event.key === "ArrowDown" || event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      openMenu(button, { focusFirstItem: true });
+    }
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeMenus({ returnFocus: true });
+    }
   });
 });
 function runMenuAction(action) {
@@ -531,12 +893,55 @@ function runMenuAction(action) {
   if (action === "close-all") closeAllWindows();
   if (action === "open-all") openAllWindows();
   if (action === "cascade") cascadeWindows();
-  if (action === "toggle-theme") document.body.classList.toggle("dark-desktop");
+  if (action === "toggle-theme") {
+    document.body.classList.toggle("dark-desktop");
+    saveDesktopState();
+  }
   closeMenus();
 }
 menuActions.forEach((actionButton) => {
   actionButton.addEventListener("click", () => {
     runMenuAction(actionButton.dataset.action);
+  });
+  actionButton.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      moveMenuItemFocus(actionButton, 1);
+    }
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      moveMenuItemFocus(actionButton, -1);
+    }
+    if (event.key === "Home") {
+      event.preventDefault();
+      const menu = actionButton.closest(".menu-dropdown");
+      getMenuItems(menu)[0]?.focus();
+    }
+    if (event.key === "End") {
+      event.preventDefault();
+      const menu = actionButton.closest(".menu-dropdown");
+      const items = getMenuItems(menu);
+      items[items.length - 1]?.focus();
+    }
+    if (event.key === "ArrowRight") {
+      event.preventDefault();
+      switchMenuFromDropdown(actionButton, 1);
+    }
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      switchMenuFromDropdown(actionButton, -1);
+    }
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      runMenuAction(actionButton.dataset.action);
+    }
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeMenus({ returnFocus: true });
+    }
+    if (event.key === "Tab") {
+      closeMenus();
+    }
   });
 });
 desktop?.addEventListener("click", (event) => {
@@ -551,7 +956,13 @@ document.addEventListener("keydown", (event) => {
   if (event.key.toLowerCase() === "x") {
     closeFocusedWindow();
   }
-  if (event.key === "Escape") closeMenus();
+  if (event.key === "Escape") {
+    if (activeMenuButton) {
+      closeMenus({ returnFocus: true });
+      return;
+    }
+    closeMenus();
+  }
 });
 
 mobileLayoutQuery.addEventListener("change", () => {
@@ -585,6 +996,6 @@ async function initDesktop() {
   bindDynamicContentEvents();
   renderProjects();
   await loadResumeTextFile();
-  openWindow("about-window");
+  if (!restoreDesktopState()) openWindow("about-window");
 }
 initDesktop();
