@@ -1,28 +1,16 @@
 <div class="dashboard-shell">
-  <p class="dashboard-intro">
-    Strategy-to-execution dashboard showing how I lead transformation programs, shape product direction,
-    and scale data-led delivery across industrial and sustainability-focused teams.
-  </p>
-
   <section class="dashboard-facts" aria-labelledby="dashboard-facts-heading">
     <div class="dashboard-section-head">
-      <h3 id="dashboard-facts-heading">Live internet facts (fun mode)</h3>
+      <h3 id="dashboard-facts-heading">Live internet facts</h3>
       <button type="button" class="dashboard-refresh" id="dashboard-refresh-facts">Refresh</button>
     </div>
-    <p class="dashboard-facts-note">
-      Pulling from random fact, numbers, cat, ISS position, and astronauts APIs. Showing a few of the funniest.
-    </p>
     <ul class="fact-list" id="dashboard-fact-list" aria-live="polite">
-      <li class="fact-item fact-item--loading">Loading fresh facts...</li>
+      <li class="fact-item fact-item--loading">Loading latest fact...</li>
     </ul>
   </section>
 
   <section class="dashboard-pizza" aria-labelledby="pizza-forecast-heading">
-    <h3 id="pizza-forecast-heading">Global pizza forecast (super simple)</h3>
-    <p class="dashboard-facts-note">
-      Baseline: ~5B pizzas/year. Simple projection uses baseline monthly demand with a fun growth pulse inspired by
-      ~158 pizzas/second.
-    </p>
+    <h3 id="pizza-forecast-heading">Global pizza forecast</h3>
     <canvas
       class="pizza-chart"
       id="pizza-forecast-chart"
@@ -31,34 +19,4 @@
       aria-label="Projected global pizza consumption per month"
     ></canvas>
   </section>
-
-  <div class="dashboard-grid" role="list" aria-label="Sample KPI cards">
-    <article class="kpi-card" role="listitem">
-      <h3>Growth Index</h3>
-      <p class="kpi-value" data-kpi-value data-target="142" data-prefix="" data-suffix="">0</p>
-      <p class="kpi-note">Commercial strategy + product focus aligned to market opportunities.</p>
-      <canvas class="kpi-chart" data-chart="bars" data-points="62,76,89,104,118,131,142" width="300" height="88" aria-label="Growth trend mini bar chart"></canvas>
-    </article>
-
-    <article class="kpi-card" role="listitem">
-      <h3>Conversion Lift</h3>
-      <p class="kpi-value" data-kpi-value data-target="27" data-prefix="+" data-suffix="%">0%</p>
-      <p class="kpi-note">Positioning, funnel simplification, and sharper proposition design.</p>
-      <canvas class="kpi-chart" data-chart="line" data-points="8,11,14,16,19,23,27" width="300" height="88" aria-label="Conversion lift mini line chart"></canvas>
-    </article>
-
-    <article class="kpi-card" role="listitem">
-      <h3>Cycle-Time Reduction</h3>
-      <p class="kpi-value" data-kpi-value data-target="34" data-prefix="-" data-suffix="%">0%</p>
-      <p class="kpi-note">Transformation playbooks that reduce friction from insight to release.</p>
-      <canvas class="kpi-chart" data-chart="bars" data-points="100,92,83,76,71,68,66" width="300" height="88" aria-label="Cycle-time reduction mini bar chart"></canvas>
-    </article>
-
-    <article class="kpi-card" role="listitem">
-      <h3>Forecast Confidence</h3>
-      <p class="kpi-value" data-kpi-value data-target="91" data-prefix="" data-suffix="%">0%</p>
-      <p class="kpi-note">Data-led execution with shared metrics, decision cadence, and ownership.</p>
-      <canvas class="kpi-chart" data-chart="line" data-points="54,61,67,73,80,86,91" width="300" height="88" aria-label="Forecast confidence mini line chart"></canvas>
-    </article>
-  </div>
 </div>
