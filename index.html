@@ -124,7 +124,23 @@
           <h2 id="about-title">About Me</h2>
           <button class="close-btn" data-close="about-window" aria-label="Close About Me">×</button>
         </header>
-        <div class="window-content" data-window-src="windows/about.html"></div>
+        <div class="window-content" ><!-- START:inline windows/about.html -->
+<div class="about-header">
+  <img src="assets/Sanjin Pixel.png" alt="Pixel portrait of Sanjin" class="about-avatar" />
+</div>
+<p><strong class="glitch-text" data-text="Hello, I’m Sanjin.">Hello, I’m Sanjin.</strong></p>
+<p id="about-typewriter-text">Strategy and product leader delivering measurable commercial growth and operational transformation in industrial and sustainability-driven businesses.</p>
+<p>
+  I align business strategy, product execution, and analytics adoption to move teams from insights to shipped outcomes.
+</p>
+<div class="cta-row">
+  <a class="primary-cta" href="https://www.linkedin.com/in/sanjin-pepic/" target="_blank" rel="noopener noreferrer" aria-label="Book a call">Book a call</a>
+  <a class="secondary-cta" href="mailto:sanjin@pepic.me" aria-label="Email me">Email me</a>
+</div>
+<p>
+  LinkedIn: <a id="about-linkedin" href="https://www.linkedin.com/in/sanjin-pepic/" target="_blank" rel="noopener noreferrer">linkedin.com/in/sanjin-pepic</a>
+</p>
+<!-- END:inline windows/about.html --></div>
       </section>
 
       <section
@@ -137,7 +153,10 @@
           <h2 id="projects-title">Projects Folder</h2>
           <button class="close-btn" data-close="projects-window" aria-label="Close Projects">×</button>
         </header>
-        <div class="window-content" data-window-src="windows/projects.html"></div>
+        <div class="window-content" ><!-- START:inline windows/projects.html -->
+<ul id="project-list" class="project-list"></ul>
+<p id="github-loading" class="github-loading-msg">Loading GitHub repos...</p>
+<!-- END:inline windows/projects.html --></div>
       </section>
 
       <section
@@ -150,7 +169,33 @@
           <h2 id="browser-title">Netscape Navigator</h2>
           <button class="close-btn" data-close="browser-window" aria-label="Close Browser">×</button>
         </header>
-        <div class="window-content browser-content" data-window-src="windows/browser.html"></div>
+        <div class="window-content browser-content" ><!-- START:inline windows/browser.html -->
+<div class="browser-menubar" aria-hidden="true">
+  <span>File</span><span>Edit</span><span>View</span><span>Go</span><span>Communicator</span><span>Help</span>
+</div>
+<div class="browser-chrome" role="group" aria-label="Navigation toolbar">
+  <div class="browser-nav-buttons">
+    <button id="browser-back" class="browser-nav-btn" type="button"><span class="nav-icon">◀</span><span class="nav-label">Back</span></button>
+    <button id="browser-forward" class="browser-nav-btn" type="button"><span class="nav-icon">▶</span><span class="nav-label">Fwd</span></button>
+    <button id="browser-reload" class="browser-nav-btn" type="button"><span class="nav-icon">↺</span><span class="nav-label">Reload</span></button>
+    <button id="browser-home" class="browser-nav-btn" type="button"><span class="nav-icon">⌂</span><span class="nav-label">Home</span></button>
+    <button id="browser-stop" class="browser-nav-btn" type="button"><span class="nav-icon">✕</span><span class="nav-label">Stop</span></button>
+  </div>
+  <div class="browser-throbber" id="browser-throbber" aria-label="Loading indicator">N</div>
+</div>
+<div class="browser-location-bar">
+  <label for="browser-url" class="browser-label">Location:</label>
+  <input id="browser-url" class="browser-address" type="text" value="about:blank" />
+  <button id="browser-go" class="browser-go-btn" type="button">Go</button>
+</div>
+<iframe id="browser-frame" class="retro-browser-frame" src="about:blank" title="Retro Browser Content" loading="lazy" sandbox="allow-scripts allow-forms allow-popups" referrerpolicy="no-referrer"></iframe>
+<div class="browser-status-bar">
+  <span class="browser-security-icon" aria-hidden="true">🔓</span>
+  <span id="browser-status">Document: Done</span>
+  <span class="browser-brand">Netscape Navigator 4.0</span>
+</div>
+<p class="resume-note">If the embedded site blocks iframes, use the “Open in new tab” link from Projects.</p>
+<!-- END:inline windows/browser.html --></div>
       </section>
 
       <section
@@ -163,7 +208,9 @@
           <h2 id="resume-title">Sanjin_Pepic_CV.txt</h2>
           <button class="close-btn" data-close="resume-window" aria-label="Close Resume">×</button>
         </header>
-        <div class="window-content resume-content" data-window-src="windows/resume.html"></div>
+        <div class="window-content resume-content" ><!-- START:inline windows/resume.html -->
+<div id="resume-text" class="retro-text-file" aria-label="Sanjin Pepic CV markdown resume">Loading SANJIN.MD...</div>
+<!-- END:inline windows/resume.html --></div>
       </section>
 
       <section
@@ -176,7 +223,13 @@
           <h2 id="contact-title">Contact Panel</h2>
           <button class="close-btn" data-close="contact-window" aria-label="Close Contact">×</button>
         </header>
-        <div class="window-content" data-window-src="windows/contact.html"></div>
+        <div class="window-content" ><!-- START:inline windows/contact.html -->
+<p>Contact details:</p>
+<ul>
+  <li>Email: <a id="contact-email" href="mailto:sanjin@pepic.me">sanjin@pepic.me</a></li>
+  <li>LinkedIn: <a id="contact-linkedin" href="https://www.linkedin.com/in/sanjin-pepic/" target="_blank" rel="noopener noreferrer">linkedin.com/in/sanjin-pepic</a></li>
+</ul>
+<!-- END:inline windows/contact.html --></div>
       </section>
 
       <section
@@ -189,7 +242,30 @@
           <h2 id="winamp-title">Winamp TV</h2>
           <button class="close-btn" data-close="winamp-window" aria-label="Close Winamp TV">×</button>
         </header>
-        <div class="window-content winamp-content" data-window-src="windows/winamp-tv.html"></div>
+        <div class="window-content winamp-content" ><!-- START:inline windows/winamp-tv.html -->
+<div class="winamp-shell">
+  <div class="winamp-screen-wrap">
+    <div id="winamp-youtube-player" class="winamp-player" aria-label="Winamp style music video player"></div>
+    <div class="winamp-crt-overlay" aria-hidden="true"></div>
+  </div>
+
+  <div class="winamp-controls">
+    <button type="button" class="retro-btn" id="winamp-prev">⏮ Prev</button>
+    <button type="button" class="retro-btn" id="winamp-toggle">▶ Play</button>
+    <button type="button" class="retro-btn" id="winamp-next">Next ⏭</button>
+  </div>
+
+  <div class="winamp-controls">
+    <button type="button" class="retro-btn" id="winamp-mute-toggle">🔇 Muted</button>
+    <label class="winamp-volume-label" for="winamp-volume">Volume</label>
+    <input id="winamp-volume" type="range" min="0" max="100" value="0" step="1" />
+  </div>
+
+  <div id="winamp-channel-list" class="winamp-channel-list" role="listbox" aria-label="Video channels"></div>
+  <p id="winamp-status" class="resume-note">Loading curated channel lineup…</p>
+  <p class="resume-note">Source: YouTube embed (no-cookie). Ads cannot be fully controlled by this site.</p>
+</div>
+<!-- END:inline windows/winamp-tv.html --></div>
       </section>
 
       <section

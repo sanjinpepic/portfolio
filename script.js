@@ -125,22 +125,6 @@ async function loadResumeTextFile() {
     ].join("\n");
   }
 }
-async function loadWindowPartials() {
-  const containers = [...document.querySelectorAll("[data-window-src]")];
-  await Promise.all(
-    containers.map(async (container) => {
-      const source = container.dataset.windowSrc;
-      if (!source) return;
-      try {
-        const response = await fetch(source, { cache: "no-cache" });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        container.innerHTML = await response.text();
-      } catch (error) {
-        container.innerHTML = `<p>Could not load ${source}: ${error.message}</p>`;
-      }
-    })
-  );
-}
 function syncDynamicElements() {
   projectList = document.getElementById("project-list");
   browserFrame = document.getElementById("browser-frame");
@@ -1288,7 +1272,6 @@ function startTypewriter() {
 
 async function initDesktop() {
   runBootSequence();
-  await loadWindowPartials();
   syncDynamicElements();
   bindIconFallbackHandlers();
   bindDynamicContentEvents();

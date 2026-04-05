@@ -20,6 +20,18 @@ The site includes:
 - **Resume** window with my CV details
 - **Contact** window with ways to reach me
 
+## Standalone Window Architecture
+
+Each desktop app/window partial is authored as its own standalone file in `windows/` so it is easy to maintain and edit independently.
+
+To produce a fully bundled `index.html` (with all window markup embedded), run:
+
+```bash
+node scripts/build-index.mjs
+```
+
+This replaces each `<!-- START:inline ... -->` block in `index.html` with the latest contents from the matching standalone file.
+
 ## Tech Stack
 
 - HTML5
