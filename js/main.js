@@ -11,13 +11,13 @@ import {
   openAllWindows, cascadeWindows, saveDesktopState, updateClock,
   updateMobileNav, bindIconFallbackHandlers, initDragHandlers,
   loadResumeTextFile, restoreDesktopState, restoreThemePreference,
-  applyTheme, setRestartWinampFlutter
+  applyTheme, setRestartWinampFlutter, setStopWinampPlayback
 } from "./window-manager.js";
 import {
   renderProjects, bindDynamicContentEvents, ALLOWED_URLS,
   ALLOWED_NORMALIZED_URLS, normalizeBrowserUrl
 } from "./browser.js";
-import { bindWinampControls, restartWinampFlutter } from "./winamp.js";
+import { bindWinampControls, restartWinampFlutter, stopWinampPlayback } from "./winamp.js";
 import { bindTerminal } from "./terminal.js";
 import {
   runBootSequence, bindScreensaver, triggerBsod,
@@ -26,6 +26,7 @@ import {
 
 // Wire up late-bound dependency (breaks circular dep between winamp↔window-manager)
 setRestartWinampFlutter(restartWinampFlutter);
+setStopWinampPlayback(stopWinampPlayback);
 
 // ── Menu system ──────────────────────────────────────────────
 
