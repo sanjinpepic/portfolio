@@ -697,10 +697,11 @@ a {
 
 .retro-btn {
   font: inherit;
+  line-height: 1;
   border: 2px solid;
   border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
-  background: var(--panel-gray);
-  padding: 0.1rem 0.5rem;
+  background: #d7d7d7;
+  padding: 0.25rem 0.45rem;
   cursor: pointer;
 }
 
@@ -712,34 +713,6 @@ a {
   border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
   color: var(--border-mid);
   cursor: default;
-}
-
-/* ── PDF / Resume viewer ────────────────────────────────── */
-
-.pdf-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.3rem 0;
-  flex-wrap: wrap;
-}
-
-.pdf-page-label {
-  padding: 0 0.15rem;
-}
-
-.retro-pdf-frame {
-  border: 2px solid;
-  border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
-  background: #fff;
-  overflow: auto;
-  max-height: 22rem;
-  display: flex;
-  justify-content: center;
-}
-
-.retro-pdf-canvas {
-  display: block;
 }
 
 .resume-content {
@@ -1058,24 +1031,49 @@ a {
   position: relative;
   border: 2px solid;
   border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
-  background: #050505;
-  box-shadow: inset 0 0 0 2px #161616;
+  background: #030303;
+  /* Screen curvature + deep corner vignette + outer glow */
+  border-radius: 3% / 4%;
+  box-shadow:
+    inset 0 0 70px rgba(0, 0, 0, 0.92),
+    inset 0 0 28px rgba(0, 0, 0, 0.6),
+    inset 0 0 0 2px #161616,
+    0 0 18px rgba(0, 0, 0, 0.65);
   aspect-ratio: 4 / 3;
   overflow: hidden;
 }
 
+/* Glass panel shine — diagonal highlight like real CRT glass */
+.winamp-screen-wrap::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.13) 0%,
+    rgba(255, 255, 255, 0.04) 22%,
+    transparent 48%
+  );
+  border-radius: inherit;
+}
+
+/* Subtle soft-light scanline base (behind overlay) */
 .winamp-screen-wrap::after {
   content: "";
   position: absolute;
   inset: 0;
+  z-index: 1;
   pointer-events: none;
   background: repeating-linear-gradient(
     0deg,
-    rgba(255, 255, 255, 0.02) 0 2px,
-    rgba(0, 0, 0, 0.08) 2px 4px
+    rgba(255, 255, 255, 0.025) 0 2px,
+    rgba(0, 0, 0, 0.1) 2px 4px
   );
   mix-blend-mode: soft-light;
 }
+
 
 .winamp-player,
 .winamp-player iframe {
@@ -1091,13 +1089,44 @@ a {
 .winamp-crt-overlay {
   position: absolute;
   inset: 0;
+  z-index: 2;
   pointer-events: none;
   background:
-    radial-gradient(circle at 50% -35%, rgba(255, 255, 255, 0.2), transparent 55%),
-    repeating-linear-gradient(180deg, rgba(0, 0, 0, 0) 0 2px, rgba(0, 0, 0, 0.2) 2px 4px),
-    repeating-linear-gradient(90deg, rgba(255, 0, 0, 0.045) 0 1px, rgba(0, 255, 255, 0.045) 1px 2px, rgba(0, 0, 255, 0.045) 2px 3px);
+    /* Phosphor bloom — top glow where electron beam starts */
+    radial-gradient(ellipse at 50% -10%, rgba(255, 255, 255, 0.28), transparent 58%),
+    /* Blue-tint at bottom (phosphor cool-down) */
+    radial-gradient(ellipse at 50% 110%, rgba(40, 120, 255, 0.08), transparent 50%),
+    /* Horizontal scanlines — main CRT effect */
+    repeating-linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0) 0 2px,
+      rgba(0, 0, 0, 0.3) 2px 4px
+    ),
+    /* RGB sub-pixel shadow mask (aperture grille) */
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 40, 40, 0.07) 0 1px,
+      rgba(40, 255, 220, 0.07) 1px 2px,
+      rgba(40, 40, 255, 0.065) 2px 3px
+    );
   mix-blend-mode: screen;
-  animation: crt-flicker 120ms steps(2, end) infinite;
+  /* Slight blur for phosphor dot bleed */
+  filter: blur(0.4px);
+  animation: crt-flicker 95ms steps(2, end) infinite;
+}
+
+/* Screen-door mesh: vertical shadow mask gaps */
+.winamp-screen-door {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0 2px,
+    rgba(0, 0, 0, 0.06) 2px 3px
+  );
+  mix-blend-mode: multiply;
 }
 
 .winamp-controls {
@@ -1105,20 +1134,6 @@ a {
   align-items: center;
   gap: 0.45rem;
   flex-wrap: wrap;
-}
-
-.retro-btn {
-  border: 2px solid;
-  border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
-  background: #d7d7d7;
-  font: inherit;
-  line-height: 1;
-  padding: 0.25rem 0.45rem;
-  cursor: pointer;
-}
-
-.retro-btn:active {
-  border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
 }
 
 .winamp-volume-label {
@@ -1187,6 +1202,48 @@ a {
 }
 
 @keyframes crt-flicker {
-  0%, 100% { opacity: 0.36; }
-  50% { opacity: 0.23; }
+  0%,  100% { opacity: 0.44; }
+  50%        { opacity: 0.17; }
+}
+
+@keyframes scanline-drift {
+  0%   { background-position: 0 0, 0 0, 0 0, 0 0; }
+  100% { background-position: 0 0, 0 0, 0 4px, 0 0; }
+}
+
+/* ── Window drag ghost shadow ───────────────────────────────── */
+.window.dragging {
+  opacity: 0.9;
+  box-shadow: 6px 8px 0 rgba(0, 0, 0, 0.55), 2px 2px 0 #000;
+}
+
+/* ── Close button red hover ─────────────────────────────────── */
+.close-btn {
+  transition: background 0.08s ease, border-color 0.08s ease, color 0.08s ease;
+}
+
+.close-btn:hover {
+  background: #c0392b;
+  color: #fff;
+  border-color: #ff6b6b #7b0000 #7b0000 #ff6b6b;
+}
+
+/* ── Menu bar transitions ───────────────────────────────────── */
+.menu-item {
+  transition: background 0.07s ease, color 0.07s ease;
+}
+
+.menu-dropdown button {
+  transition: background 0.06s ease, color 0.06s ease;
+}
+
+/* ── Marching title bar on focused window ───────────────────── */
+@keyframes titlebar-march {
+  from { background-position: 0 0; }
+  to   { background-position: 4px 0; }
+}
+
+.window.focused .title-bar {
+  background-size: 4px 100%;
+  animation: titlebar-march 0.4s linear infinite;
 }
