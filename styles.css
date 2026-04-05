@@ -1588,23 +1588,15 @@ a {
 
 /* ── DOOM window ────────────────────────────────────────────── */
 .doom-content {
-  padding: 0.6rem;
+  padding: 0;
+  overflow: hidden;
+  max-height: none;
 }
 
 .doom-shell {
-  display: grid;
-  gap: 0.5rem;
-  height: 100%;
-  grid-template-rows: auto minmax(0, 1fr) auto;
-}
-
-.doom-toolbar {
   display: flex;
-  justify-content: flex-end;
-}
-
-.doom-open-new {
-  font-weight: 700;
+  flex: 1;
+  height: 100%;
 }
 
 .doom-icon-image {
@@ -1614,10 +1606,19 @@ a {
 .doom-frame {
   width: 100%;
   height: 100%;
-  min-height: 20rem;
-  border: 2px solid;
-  border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+  min-height: 0;
+  border: 0;
   background: #000;
+  display: block;
+}
+
+#doom-window.open {
+  display: flex;
+  flex-direction: column;
+}
+
+#doom-window .doom-content {
+  flex: 1;
 }
 
 .sr-only {

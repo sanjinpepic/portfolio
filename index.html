@@ -161,7 +161,7 @@
         <span class="label">Terminal</span>
       </button>
       <button class="desktop-icon" data-open="doom-window" style="--x: 3rem; --y: 84.5rem">
-        <span class="icon" aria-hidden="true"><img class="icon-image doom-icon-image" src="assets/doom_1.png" alt="" /></span>
+        <span class="icon" aria-hidden="true"><img class="icon-image doom-icon-image" src="assets/doom_1.png" data-fallback-src="assets/icon-fallback.svg" alt="" /></span>
         <span class="label">DOOM</span>
       </button>
       </div>
@@ -626,25 +626,15 @@
       <section
         id="doom-window"
         class="window"
-        style="--left: 22rem; --top: 5rem; --width: 54rem; --height: 36rem"
+        style="--left: 1rem; --top: 2.5rem; --width: 999rem; --height: calc(100vh - 4.5rem)"
         aria-labelledby="doom-title"
       >
         <header class="title-bar drag-handle">
-          <h2 id="doom-title">DOOM</h2>
+          <h2 id="doom-title">DOOM (WASM)</h2>
           <button class="close-btn" data-close="doom-window" aria-label="Close DOOM">×</button>
         </header>
         <div class="window-content doom-content" ><!-- START:inline windows/doom.html -->
 <div class="doom-shell">
-  <div class="doom-toolbar" role="group" aria-label="DOOM controls">
-    <a
-      class="doom-open-new"
-      href="https://silentspacemarine.com"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      Open in new tab
-    </a>
-  </div>
   <iframe
     id="doom-frame"
     class="doom-frame"
@@ -654,9 +644,6 @@
     allow="fullscreen; gamepad; keyboard-map"
     referrerpolicy="no-referrer"
   ></iframe>
-  <p class="resume-note">
-    Click inside the game window to capture keyboard controls.
-  </p>
 </div>
 <!-- END:inline windows/doom.html --></div>
       </section>
