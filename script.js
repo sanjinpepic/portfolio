@@ -296,6 +296,9 @@ function openWindow(id) {
       win.addEventListener("animationend", () => win.classList.remove("opening"), { once: true });
     });
     if (id === "about-window") startTypewriter();
+    if (id === "dashboard-window" && typeof window.initializeDashboard === "function") {
+      window.initializeDashboard();
+    }
     if (id === "easter-error") RetroSounds.error();
   }
   bringToFront(win);
@@ -1200,6 +1203,7 @@ function runMenuAction(action) {
   if (action === "open-browser") openWindow("browser-window");
   if (action === "open-resume") openWindow("resume-window");
   if (action === "open-contact") openWindow("contact-window");
+  if (action === "open-dashboard") openWindow("dashboard-window");
   if (action === "open-winamp") openWindow("winamp-window");
   if (action === "open-terminal") openWindow("terminal-window");
   if (action === "close-focused") closeFocusedWindow();

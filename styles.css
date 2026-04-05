@@ -1327,12 +1327,23 @@ a {
 .terminal-content {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: auto;
+  flex: 1;
   background: #0d1a0d;
   color: #33ff33;
   padding: 0.4rem 0.5rem;
   font-size: 1.1rem;
   overflow: hidden;
+}
+
+#terminal-window.open {
+  display: flex;
+  flex-direction: column;
+}
+
+#terminal-window .window-content {
+  max-height: none;
+  padding: 0;
 }
 
 .terminal-output {
@@ -1585,4 +1596,62 @@ a {
   margin-top: 2rem !important;
   color: #ccccff;
   font-style: italic;
+}
+
+/* ── Dashboard app ─────────────────────────────────────────── */
+.dashboard-content {
+  background: linear-gradient(180deg, #e8eefc 0%, #dce7fa 100%);
+}
+
+.dashboard-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.dashboard-intro {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.25;
+  color: #0f234a;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0.75rem;
+}
+
+.kpi-card {
+  border: 2px solid #7f96c9;
+  background: #f4f7ff;
+  box-shadow: inset 1px 1px #fff, inset -1px -1px #9aaad0;
+  padding: 0.55rem;
+}
+
+.kpi-card h3 {
+  margin: 0;
+  color: #0a2a6f;
+  font-size: 1.15rem;
+}
+
+.kpi-value {
+  margin: 0.2rem 0 0;
+  font-size: 2rem;
+  color: #102f80;
+  letter-spacing: 0.02em;
+}
+
+.kpi-note {
+  margin: 0.15rem 0 0.45rem;
+  color: #1f3b7d;
+  font-size: 0.95rem;
+  min-height: 2.2rem;
+}
+
+.kpi-chart {
+  width: 100%;
+  height: 4.8rem;
+  border: 1px solid #98a9cf;
+  background: #edf2ff;
 }
