@@ -1364,8 +1364,34 @@ a {
 .winamp-shell {
   display: grid;
   gap: 0.55rem;
-  grid-template-rows: auto auto auto auto minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1.15fr) minmax(14rem, 0.85fr);
+  grid-template-areas:
+    "player playlist"
+    "status status"
+    "source source";
+  align-items: start;
   min-height: 100%;
+}
+
+.winamp-now-playing-panel {
+  grid-area: player;
+  display: grid;
+  gap: 0.55rem;
+  align-content: start;
+}
+
+.winamp-playlist-panel {
+  grid-area: playlist;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 0.35rem;
+}
+
+.winamp-playlist-heading {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 0.04em;
 }
 
 .winamp-screen-wrap {
@@ -1380,7 +1406,8 @@ a {
     inset 0 0 28px rgba(0, 0, 0, 0.6),
     inset 0 0 0 2px #161616,
     0 0 18px rgba(0, 0, 0, 0.65);
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 16 / 10;
+  max-height: clamp(8rem, 26vh, 12rem);
   overflow: hidden;
 }
 
@@ -1488,10 +1515,10 @@ a {
 
 .winamp-channel-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  grid-template-columns: 1fr;
   gap: 0.35rem;
   align-content: start;
-  max-height: 100%;
+  max-height: clamp(12rem, 40vh, 18rem);
   overflow: auto;
   padding-right: 0.2rem;
 }
@@ -1520,6 +1547,12 @@ a {
 
 .winamp-channel-btn {
   width: 100%;
+  min-height: 2.1rem;
+  padding-top: 0.42rem;
+  padding-bottom: 0.42rem;
+  line-height: 1.15;
+  display: flex;
+  align-items: center;
   text-align: left;
   white-space: nowrap;
   overflow: hidden;
@@ -1528,6 +1561,29 @@ a {
 
 .winamp-channel-btn.active {
   background: #9fd2ff;
+}
+
+#winamp-status {
+  grid-area: status;
+}
+
+.winamp-shell > .resume-note:last-child {
+  grid-area: source;
+}
+
+@media (max-width: 960px) {
+  .winamp-shell {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "player"
+      "playlist"
+      "status"
+      "source";
+  }
+
+  .winamp-channel-list {
+    max-height: 10rem;
+  }
 }
 
 .sr-only {
