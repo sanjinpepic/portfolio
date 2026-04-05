@@ -8,6 +8,7 @@ const menuDropdowns = [...document.querySelectorAll(".menu-dropdown")];
 let portfolioApps = [...(window.PORTFOLIO_APPS || [])].sort((a, b) => (a.order || 0) - (b.order || 0));
 const clock = document.getElementById("clock");
 const BROWSER_HOME_URL = "about:home";
+const DESKTOP_STATE_KEY = "portfolio.desktop.state.v1";
 const mobileLayoutQuery = window.matchMedia("(max-width: 900px)");
 let projectList = null;
 let browserFrame = null;
@@ -138,6 +139,87 @@ function syncDynamicElements() {
 }
 let topZ = 10;
 let activeWindowId = null;
+let isRestoringDesktopState = false;
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(value, max));
+}
+function parseNumericStyle(value) {
+  if (typeof value !== "string") return null;
+  const parsed = Number.parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+function applyClampedWindowPosition(win, left, top) {
+  if (!Number.isFinite(left) || !Number.isFinite(top)) return;
+  const maxX = Math.max(0, desktop.clientWidth - win.offsetWidth);
+  const maxY = Math.max(0, desktop.clientHeight - win.offsetHeight);
+  win.style.left = `${clamp(left, 0, maxX)}px`;
+  win.style.top = `${clamp(top, 0, maxY)}px`;
+}
+function collectDesktopState() {
+  const state = {
+    openWindowIds: windows.filter((win) => win.classList.contains("open")).map((win) => win.id),
+    windows: {},
+    darkDesktop: document.body.classList.contains("dark-desktop")
+  };
+  windows.forEach((win) => {
+    state.windows[win.id] = {
+      left: parseNumericStyle(win.style.left),
+      top: parseNumericStyle(win.style.top),
+      zIndex: parseNumericStyle(win.style.zIndex)
+    };
+  });
+  return state;
+}
+function saveDesktopState() {
+  if (isRestoringDesktopState) return;
+  try {
+    window.localStorage.setItem(DESKTOP_STATE_KEY, JSON.stringify(collectDesktopState()));
+  } catch {
+    // Ignore storage quota/privacy mode failures.
+  }
+}
+function restoreDesktopState() {
+  let parsed;
+  try {
+    parsed = JSON.parse(window.localStorage.getItem(DESKTOP_STATE_KEY) || "null");
+  } catch {
+    return false;
+  }
+  if (!parsed || typeof parsed !== "object") return false;
+  const windowState = parsed.windows && typeof parsed.windows === "object" ? parsed.windows : {};
+  const openIds = Array.isArray(parsed.openWindowIds) ? parsed.openWindowIds : [];
+  isRestoringDesktopState = true;
+  try {
+    document.body.classList.toggle("dark-desktop", Boolean(parsed.darkDesktop));
+    windows.forEach((win) => {
+      const info = windowState[win.id];
+      if (!info || typeof info !== "object") return;
+      applyClampedWindowPosition(win, Number(info.left), Number(info.top));
+      if (Number.isFinite(Number(info.zIndex))) {
+        win.style.zIndex = String(Number(info.zIndex));
+      }
+    });
+    windows.forEach((win) => win.classList.remove("open"));
+    const validOpenWindows = openIds
+      .map((id) => document.getElementById(id))
+      .filter((win) => win && windows.includes(win));
+    if (validOpenWindows.length === 0) return false;
+    const sortedByZ = [...validOpenWindows].sort(
+      (a, b) => Number(a.style.zIndex || 0) - Number(b.style.zIndex || 0)
+    );
+    sortedByZ.forEach((win) => openWindow(win.id));
+    const restoredTop = windows.reduce((maxZ, win) => Math.max(maxZ, Number(win.style.zIndex || 0)), 10);
+    topZ = restoredTop;
+    const topOpenWindow = windows
+      .filter((win) => win.classList.contains("open"))
+      .sort((a, b) => Number(a.style.zIndex || 0) - Number(b.style.zIndex || 0))
+      .pop();
+    activeWindowId = topOpenWindow?.id || null;
+    return true;
+  } finally {
+    isRestoringDesktopState = false;
+  }
+}
 function updateClock() {
   const now = new Date();
   clock.textContent = now.toLocaleString([], {
@@ -168,7 +250,7 @@ function openWindow(id) {
   }
   win.classList.add("open");
   bringToFront(win);
-  focusWindow(win);
+  saveDesktopState();
 }
 function closeWindow(id) {
   const win = document.getElementById(id);
@@ -181,6 +263,7 @@ function closeWindow(id) {
       .pop();
     activeWindowId = topOpenWindow?.id || null;
   }
+  saveDesktopState();
 }
 // Only URLs explicitly listed in the app files (or the home URL) may load
 // in the iframe. All other navigation attempts are blocked.
@@ -323,6 +406,7 @@ function closeFocusedWindow() {
 function closeAllWindows() {
   windows.forEach((win) => win.classList.remove("open"));
   activeWindowId = null;
+  saveDesktopState();
 }
 function openAllWindows() {
   if (mobileLayoutQuery.matches) {
@@ -344,6 +428,7 @@ function cascadeWindows() {
       x += 34;
       y += 28;
     });
+  saveDesktopState();
 }
 function getMenuItems(menu) {
   return [...menu.querySelectorAll('[role="menuitem"]')];
@@ -504,12 +589,14 @@ windows.forEach((win) => {
     if (handle.hasPointerCapture(event.pointerId)) {
       handle.releasePointerCapture(event.pointerId);
     }
+    saveDesktopState();
   });
   handle.addEventListener("pointercancel", (event) => {
     dragging = false;
     if (handle.hasPointerCapture(event.pointerId)) {
       handle.releasePointerCapture(event.pointerId);
     }
+    saveDesktopState();
   });
   handle.addEventListener("pointermove", onMove);
   win.addEventListener("mousedown", () => {
@@ -564,7 +651,10 @@ function runMenuAction(action) {
   if (action === "close-all") closeAllWindows();
   if (action === "open-all") openAllWindows();
   if (action === "cascade") cascadeWindows();
-  if (action === "toggle-theme") document.body.classList.toggle("dark-desktop");
+  if (action === "toggle-theme") {
+    document.body.classList.toggle("dark-desktop");
+    saveDesktopState();
+  }
   closeMenus();
 }
 menuActions.forEach((actionButton) => {
@@ -658,6 +748,6 @@ async function initDesktop() {
   bindDynamicContentEvents();
   renderProjects();
   await loadResumeTextFile();
-  openWindow("about-window");
+  if (!restoreDesktopState()) openWindow("about-window");
 }
 initDesktop();
