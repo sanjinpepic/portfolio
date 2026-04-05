@@ -1129,9 +1129,13 @@ function bindDynamicContentEvents() {
         "wheel",
         (event) => {
           if (mobileLayoutQuery.matches) return;
-          if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
-          timelineTrack.scrollLeft += event.deltaY;
-          event.preventDefault();
+          const canScrollHorizontally = timelineTrack.scrollWidth > timelineTrack.clientWidth;
+          if (!canScrollHorizontally) return;
+          const horizontalDelta = event.deltaY !== 0 ? event.deltaY : event.deltaX;
+          if (!horizontalDelta) return;
+          const previousScrollLeft = timelineTrack.scrollLeft;
+          timelineTrack.scrollLeft += horizontalDelta;
+          if (timelineTrack.scrollLeft !== previousScrollLeft) event.preventDefault();
         },
         { passive: false }
       );
