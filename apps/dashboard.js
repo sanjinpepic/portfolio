@@ -4,14 +4,14 @@
   let cachedFactAt = 0;
   let factProviderIndex = Math.floor(Math.random() * 5);
   let pizzaRefreshTimer = null;
-  const FACT_CACHE_MS = 45 * 1000;
+  const FACT_CACHE_MS = 90 * 1000;
 
   function normalizeFact(text) {
     if (typeof text !== "string") return "";
     return text.replace(/\s+/g, " ").trim();
   }
 
-  async function fetchJsonWithFallback(urls, timeoutMs = 3000) {
+  async function fetchJsonWithFallback(urls, timeoutMs = 1800) {
     for (const url of urls) {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), timeoutMs);
