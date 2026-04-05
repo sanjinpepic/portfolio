@@ -13,6 +13,21 @@ const mobileAppTitle = document.getElementById("mobile-app-title");
 const mobileCloseBtn = document.getElementById("mobile-close-btn");
 const BROWSER_HOME_URL = "about:home";
 const DESKTOP_STATE_KEY = "portfolio.desktop.state.v1";
+const THEME_STATE_KEY = "portfolio.desktop.theme.v1";
+const DEFAULT_THEME = "classic";
+const LEGACY_DARK_THEME = "midnight";
+const THEME_ACTION_MAP = {
+  "set-theme-classic": "classic",
+  "set-theme-midnight": "midnight",
+  "set-theme-sunset": "sunset"
+};
+const THEME_PROFILES = {
+  classic: { clickGain: 1, flutterRange: 4, flutterInterval: 900 },
+  midnight: { clickGain: 0.82, flutterRange: 3, flutterInterval: 960 },
+  sunset: { clickGain: 1.15, flutterRange: 5, flutterInterval: 860 }
+};
+let activeThemeName = DEFAULT_THEME;
+let activeThemeProfile = THEME_PROFILES[DEFAULT_THEME];
 const mobileLayoutQuery = window.matchMedia("(max-width: 900px)");
 const WINAMP_PLAYLIST = [
   { id: "K0HSD_i2DvA", title: "Daft Punk - Around The World (Official Music Video Remastered)" },
@@ -177,8 +192,7 @@ function applyClampedWindowPosition(win, left, top) {
 function collectDesktopState() {
   const state = {
     openWindowIds: windows.filter((win) => win.classList.contains("open")).map((win) => win.id),
-    windows: {},
-    darkDesktop: document.body.classList.contains("dark-desktop")
+    windows: {}
   };
   windows.forEach((win) => {
     state.windows[win.id] = {
@@ -188,6 +202,49 @@ function collectDesktopState() {
     };
   });
   return state;
+}
+function resolveThemeName(rawThemeName) {
+  if (typeof rawThemeName !== "string") return DEFAULT_THEME;
+  const normalizedName = rawThemeName.trim().toLowerCase();
+  return Object.hasOwn(THEME_PROFILES, normalizedName) ? normalizedName : DEFAULT_THEME;
+}
+function updateThemeMenuLabels() {
+  const themeOptionButtons = [...document.querySelectorAll("[data-theme-option]")];
+  themeOptionButtons.forEach((button) => {
+    const option = button.dataset.themeOption;
+    const baseLabel = button.dataset.themeLabel || button.textContent.replace(/^✓\s*/, "").trim();
+    button.dataset.themeLabel = baseLabel;
+    button.textContent = option === activeThemeName ? `✓ ${baseLabel}` : baseLabel;
+    button.setAttribute("aria-checked", option === activeThemeName ? "true" : "false");
+  });
+}
+function applyThemeAudioProfile() {
+  activeThemeProfile = THEME_PROFILES[activeThemeName] || THEME_PROFILES[DEFAULT_THEME];
+  if (typeof RetroSounds?.setProfile === "function") {
+    RetroSounds.setProfile({ clickGain: activeThemeProfile.clickGain });
+  }
+  restartWinampFlutter();
+}
+function applyTheme(themeName, { persist = true } = {}) {
+  activeThemeName = resolveThemeName(themeName);
+  document.body.dataset.theme = activeThemeName;
+  updateThemeMenuLabels();
+  applyThemeAudioProfile();
+  if (!persist) return;
+  try {
+    window.localStorage.setItem(THEME_STATE_KEY, activeThemeName);
+  } catch {
+    // Ignore storage quota/privacy mode failures.
+  }
+}
+function restoreThemePreference() {
+  let savedTheme = null;
+  try {
+    savedTheme = window.localStorage.getItem(THEME_STATE_KEY);
+  } catch {
+    savedTheme = null;
+  }
+  applyTheme(savedTheme || DEFAULT_THEME, { persist: false });
 }
 function saveDesktopState() {
   if (isRestoringDesktopState) return;
@@ -207,9 +264,18 @@ function restoreDesktopState() {
   if (!parsed || typeof parsed !== "object") return false;
   const windowState = parsed.windows && typeof parsed.windows === "object" ? parsed.windows : {};
   const openIds = Array.isArray(parsed.openWindowIds) ? parsed.openWindowIds : [];
+  const hasThemePreference = (() => {
+    try {
+      return Boolean(window.localStorage.getItem(THEME_STATE_KEY));
+    } catch {
+      return false;
+    }
+  })();
   isRestoringDesktopState = true;
   try {
-    document.body.classList.toggle("dark-desktop", Boolean(parsed.darkDesktop));
+    if (!hasThemePreference && parsed.darkDesktop === true) {
+      applyTheme(LEGACY_DARK_THEME);
+    }
     windows.forEach((win) => {
       const info = windowState[win.id];
       if (!info || typeof info !== "object") return;
@@ -742,12 +808,14 @@ function restartWinampFlutter() {
     winampFlutterTimer = null;
   }
   if (!winampPlayer || winampMuted || !winampPlaying || winampLastVolume <= 0) return;
+  const flutterRange = Math.max(1, Number(activeThemeProfile?.flutterRange) || 4);
+  const flutterInterval = Math.max(250, Number(activeThemeProfile?.flutterInterval) || 900);
   winampFlutterTimer = window.setInterval(() => {
     if (!winampPlayer || winampMuted || !winampPlaying) return;
-    const flutterAmount = Math.round((Math.random() - 0.5) * 4);
+    const flutterAmount = Math.round((Math.random() - 0.5) * flutterRange);
     const adjustedVolume = clamp(winampLastVolume + flutterAmount, 1, 100);
     winampPlayer.setVolume(adjustedVolume);
-  }, 900);
+  }, flutterInterval);
 }
 function selectWinampChannel(index, { autoPlay = true } = {}) {
   if (!winampPlayer || !WINAMP_PLAYLIST[index]) return;
@@ -1206,10 +1274,7 @@ function runMenuAction(action) {
   if (action === "close-all") closeAllWindows();
   if (action === "open-all") openAllWindows();
   if (action === "cascade") cascadeWindows();
-  if (action === "toggle-theme") {
-    document.body.classList.toggle("dark-desktop");
-    saveDesktopState();
-  }
+  if (THEME_ACTION_MAP[action]) applyTheme(THEME_ACTION_MAP[action]);
   if (action === "toggle-sounds") RetroSounds.toggle();
   if (action === "new-sticky") createStickyNote();
   closeMenus();
@@ -1528,6 +1593,7 @@ const vintageSpeaker = (() => {
 const RetroSounds = (() => {
   let ctx = null;
   let enabled = localStorage.getItem("portfolio.sounds") === "on";
+  let clickGain = 1;
 
   function getCtx() {
     if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1559,7 +1625,7 @@ const RetroSounds = (() => {
   return {
     open:  () => play([{ freq: 523, start: 0, dur: 0.07 }, { freq: 659, start: 0.06, dur: 0.1 }]),
     close: () => play([{ freq: 330, start: 0, dur: 0.08 }, { freq: 220, start: 0.06, dur: 0.1 }]),
-    click: () => play([{ freq: 440, start: 0, dur: 0.06, vol: 0.035 }]),
+    click: () => play([{ freq: 440, start: 0, dur: 0.06, vol: 0.035 * clickGain }]),
     error: () => play([{ freq: 180, start: 0, dur: 0.18, type: "sawtooth" }, { freq: 140, start: 0.15, dur: 0.22, type: "sawtooth" }]),
     toggle() {
       enabled = !enabled;
@@ -1573,6 +1639,10 @@ const RetroSounds = (() => {
       const btn = document.getElementById("sounds-menu-item");
       if (btn) btn.textContent = `Sounds: ${enabled ? "On" : "Off"}`;
     },
+    setProfile(profile = {}) {
+      const nextGain = Number(profile.clickGain);
+      clickGain = Number.isFinite(nextGain) ? clamp(nextGain, 0.65, 1.3) : 1;
+    }
   };
 })();
 
@@ -1987,6 +2057,7 @@ function triggerBsod() {
 
 async function initDesktop() {
   runBootSequence();
+  restoreThemePreference();
   syncDynamicElements();
   bindIconFallbackHandlers();
   bindDynamicContentEvents();
@@ -1998,6 +2069,6 @@ async function initDesktop() {
   RetroSounds.syncLabel();
   renderProjects();
   await loadResumeTextFile();
-  openWindow("about-window");
+  if (!restoreDesktopState()) openWindow("about-window");
 }
 initDesktop();
