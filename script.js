@@ -328,30 +328,229 @@ function renderProjects() {
 function buildBrowserHomeMarkup() {
   const items = portfolioApps.map((app, index) => {
     const orderLabel = String(app.order || index + 1).padStart(2, "0");
-    const body = app.url ? `<a href="${app.url}">${orderLabel} — ${app.title}</a>` : `${orderLabel} — ${app.title}`;
-    return `<li>${body}</li>`;
+    const title = escapeHtml(app.title || `Product ${orderLabel}`);
+    const description = escapeHtml(app.description || "Retro project preview");
+    const safeUrl = app.url ? escapeHtml(app.url) : "";
+    const safeGithubUrl = app.githubUrl ? escapeHtml(app.githubUrl) : "";
+    const launchButton = app.url
+      ? `<a class="product-link" href="${safeUrl}">Launch</a>`
+      : `<span class="product-link disabled" aria-disabled="true">Offline</span>`;
+    const repoLink = app.githubUrl
+      ? `<a class="repo-link" href="${safeGithubUrl}">Source</a>`
+      : "";
+    return `<article class="product-card" style="--delay:${index * 90}ms">
+      <div class="card-glow" aria-hidden="true"></div>
+      <p class="product-index">${orderLabel}</p>
+      <h2>${title}</h2>
+      <p class="product-copy">${description}</p>
+      <div class="product-actions">${launchButton}${repoLink}</div>
+    </article>`;
   });
   return `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Projects Home</title>
-    <link rel="stylesheet" href="styles.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Retro Products Home</title>
     <style>
-      body { background: #f4f4f4; color: #111; margin: 0; padding: 1rem 1.25rem; font-size: 1.35rem; }
-      h1 { margin: 0 0 0.6rem; font-size: 1.8rem; }
-      p { margin: 0 0 0.7rem; }
-      ul { margin: 0; padding-left: 1.1rem; }
-      li { margin-bottom: 0.55rem; }
-      a { color: #133f9a; }
+      :root {
+        --bg-top: #28004d;
+        --bg-bottom: #04040f;
+        --crt-cyan: #3bf6ff;
+        --crt-magenta: #ff58cc;
+        --crt-lime: #b7ff33;
+        --panel: rgba(10, 10, 25, 0.72);
+        --line: rgba(255, 255, 255, 0.06);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "VT323", "Courier New", monospace;
+        color: #e9eeff;
+        background:
+          radial-gradient(circle at 20% 15%, rgba(255, 88, 204, 0.22), transparent 45%),
+          radial-gradient(circle at 80% 0%, rgba(59, 246, 255, 0.2), transparent 40%),
+          linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
+        overflow-x: hidden;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background: repeating-linear-gradient(
+          180deg,
+          transparent 0 2px,
+          var(--line) 2px 3px
+        );
+        opacity: 0.55;
+      }
+
+      .page {
+        position: relative;
+        z-index: 1;
+        padding: 1.1rem 1rem 2rem;
+      }
+
+      .hero {
+        border: 2px solid var(--crt-cyan);
+        background: var(--panel);
+        box-shadow: 0 0 0 2px rgba(59, 246, 255, 0.25), 0 0 24px rgba(59, 246, 255, 0.35);
+        padding: 0.8rem 1rem 0.65rem;
+        margin-bottom: 0.9rem;
+        animation: pulse-border 2.2s infinite ease-in-out;
+      }
+
+      .kicker {
+        color: var(--crt-lime);
+        letter-spacing: 0.08em;
+        margin: 0;
+        text-transform: uppercase;
+      }
+
+      .hero h1 {
+        margin: 0.2rem 0 0.3rem;
+        font-size: clamp(1.7rem, 4.5vw, 2.5rem);
+        color: var(--crt-cyan);
+        text-shadow: 0 0 7px rgba(59, 246, 255, 0.7);
+      }
+
+      .hero p {
+        margin: 0;
+      }
+
+      .marquee {
+        margin-top: 0.6rem;
+        overflow: hidden;
+        border-top: 1px solid rgba(255, 255, 255, 0.35);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.35);
+        padding: 0.2rem 0;
+        white-space: nowrap;
+      }
+
+      .marquee span {
+        display: inline-block;
+        padding-left: 100%;
+        color: var(--crt-magenta);
+        animation: marquee 15s linear infinite;
+      }
+
+      .products {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 0.8rem;
+      }
+
+      .product-card {
+        position: relative;
+        border: 2px solid #d6dbff;
+        background: linear-gradient(180deg, rgba(28, 35, 72, 0.9), rgba(5, 8, 22, 0.92));
+        box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.08), 0 5px 0 rgba(0, 0, 0, 0.4);
+        padding: 0.75rem;
+        overflow: hidden;
+        transform: translateY(8px);
+        opacity: 0;
+        animation: card-in 500ms steps(10, end) forwards;
+        animation-delay: var(--delay, 0ms);
+      }
+
+      .product-card:hover {
+        transform: translateY(-2px) scale(1.015);
+        transition: transform 130ms steps(4, end);
+      }
+
+      .card-glow {
+        position: absolute;
+        inset: -35% auto auto -20%;
+        width: 65%;
+        aspect-ratio: 1;
+        background: radial-gradient(circle, rgba(59, 246, 255, 0.25), transparent 70%);
+        pointer-events: none;
+        animation: drift 3.4s infinite alternate ease-in-out;
+      }
+
+      .product-index {
+        margin: 0;
+        color: var(--crt-lime);
+      }
+
+      h2 {
+        margin: 0.2rem 0;
+        font-size: 1.45rem;
+      }
+
+      .product-copy {
+        margin: 0 0 0.55rem;
+      }
+
+      .product-actions {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .product-link,
+      .repo-link {
+        text-decoration: none;
+        color: #0d1020;
+        background: #9fffff;
+        border: 2px solid #fff;
+        padding: 0.18rem 0.55rem;
+        box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5);
+      }
+
+      .repo-link {
+        background: #ffd3f1;
+      }
+
+      .product-link:hover,
+      .repo-link:hover {
+        filter: brightness(1.08);
+      }
+
+      .product-link.disabled {
+        opacity: 0.5;
+        pointer-events: none;
+      }
+
+      @keyframes marquee {
+        from { transform: translateX(0); }
+        to { transform: translateX(-100%); }
+      }
+
+      @keyframes pulse-border {
+        0%, 100% { box-shadow: 0 0 0 2px rgba(59, 246, 255, 0.25), 0 0 24px rgba(59, 246, 255, 0.35); }
+        50% { box-shadow: 0 0 0 2px rgba(255, 88, 204, 0.35), 0 0 26px rgba(255, 88, 204, 0.4); }
+      }
+
+      @keyframes drift {
+        from { transform: translate(0, 0); }
+        to { transform: translate(20%, 12%); }
+      }
+
+      @keyframes card-in {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
     </style>
   </head>
   <body>
-    <h1>Projects Home</h1>
-    <p>Select a project to view:</p>
-    <ul>
-      ${items.join("\n      ")}
-    </ul>
+    <main class="page">
+      <section class="hero">
+        <p class="kicker">Portfolio // Retro Product Deck</p>
+        <h1>Welcome to the Product Showcase</h1>
+        <p>Animated previews, neon palette, and old-school web energy.</p>
+        <div class="marquee"><span>Now Loading: Strategy • Analytics • Product Experiments • Interactive Demos •</span></div>
+      </section>
+      <section class="products" aria-label="Product grid">
+        ${items.join("\n        ")}
+      </section>
+    </main>
   </body>
 </html>`;
 }
