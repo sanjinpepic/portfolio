@@ -32,6 +32,7 @@
             <li role="none"><button role="menuitem" tabindex="-1" data-action="open-about">Open About</button></li>
             <li role="none"><button role="menuitem" tabindex="-1" data-action="open-projects">Open Projects</button></li>
             <li role="none"><button role="menuitem" tabindex="-1" data-action="open-browser">Open Browser</button></li>
+            <li role="none"><button role="menuitem" tabindex="-1" data-action="open-news">Open News Feed</button></li>
             <li role="none"><button role="menuitem" tabindex="-1" data-action="open-resume">Open Resume</button></li>
             <li role="none"><button role="menuitem" tabindex="-1" data-action="open-timeline">Open Timeline</button></li>
             <li role="none"><button role="menuitem" tabindex="-1" data-action="open-contact">Open Contact</button></li>
@@ -129,28 +130,32 @@
         <span class="icon" aria-hidden="true"><img class="icon-image" src="https://gitlab.com/metsatron/BeOS-r5-Icons/-/raw/master/apps/128/surfing_BeOS_browser_netpositive.png" alt="" /></span>
         <span class="label">Browser</span>
       </button>
-      <button class="desktop-icon" data-open="resume-window" style="--x: 3rem; --y: 28.5rem">
+      <button class="desktop-icon" data-open="news-window" style="--x: 3rem; --y: 28.5rem">
+        <span class="icon" aria-hidden="true"><img class="icon-image" src="https://gitlab.com/metsatron/BeOS-r5-Icons/-/raw/master/apps/128/news_news.png" alt="" /></span>
+        <span class="label">News Feed</span>
+      </button>
+      <button class="desktop-icon" data-open="resume-window" style="--x: 3rem; --y: 36.5rem">
         <span class="icon" aria-hidden="true"><img class="icon-image" src="https://gitlab.com/metsatron/BeOS-r5-Icons/-/raw/master/apps/128/BeOS_text.png" alt="" /></span>
         <span class="label">Resume</span>
       </button>
-      <button class="desktop-icon" data-open="timeline-window" style="--x: 3rem; --y: 36.5rem">
+      <button class="desktop-icon" data-open="timeline-window" style="--x: 3rem; --y: 44.5rem">
         <span class="icon" aria-hidden="true"><img class="icon-image" src="https://gitlab.com/metsatron/BeOS-r5-Icons/-/raw/master/apps/128/workspaces_workspaces2_workspaces.png" alt="" /></span>
         <span class="label">Timeline</span>
       </button>
-      <button class="desktop-icon" data-open="contact-window" style="--x: 3rem; --y: 44.5rem">
+      <button class="desktop-icon" data-open="contact-window" style="--x: 3rem; --y: 52.5rem">
         <span class="icon" aria-hidden="true"><img class="icon-image" src="https://gitlab.com/metsatron/BeOS-r5-Icons/-/raw/master/apps/128/BeOS_email.png" alt="" /></span>
         <span class="label">Contact</span>
       </button>
-      <button class="desktop-icon" data-open="dashboard-window" style="--x: 3rem; --y: 52.5rem">
+      <button class="desktop-icon" data-open="dashboard-window" style="--x: 3rem; --y: 60.5rem">
         <span class="icon" aria-hidden="true"><img class="icon-image" src="https://gitlab.com/metsatron/BeOS-r5-Icons/-/raw/master/apps/128/BeOS_pulse.png" alt="" /></span>
         <span class="label">Dashboard</span>
       </button>
 
-      <button class="desktop-icon" data-open="winamp-window" style="--x: 3rem; --y: 60.5rem">
+      <button class="desktop-icon" data-open="winamp-window" style="--x: 3rem; --y: 68.5rem">
         <span class="icon" aria-hidden="true"><img class="icon-image" src="assets/Winamp-logo.svg.png" alt="" /></span>
         <span class="label">Winamp TV</span>
       </button>
-      <button class="desktop-icon" data-open="terminal-window" style="--x: 3rem; --y: 68.5rem">
+      <button class="desktop-icon" data-open="terminal-window" style="--x: 3rem; --y: 76.5rem">
         <span class="icon" aria-hidden="true"><img class="icon-image" src="https://gitlab.com/metsatron/BeOS-r5-Icons/-/raw/master/apps/128/BeOS_terminal.png" alt="" /></span>
         <span class="label">Terminal</span>
       </button>
@@ -238,6 +243,29 @@
 </div>
 <p class="resume-note">If the embedded site blocks iframes, use the “Open in new tab” link from Projects.</p>
 <!-- END:inline windows/browser.html --></div>
+      </section>
+
+      <section
+        id="news-window"
+        class="window"
+        style="--left: 10rem; --top: 5rem; --width: 44rem; --height: 34rem"
+        aria-labelledby="news-title"
+      >
+        <header class="title-bar drag-handle">
+          <h2 id="news-title">Daily News Wire</h2>
+          <button class="close-btn" data-close="news-window" aria-label="Close News Feed">×</button>
+        </header>
+        <div class="window-content news-content" ><!-- START:inline windows/news.html -->
+<div class="news-shell">
+  <div class="news-toolbar" role="group" aria-label="News feed controls">
+    <button type="button" class="dashboard-refresh" id="news-refresh-btn">Refresh feeds</button>
+    <p class="news-meta" id="news-meta">Latest headlines from BBC, CNN, The Guardian, and HISTORY.</p>
+  </div>
+  <ul class="news-list" id="news-list">
+    <li class="news-item news-item--loading">Loading latest headlines…</li>
+  </ul>
+</div>
+<!-- END:inline windows/news.html --></div>
       </section>
 
       <section
@@ -656,6 +684,7 @@
     <script src="apps/pixel-runner.js"></script>
     <script src="apps/thesis.js"></script>
     <script src="apps/dashboard.js"></script>
+    <script src="apps/rss-news.js"></script>
     <script src="https://www.youtube.com/iframe_api"></script>
     <script type="module" src="js/main.js"></script>
     <script src="apps/github-repos.js"></script>
