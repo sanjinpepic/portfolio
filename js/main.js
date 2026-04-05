@@ -113,6 +113,31 @@ function runMenuAction(action) {
   closeMenus();
 }
 
+function rebalanceDesktopIconColumns() {
+  if (mobileLayoutQuery.matches || !desktop || openers.length === 0) return;
+
+  const rootFontSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+  const firstX = Number.parseFloat(openers[0].style.getPropertyValue("--x")) || 3;
+  const firstY = Number.parseFloat(openers[0].style.getPropertyValue("--y")) || 4.5;
+  const secondY = Number.parseFloat(openers[1]?.style.getPropertyValue("--y")) || firstY + 8;
+  const rowStepRem = Math.max(1, secondY - firstY);
+  const colStepRem = 8;
+  const iconHeightPx = openers[0].offsetHeight || rowStepRem * rootFontSize;
+  const availableHeightPx = desktop.clientHeight;
+  const firstYpx = firstY * rootFontSize;
+  const rowsPerColumn = Math.max(
+    1,
+    Math.floor((availableHeightPx - firstYpx - iconHeightPx) / (rowStepRem * rootFontSize)) + 1
+  );
+
+  openers.forEach((icon, index) => {
+    const column = Math.floor(index / rowsPerColumn);
+    const row = index % rowsPerColumn;
+    icon.style.setProperty("--x", `${firstX + column * colStepRem}rem`);
+    icon.style.setProperty("--y", `${firstY + row * rowStepRem}rem`);
+  });
+}
+
 // ── Event binding ────────────────────────────────────────────
 
 openers.forEach((icon) => {
@@ -250,7 +275,10 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
+window.addEventListener("resize", rebalanceDesktopIconColumns);
+
 mobileLayoutQuery.addEventListener("change", () => {
+  rebalanceDesktopIconColumns();
   if (!mobileLayoutQuery.matches) {
     updateMobileNav(null);
     return;
@@ -304,6 +332,7 @@ async function initDesktop() {
   loadStickyNotes();
   RetroSounds.syncLabel();
   renderProjects();
+  rebalanceDesktopIconColumns();
   await loadResumeTextFile();
   if (!restoreDesktopState()) openWindow("about-window");
 }
