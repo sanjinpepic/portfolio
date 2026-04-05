@@ -1920,6 +1920,98 @@ a {
   font-style: italic;
 }
 
+/* ── News feed app ─────────────────────────────────────────── */
+.news-content {
+  background: #dce7fa;
+}
+
+#news-window.open {
+  display: flex;
+  flex-direction: column;
+}
+
+#news-window .window-content {
+  flex: 1;
+  max-height: none;
+}
+
+.news-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  height: 100%;
+}
+
+.news-toolbar {
+  border: 2px solid #7f96c9;
+  background: #f4f7ff;
+  box-shadow: inset 1px 1px #fff, inset -1px -1px #9aaad0;
+  padding: 0.45rem 0.55rem;
+}
+
+.news-meta {
+  margin: 0.3rem 0 0;
+  color: #1f3b7d;
+  font-size: 0.95rem;
+}
+
+.news-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.45rem;
+  overflow: auto;
+}
+
+.news-item {
+  border: 2px solid #7f96c9;
+  background: #f4f7ff;
+  box-shadow: inset 1px 1px #fff, inset -1px -1px #9aaad0;
+  padding: 0.45rem 0.55rem;
+}
+
+.news-item--loading {
+  color: #26478f;
+}
+
+.news-item-topline {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.news-source {
+  display: inline-block;
+  color: #1d3d86;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: 0.86rem;
+}
+
+.news-date {
+  color: #4a5f91;
+  font-size: 0.86rem;
+}
+
+.news-link {
+  display: inline-block;
+  margin-top: 0.18rem;
+  color: #0f2d74;
+}
+
+.news-link:hover,
+.news-link:focus-visible {
+  color: #204ea9;
+}
+
+.news-item p {
+  margin: 0.22rem 0 0;
+  color: #1d366e;
+  font-size: 0.92rem;
+  line-height: 1.2;
+}
+
 /* ── Dashboard app ─────────────────────────────────────────── */
 .dashboard-content {
   background: #dce7fa;
