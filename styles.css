@@ -1547,6 +1547,12 @@ a {
 
 .winamp-channel-btn {
   width: 100%;
+  min-height: 2.1rem;
+  padding-top: 0.42rem;
+  padding-bottom: 0.42rem;
+  line-height: 1.15;
+  display: flex;
+  align-items: center;
   text-align: left;
   white-space: nowrap;
   overflow: hidden;
