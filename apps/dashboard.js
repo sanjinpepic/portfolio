@@ -55,22 +55,15 @@
     {
       source: "ISS Now",
       load: async () => {
-        const data = await fetchJsonWithFallback([
-          "https://api.allorigins.win/raw?url=http://api.open-notify.org/iss-now.json",
-          "http://api.open-notify.org/iss-now.json"
-        ]);
-
-        if (!data?.iss_position?.latitude || !data?.iss_position?.longitude) return "";
-        return `The ISS is currently near latitude ${data.iss_position.latitude}, longitude ${data.iss_position.longitude}.`;
+        const data = await fetchJsonWithFallback(["https://api.wheretheiss.at/v1/satellites/25544"]);
+        if (typeof data?.latitude !== "number" || typeof data?.longitude !== "number") return "";
+        return `The ISS is currently near latitude ${data.latitude.toFixed(2)}, longitude ${data.longitude.toFixed(2)}.`;
       }
     },
     {
       source: "Astronaut Roll Call",
       load: async () => {
-        const data = await fetchJsonWithFallback([
-          "https://api.allorigins.win/raw?url=http://api.open-notify.org/astros.json",
-          "http://api.open-notify.org/astros.json"
-        ]);
+        const data = await fetchJsonWithFallback(["https://api.allorigins.win/raw?url=http://api.open-notify.org/astros.json"]);
 
         if (!data?.number || !Array.isArray(data.people) || !data.people.length) return "";
         const names = data.people.slice(0, 4).map((person) => person.name).join(", ");
