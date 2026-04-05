@@ -1,0 +1,22 @@
+<div class="winamp-shell">
+  <div class="winamp-screen-wrap">
+    <div id="winamp-youtube-player" class="winamp-player" aria-label="Winamp style music video player"></div>
+    <div class="winamp-crt-overlay" aria-hidden="true"></div>
+  </div>
+
+  <div class="winamp-controls">
+    <button type="button" class="retro-btn" id="winamp-prev">⏮ Prev</button>
+    <button type="button" class="retro-btn" id="winamp-toggle">▶ Play</button>
+    <button type="button" class="retro-btn" id="winamp-next">Next ⏭</button>
+  </div>
+
+  <div class="winamp-controls">
+    <button type="button" class="retro-btn" id="winamp-mute-toggle">🔇 Muted</button>
+    <label class="winamp-volume-label" for="winamp-volume">Volume</label>
+    <input id="winamp-volume" type="range" min="0" max="100" value="0" step="1" />
+  </div>
+
+  <div id="winamp-channel-list" class="winamp-channel-list" role="listbox" aria-label="Video channels"></div>
+  <p id="winamp-status" class="resume-note">Loading curated channel lineup…</p>
+  <p class="resume-note">Source: YouTube embed (no-cookie). Ads cannot be fully controlled by this site.</p>
+</div>
