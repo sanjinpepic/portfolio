@@ -654,7 +654,6 @@ function navigateBrowserTo(url) {
   }
   if (browserFrame) browserFrame.removeAttribute("srcdoc");
   if (browserAddress) browserAddress.value = normalizedUrl;
-  if (browserFrame) browserFrame.removeAttribute("srcdoc");
   if (browserFrame) browserFrame.src = normalizedUrl;
   if (browserStatus) browserStatus.textContent = `Loading ${normalizedUrl}...`;
   if (browserTitle) browserTitle.textContent = "Netscape Navigator";
@@ -738,7 +737,7 @@ function selectWinampChannel(index, { autoPlay = true } = {}) {
 function setupWinampPlaylistUi() {
   if (!winampChannelList) return;
   winampChannelList.innerHTML = WINAMP_PLAYLIST.map((track, index) =>
-    `<button type="button" class="retro-btn winamp-channel-btn" data-winamp-index="${index}" role="option">CH ${String(index + 1).padStart(2, "0")} · ${track.title}</button>`
+    `<button type="button" class="retro-btn winamp-channel-btn" data-winamp-index="${index}" role="option">CH ${String(index + 1).padStart(2, "0")} · ${escapeHtml(track.title)}</button>`
   ).join("\n");
 
   if (!winampPlaylistBound) {
