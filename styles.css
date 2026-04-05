@@ -1834,7 +1834,17 @@ a {
 
 /* ── Dashboard app ─────────────────────────────────────────── */
 .dashboard-content {
-  background: linear-gradient(180deg, #e8eefc 0%, #dce7fa 100%);
+  background: #dce7fa;
+}
+
+#dashboard-window.open {
+  display: flex;
+  flex-direction: column;
+}
+
+#dashboard-window .window-content {
+  flex: 1;
+  max-height: none;
 }
 
 .dashboard-shell {
