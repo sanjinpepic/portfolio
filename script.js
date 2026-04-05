@@ -22,6 +22,7 @@ let browserGo = null;
 let browserThrobber = null;
 let browserStatus = null;
 let resumeText = null;
+let activeMenuButton = null;
 function escapeHtml(value) {
   return value
     .replaceAll("&", "&amp;")
@@ -167,6 +168,7 @@ function openWindow(id) {
   }
   win.classList.add("open");
   bringToFront(win);
+  focusWindow(win);
 }
 function closeWindow(id) {
   const win = document.getElementById(id);
@@ -343,8 +345,59 @@ function cascadeWindows() {
       y += 28;
     });
 }
-function closeMenus() {
+function getMenuItems(menu) {
+  return [...menu.querySelectorAll('[role="menuitem"]')];
+}
+function focusWindow(win) {
+  if (!win?.classList.contains("open")) return;
+  const focusTarget =
+    win.querySelector(".title-bar .close-btn") ||
+    win.querySelector(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    );
+  focusTarget?.focus();
+}
+function focusTopMenuButton(index) {
+  const normalized = (index + menuButtons.length) % menuButtons.length;
+  menuButtons[normalized]?.focus();
+}
+function openMenu(button, { focusFirstItem = false } = {}) {
+  if (!button) return;
+  const targetMenu = document.getElementById(button.dataset.menu);
+  if (!targetMenu) return;
   menuDropdowns.forEach((dropdown) => dropdown.classList.remove("open"));
+  menuButtons.forEach((menuButton) => menuButton.setAttribute("aria-expanded", "false"));
+  targetMenu.classList.add("open");
+  button.setAttribute("aria-expanded", "true");
+  activeMenuButton = button;
+  if (focusFirstItem) getMenuItems(targetMenu)[0]?.focus();
+}
+function closeMenus({ returnFocus = false } = {}) {
+  menuDropdowns.forEach((dropdown) => dropdown.classList.remove("open"));
+  menuButtons.forEach((button) => button.setAttribute("aria-expanded", "false"));
+  if (returnFocus && activeMenuButton) {
+    activeMenuButton.focus();
+  }
+  activeMenuButton = null;
+}
+function moveMenuItemFocus(currentButton, direction) {
+  const menu = currentButton.closest(".menu-dropdown");
+  if (!menu) return;
+  const items = getMenuItems(menu);
+  const currentIndex = items.indexOf(currentButton);
+  if (currentIndex < 0) return;
+  const nextIndex = (currentIndex + direction + items.length) % items.length;
+  items[nextIndex]?.focus();
+}
+function switchMenuFromDropdown(currentButton, direction) {
+  const currentMenu = currentButton.closest(".menu-dropdown");
+  if (!currentMenu) return;
+  const currentTopButton = menuButtons.find((button) => button.dataset.menu === currentMenu.id);
+  const topIndex = menuButtons.indexOf(currentTopButton);
+  if (topIndex < 0) return;
+  const nextTopIndex = (topIndex + direction + menuButtons.length) % menuButtons.length;
+  const nextTopButton = menuButtons[nextTopIndex];
+  openMenu(nextTopButton, { focusFirstItem: true });
 }
 openers.forEach((icon) => {
   icon.addEventListener("click", () => {
@@ -471,11 +524,34 @@ desktop.addEventListener("dblclick", (event) => {
 });
 menuButtons.forEach((button) => {
   button.addEventListener("click", () => {
-    const targetId = button.dataset.menu;
-    const targetMenu = document.getElementById(targetId);
+    const targetMenu = document.getElementById(button.dataset.menu);
     const alreadyOpen = targetMenu?.classList.contains("open");
-    closeMenus();
-    if (targetMenu && !alreadyOpen) targetMenu.classList.add("open");
+    if (alreadyOpen) {
+      closeMenus({ returnFocus: true });
+      return;
+    }
+    openMenu(button, { focusFirstItem: false });
+  });
+  button.addEventListener("keydown", (event) => {
+    const index = menuButtons.indexOf(button);
+    if (event.key === "ArrowRight") {
+      event.preventDefault();
+      closeMenus();
+      focusTopMenuButton(index + 1);
+    }
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      closeMenus();
+      focusTopMenuButton(index - 1);
+    }
+    if (event.key === "ArrowDown" || event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      openMenu(button, { focusFirstItem: true });
+    }
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeMenus({ returnFocus: true });
+    }
   });
 });
 function runMenuAction(action) {
@@ -495,6 +571,46 @@ menuActions.forEach((actionButton) => {
   actionButton.addEventListener("click", () => {
     runMenuAction(actionButton.dataset.action);
   });
+  actionButton.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      moveMenuItemFocus(actionButton, 1);
+    }
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      moveMenuItemFocus(actionButton, -1);
+    }
+    if (event.key === "Home") {
+      event.preventDefault();
+      const menu = actionButton.closest(".menu-dropdown");
+      getMenuItems(menu)[0]?.focus();
+    }
+    if (event.key === "End") {
+      event.preventDefault();
+      const menu = actionButton.closest(".menu-dropdown");
+      const items = getMenuItems(menu);
+      items[items.length - 1]?.focus();
+    }
+    if (event.key === "ArrowRight") {
+      event.preventDefault();
+      switchMenuFromDropdown(actionButton, 1);
+    }
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      switchMenuFromDropdown(actionButton, -1);
+    }
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      runMenuAction(actionButton.dataset.action);
+    }
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeMenus({ returnFocus: true });
+    }
+    if (event.key === "Tab") {
+      closeMenus();
+    }
+  });
 });
 desktop?.addEventListener("click", (event) => {
   const actionTrigger = event.target.closest("[data-action]");
@@ -508,7 +624,13 @@ document.addEventListener("keydown", (event) => {
   if (event.key.toLowerCase() === "x") {
     closeFocusedWindow();
   }
-  if (event.key === "Escape") closeMenus();
+  if (event.key === "Escape") {
+    if (activeMenuButton) {
+      closeMenus({ returnFocus: true });
+      return;
+    }
+    closeMenus();
+  }
 });
 
 mobileLayoutQuery.addEventListener("change", () => {
