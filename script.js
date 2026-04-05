@@ -38,6 +38,7 @@ let winampNext = null;
 let winampMuteToggle = null;
 let winampVolume = null;
 let winampChannelList = null;
+let winampChannelFilter = null;
 let winampStatus = null;
 let winampActiveIndex = 0;
 let winampPlaying = false;
@@ -148,6 +149,7 @@ function syncDynamicElements() {
   winampMuteToggle = document.getElementById("winamp-mute-toggle");
   winampVolume = document.getElementById("winamp-volume");
   winampChannelList = document.getElementById("winamp-channel-list");
+  winampChannelFilter = document.getElementById("winamp-channel-filter");
   winampStatus = document.getElementById("winamp-status");
 }
 let topZ = 10;
@@ -697,9 +699,10 @@ function updateWinampUi() {
     winampMuteToggle.textContent = winampMuted ? "🔇 Muted" : "🔊 Sound On";
   }
   if (winampChannelList) {
-    [...winampChannelList.querySelectorAll(".winamp-channel-btn")].forEach((button, index) => {
-      button.setAttribute("aria-selected", index === winampActiveIndex ? "true" : "false");
-      button.classList.toggle("active", index === winampActiveIndex);
+    [...winampChannelList.querySelectorAll(".winamp-channel-btn")].forEach((button) => {
+      const channelIndex = Number(button.dataset.winampIndex);
+      button.setAttribute("aria-selected", channelIndex === winampActiveIndex ? "true" : "false");
+      button.classList.toggle("active", channelIndex === winampActiveIndex);
     });
   }
 }
@@ -734,11 +737,30 @@ function selectWinampChannel(index, { autoPlay = true } = {}) {
   if (winampStatus) winampStatus.textContent = `Now tuned to: ${WINAMP_PLAYLIST[index].title}`;
   updateWinampUi();
 }
+function getWinampGroupLabel(trackTitle = "") {
+  const artistName = trackTitle.split(" - ")[0]?.trim();
+  if (!artistName) return "Misc";
+  const firstChar = artistName.charAt(0).toUpperCase();
+  return /[A-Z]/.test(firstChar) ? firstChar : "#";
+}
 function setupWinampPlaylistUi() {
   if (!winampChannelList) return;
-  winampChannelList.innerHTML = WINAMP_PLAYLIST.map((track, index) =>
-    `<button type="button" class="retro-btn winamp-channel-btn" data-winamp-index="${index}" role="option">CH ${String(index + 1).padStart(2, "0")} · ${escapeHtml(track.title)}</button>`
-  ).join("\n");
+  const filterValue = winampChannelFilter?.value.trim().toLowerCase() || "";
+  const filteredPlaylist = WINAMP_PLAYLIST
+    .map((track, index) => ({ ...track, index }))
+    .filter(({ title }) => !filterValue || title.toLowerCase().includes(filterValue));
+
+  if (!filteredPlaylist.length) {
+    winampChannelList.innerHTML = '<p class="winamp-channel-empty">No channels match your filter.</p>';
+  } else {
+    let previousGroup = "";
+    winampChannelList.innerHTML = filteredPlaylist.map(({ title, index }) => {
+      const groupLabel = getWinampGroupLabel(title);
+      const groupHeader = groupLabel !== previousGroup ? `<p class="winamp-channel-group">${groupLabel}</p>` : "";
+      previousGroup = groupLabel;
+      return `${groupHeader}<button type="button" class="retro-btn winamp-channel-btn" data-winamp-index="${index}" role="option">CH ${String(index + 1).padStart(2, "0")} · ${title}</button>`;
+    }).join("\n");
+  }
 
   if (!winampPlaylistBound) {
     winampChannelList.addEventListener("click", (event) => {
@@ -746,6 +768,9 @@ function setupWinampPlaylistUi() {
       if (!channelButton) return;
       selectWinampChannel(Number(channelButton.dataset.winampIndex));
     });
+    if (winampChannelFilter) {
+      winampChannelFilter.addEventListener("input", setupWinampPlaylistUi);
+    }
     winampPlaylistBound = true;
   }
   updateWinampUi();

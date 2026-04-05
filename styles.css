@@ -1023,6 +1023,8 @@ a {
 .winamp-shell {
   display: grid;
   gap: 0.55rem;
+  grid-template-rows: auto auto auto auto minmax(0, 1fr) auto auto;
+  min-height: 100%;
 }
 
 .winamp-screen-wrap {
@@ -1145,9 +1147,34 @@ a {
 
 .winamp-channel-list {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
   gap: 0.35rem;
-  overflow: hidden;
+  align-content: start;
+  max-height: 100%;
+  overflow: auto;
+  padding-right: 0.2rem;
+}
+
+.winamp-channel-filter {
+  width: 100%;
+  border: 2px solid;
+  border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+  background: #ffffff;
+  padding: 0.2rem 0.4rem;
+  font: inherit;
+}
+
+.winamp-channel-group {
+  grid-column: 1 / -1;
+  margin-top: 0.35rem;
+  font-size: 0.95rem;
+  color: #1d2f40;
+}
+
+.winamp-channel-empty {
+  grid-column: 1 / -1;
+  margin: 0.25rem 0;
+  color: #333;
 }
 
 .winamp-channel-btn {
@@ -1160,6 +1187,18 @@ a {
 
 .winamp-channel-btn.active {
   background: #9fd2ff;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 @keyframes crt-flicker {
