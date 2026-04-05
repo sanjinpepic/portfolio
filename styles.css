@@ -697,10 +697,11 @@ a {
 
 .retro-btn {
   font: inherit;
+  line-height: 1;
   border: 2px solid;
   border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
-  background: var(--panel-gray);
-  padding: 0.1rem 0.5rem;
+  background: #d7d7d7;
+  padding: 0.25rem 0.45rem;
   cursor: pointer;
 }
 
@@ -712,34 +713,6 @@ a {
   border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
   color: var(--border-mid);
   cursor: default;
-}
-
-/* ── PDF / Resume viewer ────────────────────────────────── */
-
-.pdf-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.3rem 0;
-  flex-wrap: wrap;
-}
-
-.pdf-page-label {
-  padding: 0 0.15rem;
-}
-
-.retro-pdf-frame {
-  border: 2px solid;
-  border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
-  background: #fff;
-  overflow: auto;
-  max-height: 22rem;
-  display: flex;
-  justify-content: center;
-}
-
-.retro-pdf-canvas {
-  display: block;
 }
 
 .resume-content {
@@ -1103,20 +1076,6 @@ a {
   align-items: center;
   gap: 0.45rem;
   flex-wrap: wrap;
-}
-
-.retro-btn {
-  border: 2px solid;
-  border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
-  background: #d7d7d7;
-  font: inherit;
-  line-height: 1;
-  padding: 0.25rem 0.45rem;
-  cursor: pointer;
-}
-
-.retro-btn:active {
-  border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
 }
 
 .winamp-volume-label {
