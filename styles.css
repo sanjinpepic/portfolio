@@ -819,41 +819,6 @@ a {
   background: #ececec;
 }
 
-/* ── CRT Monitor effect ──────────────────────────────────────── */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0, 0, 0, 0.12) 2px,
-    rgba(0, 0, 0, 0.12) 4px
-  );
-  pointer-events: none;
-  z-index: 99997;
-  animation: crt-flicker 9s ease-in-out infinite alternate;
-}
-
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.62) 100%);
-  pointer-events: none;
-  z-index: 99996;
-}
-
-@keyframes crt-flicker {
-  0%, 90%  { opacity: 1; }
-  92%      { opacity: 0.97; }
-  93%      { opacity: 1; }
-  95%      { opacity: 0.95; }
-  96%      { opacity: 0.99; }
-  100%     { opacity: 1; }
-}
-
 /* ── Boot sequence ───────────────────────────────────────────── */
 #boot-overlay {
   position: fixed;
@@ -1053,15 +1018,6 @@ body::after {
   50%      { opacity: 0; }
 }
 
-/* ── Pixel rain canvas ──────────────────────────────────────── */
-#bg-canvas {
-  position: fixed;
-  inset: 2rem 0 0 0;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.16;
-}
-
 /* ── Easter egg error dialog ────────────────────────────────── */
 .error-dialog-body {
   display: flex;
@@ -1085,4 +1041,3 @@ body::after {
   display: flex;
   justify-content: center;
 }
-
