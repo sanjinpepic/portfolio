@@ -1327,12 +1327,23 @@ a {
 .terminal-content {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: auto;
+  flex: 1;
   background: #0d1a0d;
   color: #33ff33;
   padding: 0.4rem 0.5rem;
   font-size: 1.1rem;
   overflow: hidden;
+}
+
+#terminal-window.open {
+  display: flex;
+  flex-direction: column;
+}
+
+#terminal-window .window-content {
+  max-height: none;
+  padding: 0;
 }
 
 .terminal-output {
