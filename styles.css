@@ -114,10 +114,42 @@ body {
   color: var(--text-main);
   background: repeating-linear-gradient(
       45deg,
-      var(--desktop-overlay-hi) 0 2px,
+    var(--desktop-overlay-hi) 0 2px,
       var(--desktop-overlay-lo) 2px 4px
     ),
     var(--desktop-bg);
+}
+
+/* Retro square scrollbar theme (global) */
+* {
+  scrollbar-color: var(--border-dark) var(--panel-gray);
+  scrollbar-width: auto;
+}
+
+*::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--panel-gray);
+  border: 2px solid;
+  border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--surface-button);
+  border: 2px solid;
+  border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+  min-height: 24px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--surface-button) 84%, var(--border-mid));
+}
+
+*::-webkit-scrollbar-corner {
+  background: var(--panel-gray);
 }
 
 .menu-bar {
