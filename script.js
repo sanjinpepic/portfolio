@@ -7,6 +7,10 @@ const menuActions = [...document.querySelectorAll(".menu-dropdown [data-action]"
 const menuDropdowns = [...document.querySelectorAll(".menu-dropdown")];
 let portfolioApps = [...(window.PORTFOLIO_APPS || [])].sort((a, b) => (a.order || 0) - (b.order || 0));
 const clock = document.getElementById("clock");
+const menuBar = document.querySelector(".menu-bar");
+const mobileAppNav = document.getElementById("mobile-app-nav");
+const mobileAppTitle = document.getElementById("mobile-app-title");
+const mobileCloseBtn = document.getElementById("mobile-close-btn");
 const BROWSER_HOME_URL = "about:home";
 const DESKTOP_STATE_KEY = "portfolio.desktop.state.v1";
 const mobileLayoutQuery = window.matchMedia("(max-width: 900px)");
@@ -243,6 +247,22 @@ function updateClock() {
     minute: "2-digit"
   });
 }
+function updateMobileNav(openWin) {
+  if (!mobileLayoutQuery.matches) return;
+  if (openWin) {
+    const titleEl = openWin.querySelector(".title-bar h2");
+    const title = titleEl ? titleEl.textContent.trim() : openWin.id.replace("-window", "");
+    mobileAppTitle.textContent = title;
+    mobileAppNav.classList.add("active");
+    mobileAppNav.setAttribute("aria-hidden", "false");
+    menuBar.classList.add("app-open");
+  } else {
+    mobileAppNav.classList.remove("active");
+    mobileAppNav.setAttribute("aria-hidden", "true");
+    menuBar.classList.remove("app-open");
+  }
+}
+
 function bringToFront(win) {
   windows.forEach((w) => w.classList.remove("focused"));
   win.classList.add("focused");
@@ -277,6 +297,7 @@ function openWindow(id) {
     if (id === "about-window") startTypewriter();
   }
   bringToFront(win);
+  if (mobileLayoutQuery.matches) updateMobileNav(win);
   saveDesktopState();
 }
 function closeWindow(id) {
@@ -292,6 +313,8 @@ function closeWindow(id) {
     activeWindowId = topOpenWindow?.id || null;
     if (topOpenWindow) topOpenWindow.classList.add("focused");
   }
+  // On mobile, hide the app nav when closing
+  if (mobileLayoutQuery.matches) updateMobileNav(null);
   // Animate close
   win.classList.add("closing");
   win.addEventListener("animationend", () => {
@@ -1007,6 +1030,11 @@ openers.forEach((icon) => {
 closers.forEach((btn) => {
   btn.addEventListener("click", () => closeWindow(btn.dataset.close));
 });
+if (mobileCloseBtn) {
+  mobileCloseBtn.addEventListener("click", () => {
+    if (activeWindowId) closeWindow(activeWindowId);
+  });
+}
 function bindDynamicContentEvents() {
   if (projectList) {
     projectList.addEventListener("click", (event) => {
@@ -1246,12 +1274,16 @@ document.addEventListener("keydown", (event) => {
 });
 
 mobileLayoutQuery.addEventListener("change", () => {
-  if (!mobileLayoutQuery.matches) return;
+  if (!mobileLayoutQuery.matches) {
+    updateMobileNav(null);
+    return;
+  }
   const firstOpen = windows.find((win) => win.classList.contains("open"));
   windows.forEach((win) => {
     if (firstOpen && win.id !== firstOpen.id) win.classList.remove("open");
   });
   if (!firstOpen) openWindow("about-window");
+  else updateMobileNav(firstOpen);
 });
 
 setInterval(updateClock, 1000 * 15);

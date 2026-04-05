@@ -74,6 +74,11 @@
         </div>
       </div>
       <div class="menu-right" id="clock" aria-live="polite"></div>
+      <!-- Mobile: shown when a window is open -->
+      <div class="mobile-app-nav" id="mobile-app-nav" aria-hidden="true">
+        <span class="mobile-app-title" id="mobile-app-title"></span>
+        <button class="mobile-close-btn" id="mobile-close-btn" aria-label="Close app">×</button>
+      </div>
     </div>
 
     <div id="boot-overlay" aria-hidden="true">
@@ -88,6 +93,7 @@
     </div>
 
     <main id="desktop" class="desktop desktop-shell" aria-label="Retro portfolio desktop">
+      <div class="mobile-icon-grid" id="mobile-icon-grid">
       <button class="desktop-icon" data-open="about-window" style="--x: 3rem; --y: 4.5rem">
         <span class="icon" aria-hidden="true"><img class="icon-image" src="https://gitlab.com/metsatron/BeOS-r5-Icons/-/raw/master/apps/128/BeOS_people.png" alt="" /></span>
         <span class="label">About Me</span>
@@ -113,6 +119,7 @@
         <span class="icon" aria-hidden="true"><img class="icon-image" src="assets/Winamp-logo.svg.png" alt="" /></span>
         <span class="label">Winamp TV</span>
       </button>
+      </div>
 
       <section
         id="about-window"
