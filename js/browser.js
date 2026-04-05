@@ -289,9 +289,9 @@ export function buildBrowserHomeMarkup() {
     <main class="page">
       <section class="hero">
         <p class="kicker">Portfolio // Retro Product Deck</p>
-        <h1>Welcome to the Product Showcase</h1>
+        <h1>Welcome to my Product Showcase</h1>
         <p>Animated previews, neon palette, and old-school web energy.</p>
-        <div class="marquee"><span>Now Loading: Strategy • Analytics • Product Experiments • Interactive Demos •</span></div>
+        <div class="marquee"><span>Now Loading: Strategy • Analytics • Vibes • Banger Tunes •</span></div>
       </section>
       <section class="products" aria-label="Product grid">
         ${items.join("\n        ")}
