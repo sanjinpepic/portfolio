@@ -293,6 +293,61 @@ body {
     padding: 0.1rem 0.3rem;
   }
 
+  /* ── Mobile app nav bar (shown when a window is open) ── */
+  .mobile-app-nav {
+    display: none;
+    position: absolute;
+    inset: 0;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 0.4rem;
+    background: inherit;
+    pointer-events: none;
+  }
+
+  .mobile-app-nav.active {
+    display: flex;
+    pointer-events: auto;
+  }
+
+  .mobile-app-title {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 1rem;
+    padding: 0 0.4rem;
+    color: #101010;
+  }
+
+  .mobile-close-btn {
+    font: inherit;
+    font-size: 1.1rem;
+    background: var(--panel-gray);
+    border: 2px solid;
+    border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+    color: #101010;
+    width: 1.5rem;
+    height: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    line-height: 1;
+    padding: 0;
+  }
+
+  .mobile-close-btn:active {
+    border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+  }
+
+  /* Hide standard menu-left when app is active */
+  .menu-bar.app-open .menu-left {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
   /* ── Desktop: fixed, full remaining height ── */
   .desktop {
     position: fixed;
@@ -301,78 +356,93 @@ body {
     overflow: hidden;
   }
 
-  /* ── Icons: compact column along the left edge ── */
+  /* ── Icons: 2-column grid centered on screen ── */
   .desktop-shell {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+  }
+
+  .mobile-icon-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 5.5rem);
+    grid-template-rows: repeat(3, auto);
+    gap: 1.5rem 2rem;
+    justify-content: center;
+    align-content: center;
   }
 
   .desktop-icon {
-    position: absolute;
-    left: var(--x);
-    top: var(--y);
-    width: 4.8rem;
-    padding: 0.2rem 0.1rem;
+    position: static;
+    left: unset;
+    top: unset;
+    width: 5.5rem;
+    padding: 0.25rem 0.1rem;
     background: transparent;
     border: none;
     color: #fff;
     display: grid;
     justify-items: center;
-    gap: 0.25rem;
+    gap: 0.3rem;
   }
 
-  /* Reposition icons into a tight left column */
-  .desktop-icon:nth-child(1) { --x: 0.3rem; --y: 0.5rem; }
-  .desktop-icon:nth-child(2) { --x: 0.3rem; --y: 5.4rem; }
-  .desktop-icon:nth-child(3) { --x: 0.3rem; --y: 10.3rem; }
-  .desktop-icon:nth-child(4) { --x: 0.3rem; --y: 15.2rem; }
-  .desktop-icon:nth-child(5) { --x: 0.3rem; --y: 20.1rem; }
-  .desktop-icon:nth-child(6) { --x: 0.3rem; --y: 25rem; }
-
   .icon {
-    width: 2.8rem;
-    height: 2.8rem;
+    width: 3rem;
+    height: 3rem;
     font-size: 1.6rem;
   }
 
   .label {
     text-shadow: 1px 1px #1b2f33;
-    font-size: 0.95rem;
-    line-height: 1;
+    font-size: 0.9rem;
+    line-height: 1.1;
     text-align: center;
   }
 
-  /* ── Windows: fill the area to the right of the icon sidebar ── */
+  /* ── Windows: fullscreen below the nav bar ── */
   .window {
     position: absolute;
-    left: 5.5rem;
-    top: 0.3rem;
-    width: calc(100vw - 5.8rem);
-    max-height: calc(100vh - 2.5rem);
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: calc(100vh - 2rem);
+    max-height: calc(100vh - 2rem);
     min-width: 0;
     box-shadow: 2px 2px 0 #000;
     resize: none;
   }
 
   .window.open {
-    display: block;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Hide window title bar on mobile — nav bar handles it */
+  .window .title-bar {
+    display: none;
   }
 
   .window-content {
-    max-height: calc(100vh - 5rem);
+    flex: 1;
+    max-height: none;
+    height: 100%;
     overflow: auto;
     padding: 0.75rem;
   }
 
   #browser-window {
-    height: calc(100vh - 2.5rem);
+    height: calc(100vh - 2rem);
     resize: none;
     min-width: 0;
     min-height: 0;
     overflow: hidden;
   }
 
+  /* Browser window keeps its inner nav bar, so content fills remaining */
+  #browser-window .window-content,
   .browser-content {
-    height: calc(100% - 2rem);
+    height: 100%;
     overflow: hidden;
   }
 
@@ -385,6 +455,11 @@ body {
     height: 1.5rem;
     font-size: 1.1rem;
   }
+}
+
+/* Mobile icon grid wrapper — only rendered on mobile via JS */
+.mobile-icon-grid {
+  display: contents; /* Invisible on desktop */
 }
 
 .about-header {
