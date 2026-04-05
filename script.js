@@ -441,8 +441,9 @@ function renderProjects() {
     const linkedTitle = app.url
       ? `<button class="project-link" type="button" data-browser-url="${app.url}" data-browser-title="${app.browserTitle || app.title}">${app.title}</button>`
       : app.title;
-    const externalLink = app.url
-      ? ` <a href="${app.url}" target="_blank" rel="noopener">${app.openInNewTabLabel || "Open in new tab"}</a>`
+    const openInNewTabUrl = app.openInNewTabUrl || app.url;
+    const externalLink = openInNewTabUrl
+      ? ` <a href="${openInNewTabUrl}" target="_blank" rel="noopener">${app.openInNewTabLabel || "Open in new tab"}</a>`
       : "";
     const sourceBadge = app.isGithubSource ? ' <span class="source-badge">GitHub</span>' : "";
     const githubLink = app.githubUrl && !app.isGithubSource
@@ -462,9 +463,13 @@ function buildBrowserHomeMarkup() {
     const description = escapeHtml(app.description || "Retro project preview");
     const safeUrl = app.url ? escapeHtml(app.url) : "";
     const safeGithubUrl = app.githubUrl ? escapeHtml(app.githubUrl) : "";
+    const safeOpenInNewTabUrl = app.openInNewTabUrl ? escapeHtml(app.openInNewTabUrl) : "";
     const launchButton = app.url
       ? `<a class="product-link" href="${safeUrl}">Launch</a>`
       : `<span class="product-link disabled" aria-disabled="true">Offline</span>`;
+    const openInNewTabLink = safeOpenInNewTabUrl
+      ? `<a class="repo-link" href="${safeOpenInNewTabUrl}" target="_blank" rel="noopener">${escapeHtml(app.openInNewTabLabel || "Open in new tab")}</a>`
+      : "";
     const repoLink = app.githubUrl
       ? `<a class="repo-link" href="${safeGithubUrl}">Source</a>`
       : "";
@@ -473,7 +478,7 @@ function buildBrowserHomeMarkup() {
       <p class="product-index">${orderLabel}</p>
       <h2>${title}</h2>
       <p class="product-copy">${description}</p>
-      <div class="product-actions">${launchButton}${repoLink}</div>
+      <div class="product-actions">${launchButton}${openInNewTabLink}${repoLink}</div>
     </article>`;
   });
   return `<!doctype html>
