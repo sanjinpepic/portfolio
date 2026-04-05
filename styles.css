@@ -1840,15 +1840,9 @@ a {
 .dashboard-shell {
   display: flex;
   flex-direction: column;
-  gap: 0.9rem;
+  gap: 0.65rem;
 }
 
-.dashboard-intro {
-  margin: 0;
-  font-size: 1.05rem;
-  line-height: 1.25;
-  color: #0f234a;
-}
 
 .dashboard-facts,
 .dashboard-pizza {
@@ -1901,7 +1895,7 @@ a {
   padding: 0;
   list-style: none;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  grid-template-columns: 1fr;
   gap: 0.45rem;
 }
 
