@@ -35,6 +35,7 @@
             <li role="none"><button role="menuitem" tabindex="-1" data-action="open-resume">Open Resume</button></li>
             <li role="none"><button role="menuitem" tabindex="-1" data-action="open-contact">Open Contact</button></li>
             <li role="none"><button role="menuitem" tabindex="-1" data-action="open-winamp">Open Winamp TV</button></li>
+            <li role="none"><button role="menuitem" tabindex="-1" data-action="open-terminal">Open Terminal</button></li>
             <li role="none"><button role="menuitem" tabindex="-1" data-action="close-focused">Close Focused (X)</button></li>
           </ul>
         </div>
@@ -70,6 +71,7 @@
           <ul id="special-menu" class="menu-dropdown" role="menu" aria-labelledby="menu-button-special">
             <li role="none"><button role="menuitem" tabindex="-1" data-action="cascade">Cascade Windows</button></li>
             <li role="none"><button role="menuitem" tabindex="-1" data-action="toggle-theme">Toggle Dark Desktop</button></li>
+            <li role="none"><button role="menuitem" tabindex="-1" data-action="toggle-sounds" id="sounds-menu-item">Sounds: Off</button></li>
           </ul>
         </div>
       </div>
@@ -78,6 +80,23 @@
       <div class="mobile-app-nav" id="mobile-app-nav" aria-hidden="true">
         <span class="mobile-app-title" id="mobile-app-title"></span>
         <button class="mobile-close-btn" id="mobile-close-btn" aria-label="Close app">×</button>
+      </div>
+    </div>
+
+    <!-- ── Screen saver ──────────────────────────────────────── -->
+    <div id="screensaver" aria-hidden="true">
+      <div class="screensaver-logo">SP</div>
+    </div>
+
+    <!-- ── BSOD Easter egg ──────────────────────────────────── -->
+    <div id="bsod-overlay" aria-hidden="true">
+      <div class="bsod-body">
+        <p>A problem has been detected and Portfolio OS has been shut down to prevent<br>damage to your browser.</p>
+        <p class="bsod-code">DANGEROUSLY_IMPRESSIVE_PORTFOLIO</p>
+        <p>If this is the first time you've seen this screen, relax.<br>You just found an easter egg. Nice.</p>
+        <p>Technical information:</p>
+        <p class="bsod-tech">*** STOP: 0x000000CE (0xC0FFEE00, 0xSANJIN01,<br>0xDEADBEEF, 0xCAFEBABE)<br><br>Beginning dump of screen time...<br>Physical Memory Count: 640K<br>Portfolio Integrity Check: PASSED</p>
+        <p class="bsod-hint">[ Auto-dismissing in 6 seconds... press any key to continue ]</p>
       </div>
     </div>
 
@@ -118,6 +137,10 @@
       <button class="desktop-icon" data-open="winamp-window" style="--x: 3rem; --y: 44.5rem">
         <span class="icon" aria-hidden="true"><img class="icon-image" src="assets/Winamp-logo.svg.png" alt="" /></span>
         <span class="label">Winamp TV</span>
+      </button>
+      <button class="desktop-icon" data-open="terminal-window" style="--x: 3rem; --y: 52.5rem">
+        <span class="icon icon-text" aria-hidden="true">C:\&gt;_</span>
+        <span class="label">Terminal</span>
       </button>
       </div>
 
@@ -277,6 +300,40 @@
 </div>
 <!-- END:inline windows/winamp-tv.html --></div>
       </section>
+
+      <!-- ── Terminal window ──────────────────────────────────── -->
+      <section
+        id="terminal-window"
+        class="window"
+        style="--left: 14rem; --top: 8rem; --width: 38rem; --height: 22rem"
+        aria-labelledby="terminal-title"
+      >
+        <header class="title-bar drag-handle">
+          <h2 id="terminal-title">Terminal — portfolio.sh</h2>
+          <button class="close-btn" data-close="terminal-window" aria-label="Close Terminal">×</button>
+        </header>
+        <div class="window-content terminal-content">
+          <div id="terminal-output" class="terminal-output" aria-live="polite" aria-atomic="false"></div>
+          <div class="terminal-input-row">
+            <span class="terminal-prompt" aria-hidden="true">C:\PORTFOLIO&gt;</span>
+            <input id="terminal-input" class="terminal-input" type="text" autocomplete="off" spellcheck="false" aria-label="Terminal input" />
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Context menu ──────────────────────────────────────── -->
+      <ul id="context-menu" class="context-menu" role="menu" aria-label="Desktop context menu" aria-hidden="true">
+        <li role="none"><button role="menuitem" data-ctx-action="new-sticky">New Sticky Note</button></li>
+        <li role="none"><button role="menuitem" data-ctx-action="open-terminal">Open Terminal</button></li>
+        <li class="ctx-separator" role="separator"></li>
+        <li role="none"><button role="menuitem" data-ctx-action="cascade">Cascade Windows</button></li>
+        <li role="none"><button role="menuitem" data-ctx-action="close-all">Close All</button></li>
+        <li class="ctx-separator" role="separator"></li>
+        <li role="none"><button role="menuitem" data-ctx-action="toggle-theme">Toggle Dark Mode</button></li>
+      </ul>
+
+      <!-- ── Sticky notes container ───────────────────────────── -->
+      <div id="sticky-notes-container"></div>
 
       <section
         id="easter-error"
