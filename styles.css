@@ -176,11 +176,14 @@ body {
   width: min(var(--width), calc(100vw - 3rem));
   height: var(--height, auto);
   min-width: 18rem;
+  min-height: 12rem;
   max-height: calc(100vh - 4rem);
   background: var(--panel-gray);
   border: 2px solid;
   border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
   box-shadow: 2px 2px 0 #000;
+  resize: both;
+  overflow: hidden;
   display: none;
 }
 
@@ -341,6 +344,7 @@ body {
     max-height: calc(100vh - 2.5rem);
     min-width: 0;
     box-shadow: 2px 2px 0 #000;
+    resize: none;
   }
 
   .window.open {
