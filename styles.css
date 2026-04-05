@@ -1,17 +1,99 @@
 @import url("https://fonts.googleapis.com/css2?family=VT323&display=swap");
 
 :root {
-  --desktop-green: #1d857b;
+  --desktop-bg: #1d857b;
+  --desktop-overlay-hi: rgba(255, 255, 255, 0.06);
+  --desktop-overlay-lo: rgba(0, 0, 0, 0.02);
   --menu-gray: #d9d9d9;
   --panel-gray: #c9c9c9;
+  --surface-button: #d7d7d7;
   --border-dark: #3f3f3f;
   --border-mid: #7a7a7a;
   --border-light: #ffffff;
   --text-main: #101010;
+  --title-text: #ffffff;
+  --focus-accent: #1f4db4;
+  --window-shadow: #000000;
+  --titlebar-a: #4c4c4c;
+  --titlebar-b: #8a8a8a;
+  --titlebar-inactive-a: #999999;
+  --titlebar-inactive-b: #bbbbbb;
+  --title-inactive-text: #cccccc;
+  --desktop-label-text: #ffffff;
+  --desktop-label-shadow-strong: #1b2f33;
+  --desktop-label-shadow-soft: rgba(150, 255, 200, 0.3);
 }
 
-body.dark-desktop {
-  --desktop-green: #1a2a45;
+body[data-theme="classic"] {
+  --desktop-bg: #1d857b;
+  --desktop-overlay-hi: rgba(255, 255, 255, 0.06);
+  --desktop-overlay-lo: rgba(0, 0, 0, 0.02);
+  --menu-gray: #d9d9d9;
+  --panel-gray: #c9c9c9;
+  --surface-button: #d7d7d7;
+  --border-dark: #3f3f3f;
+  --border-mid: #7a7a7a;
+  --border-light: #ffffff;
+  --text-main: #101010;
+  --title-text: #ffffff;
+  --focus-accent: #1f4db4;
+  --window-shadow: #000000;
+  --titlebar-a: #4c4c4c;
+  --titlebar-b: #8a8a8a;
+  --titlebar-inactive-a: #999999;
+  --titlebar-inactive-b: #bbbbbb;
+  --title-inactive-text: #cccccc;
+  --desktop-label-text: #ffffff;
+  --desktop-label-shadow-strong: #1b2f33;
+  --desktop-label-shadow-soft: rgba(150, 255, 200, 0.3);
+}
+
+body[data-theme="midnight"] {
+  --desktop-bg: #1a2a45;
+  --desktop-overlay-hi: rgba(145, 190, 255, 0.08);
+  --desktop-overlay-lo: rgba(0, 0, 0, 0.18);
+  --menu-gray: #c0c9dc;
+  --panel-gray: #b0bdd5;
+  --surface-button: #c4cee1;
+  --border-dark: #25344e;
+  --border-mid: #5f759b;
+  --border-light: #e4efff;
+  --text-main: #102139;
+  --title-text: #f5f9ff;
+  --focus-accent: #154ea6;
+  --window-shadow: #051428;
+  --titlebar-a: #203f6f;
+  --titlebar-b: #4f74ad;
+  --titlebar-inactive-a: #496289;
+  --titlebar-inactive-b: #7895c4;
+  --title-inactive-text: #d5e5ff;
+  --desktop-label-text: #eef5ff;
+  --desktop-label-shadow-strong: #122748;
+  --desktop-label-shadow-soft: rgba(133, 174, 255, 0.4);
+}
+
+body[data-theme="sunset"] {
+  --desktop-bg: #a04c31;
+  --desktop-overlay-hi: rgba(255, 239, 201, 0.09);
+  --desktop-overlay-lo: rgba(62, 16, 8, 0.18);
+  --menu-gray: #e0cfbc;
+  --panel-gray: #d8bca2;
+  --surface-button: #ebd3b8;
+  --border-dark: #6f3a1f;
+  --border-mid: #a86d47;
+  --border-light: #fff2d9;
+  --text-main: #381d12;
+  --title-text: #fff7eb;
+  --focus-accent: #8d2f18;
+  --window-shadow: #3d1205;
+  --titlebar-a: #8f3d24;
+  --titlebar-b: #c0714a;
+  --titlebar-inactive-a: #9d6b4c;
+  --titlebar-inactive-b: #c28d69;
+  --title-inactive-text: #ffdfc4;
+  --desktop-label-text: #fff4df;
+  --desktop-label-shadow-strong: #5c2511;
+  --desktop-label-shadow-soft: rgba(255, 174, 112, 0.42);
 }
 
 * {
@@ -32,10 +114,10 @@ body {
   color: var(--text-main);
   background: repeating-linear-gradient(
       45deg,
-      rgba(255, 255, 255, 0.06) 0 2px,
-      rgba(0, 0, 0, 0.02) 2px 4px
+      var(--desktop-overlay-hi) 0 2px,
+      var(--desktop-overlay-lo) 2px 4px
     ),
-    var(--desktop-green);
+    var(--desktop-bg);
 }
 
 .menu-bar {
@@ -79,8 +161,8 @@ body {
 
 .menu-item:hover,
 .menu-item:focus-visible {
-  background: #1f4db4;
-  color: #fff;
+  background: var(--focus-accent);
+  color: var(--title-text);
   outline: none;
 }
 
@@ -114,8 +196,8 @@ body {
 
 .menu-dropdown button:hover,
 .menu-dropdown button:focus-visible {
-  background: #1f4db4;
-  color: #fff;
+  background: var(--focus-accent);
+  color: var(--title-text);
   outline: none;
 }
 
@@ -131,7 +213,7 @@ body {
   width: 5.25rem;
   border: none;
   background: transparent;
-  color: #fff;
+  color: var(--desktop-label-text);
   display: grid;
   justify-items: center;
   gap: 0.35rem;
@@ -159,13 +241,14 @@ body {
   image-rendering: pixelated;
 }
 .label {
-  text-shadow: 1px 1px #1b2f33, 0 0 8px rgba(150, 255, 200, 0.3);
+  color: var(--desktop-label-text);
+  text-shadow: 1px 1px var(--desktop-label-shadow-strong), 0 0 8px var(--desktop-label-shadow-soft);
   line-height: 1;
 }
 
 .desktop-icon:focus-visible .icon,
 .desktop-icon:hover .icon {
-  outline: 1px dashed #fff;
+  outline: 1px dashed var(--title-text);
   outline-offset: 2px;
 }
 
@@ -181,7 +264,7 @@ body {
   background: var(--panel-gray);
   border: 2px solid;
   border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
-  box-shadow: 2px 2px 0 #000;
+  box-shadow: 2px 2px 0 var(--window-shadow);
   resize: both;
   overflow: hidden;
   display: none;
@@ -202,13 +285,13 @@ body {
   height: 2rem;
   background: repeating-linear-gradient(
     90deg,
-    #4c4c4c,
-    #4c4c4c 2px,
-    #8a8a8a 2px,
-    #8a8a8a 4px
+    var(--titlebar-a),
+    var(--titlebar-a) 2px,
+    var(--titlebar-b) 2px,
+    var(--titlebar-b) 4px
   );
   border-bottom: 2px solid var(--border-dark);
-  color: #fff;
+  color: var(--title-text);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -228,7 +311,7 @@ body {
   height: 1.4rem;
   border: 2px solid;
   border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
-  background: #d7d7d7;
+  background: var(--surface-button);
   font: inherit;
   display: grid;
   place-items: center;
@@ -241,7 +324,7 @@ body {
 }
 
 .close-btn:focus-visible {
-  outline: 2px solid #1f4db4;
+  outline: 2px solid var(--focus-accent);
   outline-offset: 1px;
 }
 
@@ -1111,23 +1194,29 @@ a {
 .window .title-bar {
   background: repeating-linear-gradient(
     90deg,
-    #999, #999 2px, #bbb 2px, #bbb 4px
+    var(--titlebar-inactive-a),
+    var(--titlebar-inactive-a) 2px,
+    var(--titlebar-inactive-b) 2px,
+    var(--titlebar-inactive-b) 4px
   );
 }
 
 .window .title-bar h2 {
-  color: #ccc;
+  color: var(--title-inactive-text);
 }
 
 .window.focused .title-bar {
   background: repeating-linear-gradient(
     90deg,
-    #4c4c4c, #4c4c4c 2px, #8a8a8a 2px, #8a8a8a 4px
+    var(--titlebar-a),
+    var(--titlebar-a) 2px,
+    var(--titlebar-b) 2px,
+    var(--titlebar-b) 4px
   );
 }
 
 .window.focused .title-bar h2 {
-  color: #fff;
+  color: var(--title-text);
 }
 
 /* ── Desktop icon hover animations ─────────────────────────── */
@@ -1146,8 +1235,8 @@ a {
 
 .desktop-icon:hover .label,
 .desktop-icon:focus-visible .label {
-  background: #1f4db4;
-  color: #fff;
+  background: var(--focus-accent);
+  color: var(--title-text);
   text-shadow: none;
   padding: 0 0.2rem;
 }

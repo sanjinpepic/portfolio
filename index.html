@@ -72,7 +72,9 @@
           </button>
           <ul id="special-menu" class="menu-dropdown" role="menu" aria-labelledby="menu-button-special">
             <li role="none"><button role="menuitem" tabindex="-1" data-action="cascade">Cascade Windows</button></li>
-            <li role="none"><button role="menuitem" tabindex="-1" data-action="toggle-theme">Toggle Dark Desktop</button></li>
+            <li role="none"><button role="menuitemradio" aria-checked="false" tabindex="-1" data-action="set-theme-classic" data-theme-option="classic">Classic CRT</button></li>
+            <li role="none"><button role="menuitemradio" aria-checked="false" tabindex="-1" data-action="set-theme-midnight" data-theme-option="midnight">Midnight Blue</button></li>
+            <li role="none"><button role="menuitemradio" aria-checked="false" tabindex="-1" data-action="set-theme-sunset" data-theme-option="sunset">Sunset Amber</button></li>
             <li role="none"><button role="menuitem" tabindex="-1" data-action="toggle-sounds" id="sounds-menu-item">Sounds: Off</button></li>
           </ul>
         </div>
@@ -533,7 +535,9 @@
         <li role="none"><button role="menuitem" data-ctx-action="cascade">Cascade Windows</button></li>
         <li role="none"><button role="menuitem" data-ctx-action="close-all">Close All</button></li>
         <li class="ctx-separator" role="separator"></li>
-        <li role="none"><button role="menuitem" data-ctx-action="toggle-theme">Toggle Dark Mode</button></li>
+        <li role="none"><button role="menuitemradio" aria-checked="false" data-ctx-action="set-theme-classic" data-theme-option="classic">Classic CRT</button></li>
+        <li role="none"><button role="menuitemradio" aria-checked="false" data-ctx-action="set-theme-midnight" data-theme-option="midnight">Midnight Blue</button></li>
+        <li role="none"><button role="menuitemradio" aria-checked="false" data-ctx-action="set-theme-sunset" data-theme-option="sunset">Sunset Amber</button></li>
       </ul>
 
       <!-- ── Sticky notes container ───────────────────────────── -->
