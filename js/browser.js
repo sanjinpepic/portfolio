@@ -71,7 +71,7 @@ export function buildBrowserHomeMarkup() {
   const items = S.portfolioApps.map((app, index) => {
     const orderLabel = String(app.order || index + 1).padStart(2, "0");
     const title = escapeHtml(app.title || `Product ${orderLabel}`);
-    const description = escapeHtml(app.description || "Retro project preview");
+    const description = escapeHtml(app.description || "My project previews");
     const safeUrl = app.url ? escapeHtml(app.url) : "";
     const safeGithubUrl = app.githubUrl ? escapeHtml(app.githubUrl) : "";
     const safeOpenInNewTabUrl = app.openInNewTabUrl ? escapeHtml(app.openInNewTabUrl) : "";
