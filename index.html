@@ -34,6 +34,7 @@
             <li role="none"><button role="menuitem" tabindex="-1" data-action="open-browser">Open Browser</button></li>
             <li role="none"><button role="menuitem" tabindex="-1" data-action="open-resume">Open Resume</button></li>
             <li role="none"><button role="menuitem" tabindex="-1" data-action="open-contact">Open Contact</button></li>
+            <li role="none"><button role="menuitem" tabindex="-1" data-action="open-dashboard">Open Dashboard</button></li>
             <li role="none"><button role="menuitem" tabindex="-1" data-action="open-winamp">Open Winamp TV</button></li>
             <li role="none"><button role="menuitem" tabindex="-1" data-action="open-terminal">Open Terminal</button></li>
             <li role="none"><button role="menuitem" tabindex="-1" data-action="close-focused">Close Focused (X)</button></li>
@@ -133,12 +134,16 @@
         <span class="icon" aria-hidden="true"><img class="icon-image" src="https://gitlab.com/metsatron/BeOS-r5-Icons/-/raw/master/apps/128/BeOS_email.png" alt="" /></span>
         <span class="label">Contact</span>
       </button>
+      <button class="desktop-icon" data-open="dashboard-window" style="--x: 3rem; --y: 44.5rem">
+        <span class="icon icon-text" aria-hidden="true">📊</span>
+        <span class="label">Dashboard</span>
+      </button>
 
-      <button class="desktop-icon" data-open="winamp-window" style="--x: 3rem; --y: 44.5rem">
+      <button class="desktop-icon" data-open="winamp-window" style="--x: 3rem; --y: 52.5rem">
         <span class="icon" aria-hidden="true"><img class="icon-image" src="assets/Winamp-logo.svg.png" alt="" /></span>
         <span class="label">Winamp TV</span>
       </button>
-      <button class="desktop-icon" data-open="terminal-window" style="--x: 3rem; --y: 52.5rem">
+      <button class="desktop-icon" data-open="terminal-window" style="--x: 3rem; --y: 60.5rem">
         <span class="icon icon-text" aria-hidden="true">C:\&gt;_</span>
         <span class="label">Terminal</span>
       </button>
@@ -263,6 +268,56 @@
       </section>
 
       <section
+        id="dashboard-window"
+        class="window"
+        style="--left: 30rem; --top: 6rem; --width: 48rem; --height: 35rem"
+        aria-labelledby="dashboard-title"
+      >
+        <header class="title-bar drag-handle">
+          <h2 id="dashboard-title">Execution Dashboard</h2>
+          <button class="close-btn" data-close="dashboard-window" aria-label="Close Dashboard">×</button>
+        </header>
+        <div class="window-content dashboard-content" ><!-- START:inline windows/dashboard.html -->
+<div class="dashboard-shell">
+  <p class="dashboard-intro">
+    Strategy-to-execution dashboard showing how I lead transformation programs, shape product direction,
+    and scale data-led delivery across industrial and sustainability-focused teams.
+  </p>
+
+  <div class="dashboard-grid" role="list" aria-label="Sample KPI cards">
+    <article class="kpi-card" role="listitem">
+      <h3>Growth Index</h3>
+      <p class="kpi-value" data-kpi-value data-target="142" data-prefix="" data-suffix="">0</p>
+      <p class="kpi-note">Commercial strategy + product focus aligned to market opportunities.</p>
+      <canvas class="kpi-chart" data-chart="bars" data-points="62,76,89,104,118,131,142" width="300" height="88" aria-label="Growth trend mini bar chart"></canvas>
+    </article>
+
+    <article class="kpi-card" role="listitem">
+      <h3>Conversion Lift</h3>
+      <p class="kpi-value" data-kpi-value data-target="27" data-prefix="+" data-suffix="%">0%</p>
+      <p class="kpi-note">Positioning, funnel simplification, and sharper proposition design.</p>
+      <canvas class="kpi-chart" data-chart="line" data-points="8,11,14,16,19,23,27" width="300" height="88" aria-label="Conversion lift mini line chart"></canvas>
+    </article>
+
+    <article class="kpi-card" role="listitem">
+      <h3>Cycle-Time Reduction</h3>
+      <p class="kpi-value" data-kpi-value data-target="34" data-prefix="-" data-suffix="%">0%</p>
+      <p class="kpi-note">Transformation playbooks that reduce friction from insight to release.</p>
+      <canvas class="kpi-chart" data-chart="bars" data-points="100,92,83,76,71,68,66" width="300" height="88" aria-label="Cycle-time reduction mini bar chart"></canvas>
+    </article>
+
+    <article class="kpi-card" role="listitem">
+      <h3>Forecast Confidence</h3>
+      <p class="kpi-value" data-kpi-value data-target="91" data-prefix="" data-suffix="%">0%</p>
+      <p class="kpi-note">Data-led execution with shared metrics, decision cadence, and ownership.</p>
+      <canvas class="kpi-chart" data-chart="line" data-points="54,61,67,73,80,86,91" width="300" height="88" aria-label="Forecast confidence mini line chart"></canvas>
+    </article>
+  </div>
+</div>
+<!-- END:inline windows/dashboard.html --></div>
+      </section>
+
+      <section
         id="winamp-window"
         class="window"
         style="--left: 26rem; --top: 3rem; --width: 42rem; --height: 38rem"
@@ -363,6 +418,7 @@
 
     <script src="apps/metalcore.js"></script>
     <script src="apps/pixel-runner.js"></script>
+    <script src="apps/dashboard.js"></script>
     <script src="https://www.youtube.com/iframe_api"></script>
     <script src="script.js"></script>
     <script src="apps/github-repos.js"></script>
