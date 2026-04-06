@@ -166,6 +166,7 @@ body {
   box-shadow: 0 1px 0 var(--border-light);
   z-index: 9999;
   padding: 0 0.75rem;
+  color: var(--text-main);
 }
 
 .menu-left {
@@ -189,6 +190,7 @@ body {
   font: inherit;
   cursor: default;
   padding: 0.1rem 0.35rem;
+  color: var(--text-main);
 }
 
 .menu-item:hover,
@@ -224,6 +226,7 @@ body {
   border: none;
   font: inherit;
   padding: 0.2rem 0.4rem;
+  color: var(--text-main);
 }
 
 .menu-dropdown button:hover,
@@ -300,6 +303,7 @@ body {
   resize: both;
   overflow: hidden;
   display: none;
+  color: var(--text-main);
 }
 
 .window.open {
@@ -364,6 +368,7 @@ body {
   padding: 0.85rem 1rem 1rem;
   overflow: auto;
   max-height: calc(100vh - 11rem);
+  color: var(--text-main);
 }
 
 .window-content p,
@@ -1359,6 +1364,7 @@ a {
 
 .winamp-content {
   padding: 0.65rem;
+  color: var(--text-main);
 }
 
 .winamp-shell {
@@ -1371,6 +1377,7 @@ a {
     "source source";
   align-items: start;
   min-height: 100%;
+  color: var(--text-main);
 }
 
 .winamp-now-playing-panel {
@@ -1392,6 +1399,7 @@ a {
   margin: 0;
   font-weight: 700;
   letter-spacing: 0.04em;
+  color: var(--text-main);
 }
 
 .winamp-screen-wrap {
@@ -1502,6 +1510,7 @@ a {
   align-items: center;
   gap: 0.45rem;
   flex-wrap: wrap;
+  color: var(--text-main);
 }
 
 .winamp-volume-label {
@@ -1565,10 +1574,12 @@ a {
 
 #winamp-status {
   grid-area: status;
+  color: var(--text-main);
 }
 
 .winamp-shell > .resume-note:last-child {
   grid-area: source;
+  color: var(--text-main);
 }
 
 @media (max-width: 960px) {
