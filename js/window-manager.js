@@ -16,6 +16,26 @@ export function setRestartWinampFlutter(fn) { _restartWinampFlutter = fn; }
 let _stopWinampPlayback = null;
 export function setStopWinampPlayback(fn) { _stopWinampPlayback = fn; }
 
+function restartDoomSession() {
+  const doomFrame = document.getElementById("doom-frame");
+  if (!doomFrame) return;
+  const sourceUrl = doomFrame.dataset.src || doomFrame.getAttribute("src") || "about:blank";
+  if (doomFrame.getAttribute("src") !== sourceUrl) {
+    doomFrame.setAttribute("src", sourceUrl);
+  }
+}
+
+function stopDoomSession() {
+  const doomFrame = document.getElementById("doom-frame");
+  if (!doomFrame) return;
+  if (!doomFrame.dataset.src) {
+    doomFrame.dataset.src = doomFrame.getAttribute("src") || "about:blank";
+  }
+  if (doomFrame.getAttribute("src") !== "about:blank") {
+    doomFrame.setAttribute("src", "about:blank");
+  }
+}
+
 // ── Internal helpers ──────────────────────────────────────────
 
 function applyClampedWindowPosition(win, left, top) {
@@ -204,6 +224,9 @@ export function openWindow(id) {
   if (id === "browser-window" && S.browserAddress?.value === "about:blank") {
     loadBrowserHomePage();
   }
+  if (id === "doom-window") {
+    restartDoomSession();
+  }
   const wasOpen = win.classList.contains("open");
   win.classList.add("open");
   if (!wasOpen) {
@@ -231,6 +254,9 @@ export function closeWindow(id) {
   if (!win || !win.classList.contains("open")) return;
   if (id === "winamp-window" && _stopWinampPlayback) {
     _stopWinampPlayback({ terminate: true });
+  }
+  if (id === "doom-window") {
+    stopDoomSession();
   }
   // Transfer focus immediately
   if (S.activeWindowId === id) {

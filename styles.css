@@ -1596,6 +1596,8 @@ a {
 #doom-window {
   min-width: 640px;
   min-height: calc(500px + 2rem);
+  resize: none;
+  overflow: hidden;
 }
 
 .doom-shell {
@@ -1626,6 +1628,7 @@ a {
 
 #doom-window .doom-content {
   flex: 1;
+  overflow: hidden;
 }
 
 .sr-only {
