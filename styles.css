@@ -1593,10 +1593,16 @@ a {
   max-height: none;
 }
 
+#doom-window {
+  min-width: 320px;
+  min-height: calc(200px + 2rem);
+}
+
 .doom-shell {
   display: flex;
-  flex: 1;
-  height: 100%;
+  flex: none;
+  width: 320px;
+  height: 200px;
 }
 
 .doom-icon-image {
@@ -1604,12 +1610,13 @@ a {
 }
 
 .doom-frame {
-  width: 100%;
-  height: 100%;
-  min-height: 0;
+  width: 320px;
+  height: 200px;
+  min-height: 200px;
   border: 0;
   background: #000;
   display: block;
+  flex: none;
 }
 
 #doom-window.open {
