@@ -479,21 +479,18 @@ body {
     overflow: hidden;
   }
 
-  /* ── Icons: 2-column grid centered on screen ── */
+  /* ── Icons: multi-column grid filling the screen ── */
   .desktop-shell {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: block;
     height: 100%;
+    overflow-y: auto;
   }
 
   .mobile-icon-grid {
     display: grid;
-    grid-template-columns: repeat(2, 5.5rem);
-    grid-template-rows: repeat(3, auto);
-    gap: 1.5rem 2rem;
-    justify-content: center;
-    align-content: center;
+    grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr));
+    gap: 1.5rem 1rem;
+    padding: 1.5rem 1rem;
   }
 
   .desktop-icon {
