@@ -1594,15 +1594,15 @@ a {
 }
 
 #doom-window {
-  min-width: 1280px;
-  min-height: calc(720px + 2rem);
+  min-width: 640px;
+  min-height: calc(500px + 2rem);
 }
 
 .doom-shell {
   display: flex;
   flex: none;
-  width: 1280px;
-  height: 720px;
+  width: 640px;
+  height: 500px;
 }
 
 .doom-icon-image {
@@ -1610,9 +1610,9 @@ a {
 }
 
 .doom-frame {
-  width: 1280px;
-  height: 720px;
-  min-height: 720px;
+  width: 640px;
+  height: 500px;
+  min-height: 500px;
   border: 0;
   background: #000;
   display: block;
