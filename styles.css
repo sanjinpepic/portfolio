@@ -907,6 +907,7 @@ a {
   background: #d7d7d7;
   padding: 0.25rem 0.45rem;
   cursor: pointer;
+  color: var(--text-main);
 }
 
 .retro-btn:active {
@@ -1575,10 +1576,12 @@ a {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: var(--text-main);
 }
 
 .winamp-channel-btn.active {
   background: #9fd2ff;
+  color: var(--text-main);
 }
 
 #winamp-status {
