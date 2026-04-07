@@ -4,7 +4,7 @@ import { desktop, windows, mobileLayoutQuery, S } from "./state.js";
 import { escapeHtml } from "./utils.js";
 import { RetroSounds } from "./sounds.js";
 
-// â”€â”€ Boot sequence â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Boot sequence 
 export function runBootSequence() {
   const overlay = document.getElementById("boot-overlay");
   if (!overlay) return;
@@ -77,7 +77,7 @@ export function runBootSequence() {
   setTimeout(finish, 2900);
 }
 
-// â”€â”€ Screen saver â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Screen saver 
 let screensaverTimer = null;
 const SCREENSAVER_DELAY = 90 * 1000; // 90 seconds
 
@@ -110,7 +110,7 @@ export function bindScreensaver() {
   resetScreensaverTimer();
 }
 
-// â”€â”€ BSOD Easter egg â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  BSOD Easter egg 
 let bsodActive = false;
 
 export function triggerBsod() {
@@ -140,7 +140,7 @@ export function triggerBsod() {
   setTimeout(dismiss, 6000);
 }
 
-// â”€â”€ Right-click context menu â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Right-click context menu 
 export function bindContextMenu(menuActionHandler) {
   const menu = document.getElementById("context-menu");
   if (!menu) return;
@@ -181,7 +181,7 @@ export function bindContextMenu(menuActionHandler) {
   });
 }
 
-// â”€â”€ Sticky notes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  Sticky notes 
 const STICKIES_KEY = "portfolio.stickies.v1";
 const STICKY_COLORS = ["#ffffa5", "#c5e8ff", "#ffd6e7"];
 let stickyColorIndex = 0;
