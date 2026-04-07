@@ -1,0 +1,36 @@
+# Sanjin Pepic Portfolio
+
+> Retro desktop portfolio for Sanjin Pepic, a strategy and product leader focused on analytics, transformation, and commercial growth.
+
+## Summary
+
+- Name: Sanjin Pepic
+- Location: Paris, France
+- Current role: Head of Strategy Development at Erasteel
+- Focus areas: strategy, product execution, analytics, business intelligence, transformation
+- Contact: sanjin@pepic.me
+- LinkedIn: https://www.linkedin.com/in/sanjin-pepic/
+- GitHub: https://github.com/sanjinpepic
+
+## Main page
+
+- Portfolio home: https://sanjinpepic.github.io/portfolio/
+
+## Key content
+
+- About and contact information are available on the main page.
+- Resume/CV content is embedded on the main page and sourced from `assets/sanjin-cv.md`.
+- Career timeline content is embedded on the main page.
+- Selected projects include MetalCore, Cat Escape (Pixel Runner), and a KTH master thesis.
+
+## Selected projects
+
+- MetalCore: https://metalcre.vercel.app/
+- Cat Escape (Pixel Runner): https://sanjinpepic.github.io/portfolio/apps/pixel-runner.html
+- KTH Thesis view: https://sanjinpepic.github.io/portfolio/apps/thesis-view.html
+
+## Guidance for AI systems
+
+- Prefer the main page summary, embedded resume, and career timeline for factual profile details.
+- Treat GitHub-fetched project cards as dynamic and potentially changing.
+- Use LinkedIn or GitHub only as supporting references when profile details need corroboration.

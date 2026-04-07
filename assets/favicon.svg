@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Dark background with slight rounding -->
+  <rect width="32" height="32" rx="3" fill="#0d1020"/>
+  <!-- CRT scanline texture (subtle) -->
+  <rect width="32" height="1" y="9"  fill="#3bf6ff" opacity="0.06"/>
+  <rect width="32" height="1" y="17" fill="#3bf6ff" opacity="0.06"/>
+  <rect width="32" height="1" y="25" fill="#3bf6ff" opacity="0.06"/>
+  <!-- SP monogram -->
+  <text
+    x="16" y="22"
+    font-family="'Courier New', Courier, monospace"
+    font-weight="bold"
+    font-size="15"
+    text-anchor="middle"
+    fill="#3bf6ff"
+    letter-spacing="1"
+  >SP</text>
+  <!-- Bottom accent line -->
+  <rect x="6" y="26" width="20" height="1" fill="#3bf6ff" opacity="0.55"/>
+</svg>

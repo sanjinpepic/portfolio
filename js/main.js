@@ -10,7 +10,7 @@ import {
   openWindow, closeWindow, closeFocusedWindow, closeAllWindows,
   openAllWindows, cascadeWindows, saveDesktopState, updateClock,
   updateMobileNav, bindIconFallbackHandlers, initDragHandlers,
-  loadResumeTextFile, restoreDesktopState, restoreThemePreference,
+  loadResumeTextFile, loadCaseStudy, restoreDesktopState, restoreThemePreference,
   applyTheme, setRestartWinampFlutter, setStopWinampPlayback
 } from "./window-manager.js";
 import {
@@ -104,6 +104,7 @@ function runMenuAction(action) {
   if (action === "open-winamp") openWindow("winamp-window");
   if (action === "open-doom") openWindow("doom-window");
   if (action === "open-terminal") openWindow("terminal-window");
+  if (action === "open-case-studies") openWindow("case-studies-window");
   if (action === "close-focused") closeFocusedWindow();
   if (action === "close-all") closeAllWindows();
   if (action === "open-all") openAllWindows();
@@ -334,7 +335,54 @@ async function initDesktop() {
   RetroSounds.syncLabel();
   renderProjects();
   rebalanceDesktopIconColumns();
+  // Case study tab switching
+  const caseStudiesWindow = document.getElementById("case-studies-window");
+  if (caseStudiesWindow) {
+    caseStudiesWindow.addEventListener("click", (event) => {
+      const tab = event.target.closest(".case-study-tab[data-case]");
+      if (!tab) return;
+      caseStudiesWindow.querySelectorAll(".case-study-tab").forEach((t) => t.classList.remove("active"));
+      tab.classList.add("active");
+      loadCaseStudy(tab.dataset.case);
+    });
+  }
+
+  // Contact form — AJAX submit via Web3Forms
+  const contactForm = document.getElementById("contact-form");
+  const contactSubmit = document.getElementById("contact-submit");
+  const contactStatus = document.getElementById("contact-status");
+  if (contactForm) {
+    contactForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      contactSubmit.disabled = true;
+      contactStatus.textContent = "Sending…";
+      contactStatus.className = "contact-status";
+      try {
+        const response = await fetch(contactForm.action, {
+          method: "POST",
+          body: new FormData(contactForm),
+          headers: { Accept: "application/json" },
+        });
+        const data = await response.json().catch(() => ({}));
+        if (data.success) {
+          contactStatus.textContent = "Message sent. I'll be in touch.";
+          contactStatus.className = "contact-status ok";
+          contactForm.reset();
+        } else {
+          contactStatus.textContent = data.message || "Something went wrong. Try emailing directly.";
+          contactStatus.className = "contact-status err";
+        }
+      } catch {
+        contactStatus.textContent = "Network error. Try emailing directly.";
+        contactStatus.className = "contact-status err";
+      } finally {
+        contactSubmit.disabled = false;
+      }
+    });
+  }
+
   await loadResumeTextFile();
+  await loadCaseStudy("erasteel");
   if (!restoreDesktopState()) openWindow("about-window");
 }
 

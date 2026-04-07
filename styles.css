@@ -998,6 +998,213 @@ a {
   background: #ececec;
 }
 
+/* ── Contact form ────────────────────────────────────────────── */
+
+.contact-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 0.1rem 0;
+}
+
+.contact-links {
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--win-border);
+}
+
+.contact-links p {
+  margin: 0 0 0.25rem;
+}
+
+.contact-links ul {
+  margin: 0;
+  padding: 0 0 0 1rem;
+}
+
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.contact-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.contact-field label {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.contact-field input,
+.contact-field textarea {
+  font: inherit;
+  font-size: 1.05rem;
+  border: 2px solid;
+  border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+  padding: 0.2rem 0.35rem;
+  background: #fff;
+  color: #111;
+  resize: vertical;
+}
+
+.contact-field input:focus,
+.contact-field textarea:focus {
+  outline: 2px solid var(--accent, #1d857b);
+  outline-offset: 1px;
+}
+
+.contact-form-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-top: 0.15rem;
+}
+
+.contact-submit {
+  font: inherit;
+  font-size: 1.05rem;
+  padding: 0.25rem 1rem;
+  border: 2px solid;
+  border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+  background: var(--win-title-bg);
+  color: var(--win-title-fg);
+  cursor: pointer;
+}
+
+.contact-submit:hover {
+  filter: brightness(1.1);
+}
+
+.contact-submit:active {
+  border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+}
+
+.contact-submit:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.contact-status {
+  font-size: 0.95rem;
+}
+
+.contact-status.ok  { color: #1a7a1a; }
+.contact-status.err { color: #b00000; }
+
+/* ── Case Studies window ─────────────────────────────────────── */
+
+.case-studies-shell {
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+}
+
+.case-studies-nav {
+  display: flex;
+  flex-direction: column;
+  width: 11rem;
+  min-width: 11rem;
+  border-right: 2px solid var(--win-border);
+  padding: 0.4rem 0;
+  overflow-y: auto;
+  background: var(--win-title-bg);
+}
+
+.case-studies-nav-label {
+  margin: 0 0 0.4rem;
+  padding: 0 0.6rem 0.35rem;
+  border-bottom: 1px solid var(--win-border);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  color: var(--win-title-fg);
+  opacity: 0.7;
+}
+
+.case-study-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  padding: 0.45rem 0.6rem;
+  background: none;
+  border: none;
+  border-left: 3px solid transparent;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  font-size: inherit;
+  color: var(--fg);
+  line-height: 1.2;
+  transition: background 80ms;
+}
+
+.case-study-tab:hover {
+  background: var(--win-hover-bg, rgba(0,0,0,0.06));
+}
+
+.case-study-tab.active {
+  border-left-color: var(--accent, #1d857b);
+  background: var(--win-active-tab-bg, rgba(0,0,0,0.1));
+}
+
+.case-study-co {
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.case-study-desc {
+  font-size: 0.82rem;
+  opacity: 0.75;
+}
+
+.case-study-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.6rem 0.85rem;
+}
+
+@media (max-width: 900px) {
+  .case-studies-shell {
+    flex-direction: column;
+  }
+
+  .case-studies-nav {
+    width: 100%;
+    min-width: unset;
+    flex-direction: row;
+    border-right: none;
+    border-bottom: 2px solid var(--win-border);
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0;
+  }
+
+  .case-studies-nav-label {
+    display: none;
+  }
+
+  .case-study-tab {
+    border-left: none;
+    border-bottom: 3px solid transparent;
+    padding: 0.4rem 0.7rem;
+    white-space: nowrap;
+  }
+
+  .case-study-tab.active {
+    border-left-color: transparent;
+    border-bottom-color: var(--accent, #1d857b);
+  }
+
+  .case-study-desc {
+    display: none;
+  }
+}
+
+/* ── Timeline workbench ──────────────────────────────────────── */
+
 .timeline-workbench {
   display: flex;
   flex-direction: column;

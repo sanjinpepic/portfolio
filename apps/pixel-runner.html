@@ -3,7 +3,48 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pixel Runner: Cat Escape</title>
+    <title>Cat Escape | Pixel Runner by Sanjin Pepic</title>
+    <meta
+      name="description"
+      content="Cat Escape is a lightweight browser game by Sanjin Pepic, built as a rapid product experiment around engagement, retention loops, and MVP delivery."
+    />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <link rel="canonical" href="https://sanjinpepic.github.io/portfolio/apps/pixel-runner.html" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Cat Escape | Pixel Runner by Sanjin Pepic" />
+    <meta
+      property="og:description"
+      content="A playful browser game built as a fast experiment in interaction design, engagement, and retention mechanics."
+    />
+    <meta property="og:url" content="https://sanjinpepic.github.io/portfolio/apps/pixel-runner.html" />
+    <meta property="og:site_name" content="Sanjin Pepic Portfolio" />
+    <meta property="og:image" content="https://sanjinpepic.github.io/portfolio/assets/og-preview.png" />
+    <meta property="og:image:alt" content="Sanjin Pepic portfolio retro desktop preview" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Cat Escape | Pixel Runner by Sanjin Pepic" />
+    <meta
+      name="twitter:description"
+      content="A rapid browser-game experiment focused on engagement, interaction design, and MVP shipping."
+    />
+    <meta name="twitter:image" content="https://sanjinpepic.github.io/portfolio/assets/og-preview.png" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "CreativeWork",
+        "@id": "https://sanjinpepic.github.io/portfolio/apps/pixel-runner.html#creativework",
+        "name": "Cat Escape",
+        "alternateName": "Pixel Runner",
+        "url": "https://sanjinpepic.github.io/portfolio/apps/pixel-runner.html",
+        "description": "Lightweight browser game built by Sanjin Pepic as a rapid experiment in engagement and retention mechanics.",
+        "creator": {
+          "@type": "Person",
+          "name": "Sanjin Pepic",
+          "url": "https://sanjinpepic.github.io/portfolio/"
+        },
+        "genre": ["Browser game", "Product experiment"],
+        "image": "https://sanjinpepic.github.io/portfolio/assets/og-preview.png"
+      }
+    </script>
     <style>
       :root {
         --ink: #0f0f0f;
@@ -13,6 +54,7 @@
       }
 
       * { box-sizing: border-box; }
+
       body {
         margin: 0;
         font-family: "VT323", monospace;
@@ -64,17 +106,36 @@
         background: var(--ui);
         padding: 0 0.25rem;
       }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
     </style>
   </head>
   <body>
     <main class="game-wrap">
+      <section class="sr-only" aria-labelledby="pixel-runner-page-title">
+        <h1 id="pixel-runner-page-title">Cat Escape browser game by Sanjin Pepic</h1>
+        <p>
+          Cat Escape is a lightweight pixel runner game created as a fast product experiment. The project demonstrates rapid prototyping, interaction design, engagement loops, and minimal-scope MVP delivery in the browser.
+        </p>
+      </section>
       <section class="game-shell" aria-label="Pixel runner game">
         <canvas id="game" width="640" height="240" aria-label="Running cat game"></canvas>
         <div class="hud">
           <strong>CAT ESCAPE.EXE</strong>
           <span id="score">Distance: 0m</span>
         </div>
-        <p class="hint">Jump with <kbd>Space</kbd>, <kbd>W</kbd>, <kbd>↑</kbd>, or tap/click. Avoid office cacti forever.</p>
+        <p class="hint">Jump with <kbd>Space</kbd>, <kbd>W</kbd>, <kbd>Up</kbd>, or tap/click. Avoid office cacti forever.</p>
+        <p class="hint">Built by <a href="https://sanjinpepic.github.io/portfolio/">Sanjin Pepic</a> as a rapid experiment in product design and retention mechanics.</p>
       </section>
     </main>
 

@@ -1,5 +1,44 @@
-<p>Contact details:</p>
-<ul>
-  <li>Email: <a id="contact-email" href="mailto:sanjin@pepic.me">sanjin@pepic.me</a></li>
-  <li>LinkedIn: <a id="contact-linkedin" href="https://www.linkedin.com/in/sanjin-pepic/" target="_blank" rel="noopener noreferrer">linkedin.com/in/sanjin-pepic</a></li>
-</ul>
+<div class="contact-shell">
+  <div class="contact-links">
+    <p>Direct line:</p>
+    <ul>
+      <li>Email: <a id="contact-email" href="mailto:sanjin@pepic.me">sanjin@pepic.me</a></li>
+      <li>LinkedIn: <a id="contact-linkedin" href="https://www.linkedin.com/in/sanjin-pepic/" target="_blank" rel="noopener noreferrer">linkedin.com/in/sanjin-pepic</a></li>
+    </ul>
+  </div>
+
+  <form
+    id="contact-form"
+    class="contact-form"
+    action="https://api.web3forms.com/submit"
+    method="POST"
+    novalidate
+    aria-label="Send a message"
+  >
+    <input type="hidden" name="access_key" value="03177ecd-b833-4b57-9243-9ef71cbab7cf" />
+    <input type="hidden" name="subject" value="Portfolio contact: new message" />
+    <input type="hidden" name="from_name" value="Sanjin Pepic Portfolio" />
+    <!-- Honeypot -->
+    <input type="checkbox" name="botcheck" tabindex="-1" aria-hidden="true" style="display:none" />
+
+    <div class="contact-field">
+      <label for="contact-name">Name</label>
+      <input type="text" id="contact-name" name="name" autocomplete="name" required maxlength="120" />
+    </div>
+
+    <div class="contact-field">
+      <label for="contact-reply">Email</label>
+      <input type="email" id="contact-reply" name="email" autocomplete="email" required maxlength="254" />
+    </div>
+
+    <div class="contact-field">
+      <label for="contact-message">Message</label>
+      <textarea id="contact-message" name="message" rows="4" required maxlength="2000"></textarea>
+    </div>
+
+    <div class="contact-form-footer">
+      <button type="submit" class="contact-submit" id="contact-submit">Send</button>
+      <span class="contact-status" id="contact-status" aria-live="polite"></span>
+    </div>
+  </form>
+</div>

@@ -346,6 +346,25 @@ export function startTypewriter() {
   setTimeout(type, 200);
 }
 
+// ── Case study loader ─────────────────────────────────────────
+
+export async function loadCaseStudy(id) {
+  if (!S.caseStudyContent) return;
+  S.caseStudyActiveId = id;
+  S.caseStudyContent.textContent = "Loading…";
+  try {
+    const response = await fetch(`assets/case-study-${id}.md`, { cache: "no-cache" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const markdown = await response.text();
+    S.caseStudyContent.innerHTML = markdownToRetroHtml(markdown);
+  } catch (error) {
+    S.caseStudyContent.textContent = [
+      `ERROR: Could not load case study.`,
+      `Details: ${error.message}`
+    ].join("\n");
+  }
+}
+
 // ── Resume loader ─────────────────────────────────────────────
 
 export async function loadResumeTextFile() {

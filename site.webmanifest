@@ -1,0 +1,23 @@
+{
+  "name": "Sanjin Pepic Portfolio",
+  "short_name": "Sanjin Pepic",
+  "description": "Strategy, product, and analytics portfolio of Sanjin Pepic.",
+  "start_url": "/portfolio/",
+  "display": "standalone",
+  "background_color": "#0d1020",
+  "theme_color": "#1d857b",
+  "icons": [
+    {
+      "src": "assets/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/Sanjin Pixel.png",
+      "sizes": "500x500",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
