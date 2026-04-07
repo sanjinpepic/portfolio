@@ -77,7 +77,6 @@ export const S = {
   winampVolume: null,
   winampChannelList: null,
   winampChannelFilter: null,
-  winampStatus: null,
   // Timeline
   timelineWindowContent: null,
   // Case studies
@@ -114,7 +113,6 @@ export function syncDynamicElements() {
   S.winampVolume = document.getElementById("winamp-volume");
   S.winampChannelList = document.getElementById("winamp-channel-list");
   S.winampChannelFilter = document.getElementById("winamp-channel-filter");
-  S.winampStatus = document.getElementById("winamp-status");
   S.timelineWindowContent = document.getElementById("timeline-window-content");
   S.caseStudyContent = document.getElementById("case-study-content");
 }

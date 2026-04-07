@@ -53,9 +53,6 @@ function updateWinampNowPlaying() {
   if (trackTitleNode) {
     trackTitleNode.textContent = currentTrack?.title || "Loading lineup...";
   }
-  if (S.winampStatus) {
-    S.winampStatus.textContent = currentTrack ? `Now tuned to: ${currentTrack.title}` : "Loading lineup...";
-  }
 }
 
 async function fetchYouTubeTitle(videoId) {
@@ -309,9 +306,6 @@ function initWinampPlayer() {
       },
       onError: () => {
         stopWinampClock();
-        if (S.winampStatus) {
-          S.winampStatus.textContent = "This channel is unavailable in embed mode. Skipping to next.";
-        }
         const next = (S.winampActiveIndex + 1) % WINAMP_PLAYLIST.length;
         setTimeout(() => selectWinampChannel(next), 800);
       }

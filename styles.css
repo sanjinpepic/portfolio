@@ -1604,11 +1604,17 @@ a {
   justify-content: center;
 }
 
+#winamp-window {
+  min-width: 34rem;
+  min-height: 26rem;
+}
+
 .winamp-content {
   padding: 0.45rem;
   height: 100%;
   box-sizing: border-box;
   overflow: hidden;
+  container-type: inline-size;
   color: #101010;
   background:
     linear-gradient(180deg, #7e8498 0%, #5f667a 10%, #3d4355 55%, #2b3040 100%);
@@ -1621,9 +1627,8 @@ a {
   grid-template-columns: minmax(0, 1.45fr) minmax(17rem, 0.95fr);
   grid-template-areas:
     "player playlist"
-    "status status"
     "source source";
-  grid-template-rows: minmax(0, 1fr) auto auto;
+  grid-template-rows: minmax(0, 1fr) auto;
   height: 100%;
   align-items: stretch;
   align-content: stretch;
@@ -1937,16 +1942,11 @@ a {
   border-color: #546fa8;
 }
 
-#winamp-status {
-  grid-area: status;
-  color: #eef3ff;
-  border-top: 1px solid rgba(255, 255, 255, 0.18);
-  padding-top: 0.2rem;
-}
-
 .winamp-shell > .resume-note:last-child {
   grid-area: source;
   color: #d4dbef;
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+  padding-top: 0.2rem;
 }
 
 @media (max-width: 960px) {
@@ -1955,9 +1955,8 @@ a {
     grid-template-areas:
       "player"
       "playlist"
-      "status"
       "source";
-    grid-template-rows: auto auto auto auto;
+    grid-template-rows: auto auto auto;
     height: auto;
   }
 
@@ -1978,6 +1977,89 @@ a {
   .winamp-channel-list {
     max-height: 10rem;
     min-height: 10rem;
+  }
+}
+
+@container (max-width: 48rem) {
+  .winamp-shell {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "player"
+      "playlist"
+      "source";
+    grid-template-rows: auto auto auto;
+    height: auto;
+  }
+
+  .winamp-now-playing-panel,
+  .winamp-playlist-panel,
+  .winamp-main-deck {
+    height: auto;
+  }
+
+  .winamp-screen-wrap {
+    height: auto;
+    min-height: 0;
+    max-height: clamp(12rem, 36vw, 18rem);
+  }
+
+  .winamp-channel-list {
+    min-height: 10rem;
+    max-height: 14rem;
+  }
+}
+
+@container (max-width: 38rem) {
+  .winamp-content {
+    overflow: auto;
+  }
+
+  .winamp-controls {
+    flex-wrap: wrap;
+  }
+
+  .winamp-controls--secondary {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+  }
+
+  .winamp-metal-btn--wide {
+    min-width: 4rem;
+  }
+
+  .winamp-playlist-heading {
+    font-size: 1.05rem;
+  }
+
+  .winamp-led-time {
+    font-size: 1.65rem;
+  }
+
+  .winamp-meta-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.25rem 0.45rem;
+  }
+
+  .winamp-channel-list {
+    min-height: 8.5rem;
+    max-height: 11rem;
+  }
+}
+
+@container (max-width: 32rem) {
+  .winamp-screen-wrap {
+    aspect-ratio: 4 / 3;
+    max-height: 14rem;
+  }
+
+  #winamp-track-title,
+  .winamp-meta-value {
+    font-size: 0.78rem;
+  }
+
+  .winamp-channel-btn {
+    min-height: 1.65rem;
+    padding: 0.22rem 0.35rem;
   }
 }
 /*  DOOM window  */
