@@ -815,7 +815,6 @@ function setupWinampSearchUi() {
   bindWinampSearchInteractions();
   renderWinampSearchResults();
 }
-}
 
 function initWinampPlayer() {
   if (S.winampPlayer || !window.YT || !window.YT.Player || !document.getElementById("winamp-youtube-player")) return;
