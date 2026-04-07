@@ -3,7 +3,7 @@
 import {
   desktop, windows, openers, closers, menuButtons, menuActions,
   menuDropdowns, mobileCloseBtn, mobileLayoutQuery, S,
-  syncDynamicElements, BROWSER_HOME_URL, THEME_ACTION_MAP
+  syncDynamicElements, BROWSER_HOME_URL, THEME_ACTION_MAP, BACKGROUND_MODE_ACTION_MAP
 } from "./state.js";
 import { RetroSounds } from "./sounds.js";
 import {
@@ -11,7 +11,8 @@ import {
   openAllWindows, cascadeWindows, saveDesktopState, updateClock,
   updateMobileNav, bindIconFallbackHandlers, initDragHandlers,
   loadResumeTextFile, loadCaseStudy, restoreDesktopState, restoreThemePreference,
-  applyTheme, setRestartWinampFlutter, setStopWinampPlayback
+  restoreBackgroundModePreference, applyTheme, applyBackgroundMode,
+  setRestartWinampFlutter, setStopWinampPlayback
 } from "./window-manager.js";
 import {
   renderProjects, bindDynamicContentEvents, ALLOWED_URLS,
@@ -110,6 +111,7 @@ function runMenuAction(action) {
   if (action === "open-all") openAllWindows();
   if (action === "cascade") cascadeWindows();
   if (THEME_ACTION_MAP[action]) applyTheme(THEME_ACTION_MAP[action]);
+  if (BACKGROUND_MODE_ACTION_MAP[action]) applyBackgroundMode(BACKGROUND_MODE_ACTION_MAP[action]);
   if (action === "toggle-sounds") RetroSounds.toggle();
   if (action === "new-sticky") createStickyNote();
   closeMenus();
@@ -323,6 +325,7 @@ window.addGithubRepos = function (repos) {
 async function initDesktop() {
   runBootSequence();
   restoreThemePreference();
+  restoreBackgroundModePreference();
   syncDynamicElements();
   bindIconFallbackHandlers();
   initDragHandlers();

@@ -18,14 +18,23 @@ export const mobileCloseBtn = document.getElementById("mobile-close-btn");
 export const BROWSER_HOME_URL = "about:home";
 export const DESKTOP_STATE_KEY = "portfolio.desktop.state.v1";
 export const THEME_STATE_KEY = "portfolio.desktop.theme.v1";
-export const DEFAULT_THEME = "classic";
+export const BACKGROUND_MODE_STATE_KEY = "portfolio.desktop.background-mode.v1";
+export const DEFAULT_THEME = "windows";
 export const LEGACY_DARK_THEME = "midnight";
+export const DEFAULT_BACKGROUND_MODE = "fill";
 export const THEME_ACTION_MAP = {
+  "set-theme-windows": "windows",
   "set-theme-classic": "classic",
   "set-theme-midnight": "midnight",
   "set-theme-sunset": "sunset",
 };
+export const BACKGROUND_MODE_ACTION_MAP = {
+  "set-bg-mode-fill": "fill",
+  "set-bg-mode-center": "center",
+  "set-bg-mode-tile": "tile",
+};
 export const THEME_PROFILES = {
+  windows: { clickGain: 0.95, flutterRange: 3, flutterInterval: 980 },
   classic: { clickGain: 1, flutterRange: 4, flutterInterval: 900 },
   midnight: { clickGain: 0.82, flutterRange: 3, flutterInterval: 960 },
   sunset: { clickGain: 1.15, flutterRange: 5, flutterInterval: 860 },
@@ -52,8 +61,9 @@ export const S = {
   isRestoringDesktopState: false,
   activeMenuButton: null,
   // Theme state
-  activeThemeName: "classic",
-  activeThemeProfile: { clickGain: 1, flutterRange: 4, flutterInterval: 900 },
+  activeThemeName: "windows",
+  activeThemeProfile: { clickGain: 0.95, flutterRange: 3, flutterInterval: 980 },
+  activeBackgroundMode: "fill",
   // Browser elements (populated by syncDynamicElements)
   projectList: null,
   browserFrame: null,

@@ -2,6 +2,11 @@
 
 :root {
   --desktop-bg: #1d857b;
+  --desktop-bg-image: none;
+  --desktop-bg-frame: #1d857b;
+  --desktop-bg-position: center center;
+  --desktop-bg-size: cover;
+  --desktop-bg-repeat: no-repeat;
   --desktop-overlay-hi: rgba(255, 255, 255, 0.06);
   --desktop-overlay-lo: rgba(0, 0, 0, 0.02);
   --menu-gray: #d9d9d9;
@@ -24,8 +29,36 @@
   --desktop-label-shadow-soft: rgba(150, 255, 200, 0.3);
 }
 
+body[data-theme="windows"] {
+  --desktop-bg: #8ec3ff;
+  --desktop-bg-image: url("assets/windows.jpg");
+  --desktop-bg-frame: #8ec3ff;
+  --desktop-overlay-hi: rgba(255, 255, 255, 0.04);
+  --desktop-overlay-lo: rgba(0, 0, 0, 0.01);
+  --menu-gray: #d9d9d9;
+  --panel-gray: #c9c9c9;
+  --surface-button: #d7d7d7;
+  --border-dark: #3f3f3f;
+  --border-mid: #7a7a7a;
+  --border-light: #ffffff;
+  --text-main: #101010;
+  --title-text: #ffffff;
+  --focus-accent: #1f4db4;
+  --window-shadow: #000000;
+  --titlebar-a: #4c4c4c;
+  --titlebar-b: #8a8a8a;
+  --titlebar-inactive-a: #999999;
+  --titlebar-inactive-b: #bbbbbb;
+  --title-inactive-text: #cccccc;
+  --desktop-label-text: #ffffff;
+  --desktop-label-shadow-strong: #21477b;
+  --desktop-label-shadow-soft: rgba(184, 222, 255, 0.45);
+}
+
 body[data-theme="classic"] {
   --desktop-bg: #1d857b;
+  --desktop-bg-image: none;
+  --desktop-bg-frame: #1d857b;
   --desktop-overlay-hi: rgba(255, 255, 255, 0.06);
   --desktop-overlay-lo: rgba(0, 0, 0, 0.02);
   --menu-gray: #d9d9d9;
@@ -50,6 +83,8 @@ body[data-theme="classic"] {
 
 body[data-theme="midnight"] {
   --desktop-bg: #1a2a45;
+  --desktop-bg-image: none;
+  --desktop-bg-frame: #1a2a45;
   --desktop-overlay-hi: rgba(145, 190, 255, 0.08);
   --desktop-overlay-lo: rgba(0, 0, 0, 0.18);
   --menu-gray: #c0c9dc;
@@ -74,6 +109,8 @@ body[data-theme="midnight"] {
 
 body[data-theme="sunset"] {
   --desktop-bg: #a04c31;
+  --desktop-bg-image: none;
+  --desktop-bg-frame: #a04c31;
   --desktop-overlay-hi: rgba(255, 239, 201, 0.09);
   --desktop-overlay-lo: rgba(62, 16, 8, 0.18);
   --menu-gray: #e0cfbc;
@@ -112,12 +149,38 @@ body {
   font-family: "VT323", monospace;
   font-size: 1.45rem;
   color: var(--text-main);
-  background: repeating-linear-gradient(
+  background-color: var(--desktop-bg-frame);
+  background-image:
+    repeating-linear-gradient(
       45deg,
-    var(--desktop-overlay-hi) 0 2px,
+      var(--desktop-overlay-hi) 0 2px,
       var(--desktop-overlay-lo) 2px 4px
     ),
-    var(--desktop-bg);
+    var(--desktop-bg-image);
+  background-position: 0 0, var(--desktop-bg-position);
+  background-size: auto, var(--desktop-bg-size);
+  background-repeat: repeat, var(--desktop-bg-repeat);
+}
+
+body[data-bg-mode="fill"] {
+  --desktop-bg-position: center center;
+  --desktop-bg-size: cover;
+  --desktop-bg-repeat: no-repeat;
+  --desktop-bg-frame: var(--desktop-bg);
+}
+
+body[data-bg-mode="center"] {
+  --desktop-bg-position: center center;
+  --desktop-bg-size: auto;
+  --desktop-bg-repeat: no-repeat;
+  --desktop-bg-frame: #8ec3ff;
+}
+
+body[data-bg-mode="tile"] {
+  --desktop-bg-position: left top;
+  --desktop-bg-size: auto;
+  --desktop-bg-repeat: repeat;
+  --desktop-bg-frame: var(--desktop-bg);
 }
 
 /* Retro square scrollbar theme (global) */
@@ -217,6 +280,40 @@ body {
 }
 
 .menu-dropdown.open {
+  display: block;
+}
+
+.menu-dropdown .menu-submenu {
+  position: relative;
+}
+
+.menu-dropdown .submenu-toggle {
+  width: 100%;
+  text-align: left;
+}
+
+.menu-dropdown .submenu-toggle::after {
+  content: "›";
+  float: right;
+}
+
+.menu-submenu-panel {
+  position: absolute;
+  top: -0.2rem;
+  left: calc(100% - 0.1rem);
+  margin: 0;
+  padding: 0.2rem;
+  list-style: none;
+  min-width: 13rem;
+  background: var(--panel-gray);
+  border: 2px solid;
+  border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+  display: none;
+  z-index: 10001;
+}
+
+.menu-submenu:hover > .menu-submenu-panel,
+.menu-submenu:focus-within > .menu-submenu-panel {
   display: block;
 }
 

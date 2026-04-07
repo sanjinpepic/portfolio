@@ -239,9 +239,18 @@
           </button>
           <ul id="special-menu" class="menu-dropdown" role="menu" aria-labelledby="menu-button-special">
             <li role="none"><button role="menuitem" tabindex="-1" data-action="cascade">Cascade Windows</button></li>
+            <li role="none"><button role="menuitemradio" aria-checked="false" tabindex="-1" data-action="set-theme-windows" data-theme-option="windows">Windows Sky</button></li>
             <li role="none"><button role="menuitemradio" aria-checked="false" tabindex="-1" data-action="set-theme-classic" data-theme-option="classic">Classic CRT</button></li>
             <li role="none"><button role="menuitemradio" aria-checked="false" tabindex="-1" data-action="set-theme-midnight" data-theme-option="midnight">Midnight Blue</button></li>
             <li role="none"><button role="menuitemradio" aria-checked="false" tabindex="-1" data-action="set-theme-sunset" data-theme-option="sunset">Sunset Amber</button></li>
+            <li role="none" class="menu-submenu">
+              <button role="menuitem" tabindex="-1" class="submenu-toggle">Settings</button>
+              <ul class="menu-submenu-panel" role="menu" aria-label="Desktop background settings">
+                <li role="none"><button role="menuitemradio" aria-checked="false" tabindex="-1" data-action="set-bg-mode-fill" data-bg-mode-option="fill">Fill (Standard)</button></li>
+                <li role="none"><button role="menuitemradio" aria-checked="false" tabindex="-1" data-action="set-bg-mode-center" data-bg-mode-option="center">Center</button></li>
+                <li role="none"><button role="menuitemradio" aria-checked="false" tabindex="-1" data-action="set-bg-mode-tile" data-bg-mode-option="tile">Multiply</button></li>
+              </ul>
+            </li>
             <li role="none"><button role="menuitem" tabindex="-1" data-action="toggle-sounds" id="sounds-menu-item">Sounds: Off</button></li>
           </ul>
         </div>
@@ -998,6 +1007,7 @@
         <li role="none"><button role="menuitem" data-ctx-action="cascade">Cascade Windows</button></li>
         <li role="none"><button role="menuitem" data-ctx-action="close-all">Close All</button></li>
         <li class="ctx-separator" role="separator"></li>
+        <li role="none"><button role="menuitemradio" aria-checked="false" data-ctx-action="set-theme-windows" data-theme-option="windows">Windows Sky</button></li>
         <li role="none"><button role="menuitemradio" aria-checked="false" data-ctx-action="set-theme-classic" data-theme-option="classic">Classic CRT</button></li>
         <li role="none"><button role="menuitemradio" aria-checked="false" data-ctx-action="set-theme-midnight" data-theme-option="midnight">Midnight Blue</button></li>
         <li role="none"><button role="menuitemradio" aria-checked="false" data-ctx-action="set-theme-sunset" data-theme-option="sunset">Sunset Amber</button></li>

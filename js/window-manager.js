@@ -3,7 +3,8 @@
 import {
   desktop, windows, mobileLayoutQuery, menuBar,
   mobileAppNav, mobileAppTitle, clock,
-  DESKTOP_STATE_KEY, THEME_STATE_KEY, DEFAULT_THEME, LEGACY_DARK_THEME,
+  DESKTOP_STATE_KEY, THEME_STATE_KEY, BACKGROUND_MODE_STATE_KEY,
+  DEFAULT_THEME, DEFAULT_BACKGROUND_MODE, LEGACY_DARK_THEME,
   THEME_PROFILES, S
 } from "./state.js";
 import { clamp, parseNumericStyle, markdownToRetroHtml } from "./utils.js";
@@ -88,6 +89,17 @@ function applyThemeAudioProfile() {
   if (_restartWinampFlutter) _restartWinampFlutter();
 }
 
+function updateBackgroundModeMenuLabels() {
+  const backgroundOptionButtons = [...document.querySelectorAll("[data-bg-mode-option]")];
+  backgroundOptionButtons.forEach((button) => {
+    const option = button.dataset.bgModeOption;
+    const baseLabel = button.dataset.modeLabel || button.textContent.replace(/^âœ“\s*/, "").trim();
+    button.dataset.modeLabel = baseLabel;
+    button.textContent = option === S.activeBackgroundMode ? `âœ“ ${baseLabel}` : baseLabel;
+    button.setAttribute("aria-checked", option === S.activeBackgroundMode ? "true" : "false");
+  });
+}
+
 export function applyTheme(themeName, { persist = true } = {}) {
   S.activeThemeName = resolveThemeName(themeName);
   document.body.dataset.theme = S.activeThemeName;
@@ -109,6 +121,34 @@ export function restoreThemePreference() {
     savedTheme = null;
   }
   applyTheme(savedTheme || DEFAULT_THEME, { persist: false });
+}
+
+function resolveBackgroundMode(rawMode) {
+  if (typeof rawMode !== "string") return DEFAULT_BACKGROUND_MODE;
+  const normalizedMode = rawMode.trim().toLowerCase();
+  return ["fill", "center", "tile"].includes(normalizedMode) ? normalizedMode : DEFAULT_BACKGROUND_MODE;
+}
+
+export function applyBackgroundMode(modeName, { persist = true } = {}) {
+  S.activeBackgroundMode = resolveBackgroundMode(modeName);
+  document.body.dataset.bgMode = S.activeBackgroundMode;
+  updateBackgroundModeMenuLabels();
+  if (!persist) return;
+  try {
+    window.localStorage.setItem(BACKGROUND_MODE_STATE_KEY, S.activeBackgroundMode);
+  } catch {
+    // Ignore storage quota/privacy mode failures.
+  }
+}
+
+export function restoreBackgroundModePreference() {
+  let savedMode = null;
+  try {
+    savedMode = window.localStorage.getItem(BACKGROUND_MODE_STATE_KEY);
+  } catch {
+    savedMode = null;
+  }
+  applyBackgroundMode(savedMode || DEFAULT_BACKGROUND_MODE, { persist: false });
 }
 
 // ── Exported functions ────────────────────────────────────────
