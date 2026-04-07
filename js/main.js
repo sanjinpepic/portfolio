@@ -320,6 +320,31 @@ window.addGithubRepos = function (repos) {
   renderProjects();
 };
 
+function validateContactForm(form) {
+  const nameInput = form.querySelector("#contact-name");
+  const emailInput = form.querySelector("#contact-reply");
+  const messageInput = form.querySelector("#contact-message");
+
+  const name = nameInput?.value.trim() || "";
+  const email = emailInput?.value.trim() || "";
+  const message = messageInput?.value.trim() || "";
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!name) {
+    nameInput?.focus();
+    return "Please enter your name.";
+  }
+  if (!email || !emailPattern.test(email)) {
+    emailInput?.focus();
+    return "Please enter a valid email address.";
+  }
+  if (!message) {
+    messageInput?.focus();
+    return "Please enter a message.";
+  }
+  return "";
+}
+
 // ── Desktop init ─────────────────────────────────────────────
 
 async function initDesktop() {
@@ -361,6 +386,14 @@ async function initDesktop() {
     const form = event.target;
     const submitBtn = document.getElementById("contact-submit");
     const statusEl = document.getElementById("contact-status");
+    const validationError = validateContactForm(form);
+    if (validationError) {
+      if (statusEl) {
+        statusEl.textContent = validationError;
+        statusEl.className = "contact-status err";
+      }
+      return;
+    }
     if (submitBtn) submitBtn.disabled = true;
     if (statusEl) {
       statusEl.textContent = "Sending…";
