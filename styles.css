@@ -1618,7 +1618,7 @@ a {
   display: grid;
   gap: 0.45rem;
   width: 100%;
-  grid-template-columns: minmax(0, 1.2fr) minmax(15rem, 0.8fr);
+  grid-template-columns: minmax(0, 1.45fr) minmax(17rem, 0.95fr);
   grid-template-areas:
     "player playlist"
     "status status"
@@ -1652,7 +1652,7 @@ a {
 
 .winamp-display-stack {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(12rem, 0.9fr);
+  grid-template-columns: minmax(13rem, 0.95fr) minmax(16rem, 1.2fr);
   gap: 0.4rem;
   align-items: stretch;
 }
@@ -1664,6 +1664,9 @@ a {
     radial-gradient(circle at 20% 10%, rgba(133, 255, 93, 0.16), transparent 32%),
     linear-gradient(180deg, #283321 0%, #192015 100%);
   color: #8cff5f;
+  display: grid;
+  grid-template-rows: auto auto auto;
+  gap: 0.28rem;
   padding: 0.35rem 0.45rem;
   box-shadow: inset 0 0 14px rgba(0, 0, 0, 0.62);
 }
@@ -1688,8 +1691,12 @@ a {
 
 .winamp-meta-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.35rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.3rem 0.55rem;
+}
+
+.winamp-track-strip {
+  min-width: 0;
 }
 
 .winamp-meta-block {
@@ -1701,6 +1708,7 @@ a {
   font-size: 0.72rem;
   color: #c4f2b2;
   letter-spacing: 0.08em;
+  margin-bottom: 0.06rem;
 }
 
 .winamp-meta-value {
@@ -1723,7 +1731,8 @@ a {
     inset 0 0 0 1px #12151e,
     0 0 12px rgba(0, 0, 0, 0.45);
   aspect-ratio: 16 / 10;
-  max-height: clamp(8rem, 24vh, 11rem);
+  min-height: 7.6rem;
+  max-height: clamp(9.5rem, 28vh, 12.8rem);
   overflow: hidden;
 }
 
@@ -1787,7 +1796,7 @@ a {
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .winamp-controls--transport {
@@ -1795,6 +1804,9 @@ a {
 }
 
 .winamp-controls--secondary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
   border-top: 1px solid rgba(255, 255, 255, 0.18);
   padding-top: 0.28rem;
 }
@@ -1835,8 +1847,8 @@ a {
 }
 
 #winamp-volume {
-  flex: 1;
-  min-width: 7rem;
+  width: 100%;
+  min-width: 0;
   accent-color: #b7d34f;
 }
 
@@ -1846,6 +1858,7 @@ a {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   gap: 0.35rem;
+  align-self: stretch;
 }
 
 .winamp-playlist-heading {
@@ -1861,7 +1874,7 @@ a {
   grid-template-columns: 1fr;
   gap: 0.2rem;
   align-content: start;
-  max-height: clamp(12rem, 40vh, 18rem);
+  min-height: clamp(14rem, 46vh, 22rem);
   overflow: auto;
   padding: 0.2rem;
   border: 2px solid;
@@ -1936,8 +1949,18 @@ a {
     grid-template-columns: 1fr;
   }
 
+  .winamp-controls {
+    flex-wrap: wrap;
+  }
+
+  .winamp-controls--secondary {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+  }
+
   .winamp-channel-list {
     max-height: 10rem;
+    min-height: 10rem;
   }
 }
 /*  DOOM window  */
