@@ -165,97 +165,138 @@ function drawWinampVisualizerFrame() {
 }
 
 function drawAlchemyVisualizerFrame(context, width, height, time, playbackTime, normalizedVolume, energy, spectrum) {
-  const background = context.createRadialGradient(
-    width * 0.5,
-    height * 0.52,
-    width * 0.06,
-    width * 0.5,
-    height * 0.52,
-    width * 0.82
-  );
-  background.addColorStop(0, "rgba(255, 242, 169, 0.16)");
-  background.addColorStop(0.28, `hsla(${32 + normalizedVolume * 28} 88% 20% / 0.88)`);
-  background.addColorStop(0.62, "hsla(18 84% 9% / 0.96)");
-  background.addColorStop(1, "#020202");
+  const centerX = width * 0.5;
+  const centerY = height * 0.52;
+  const minSize = Math.min(width, height);
+  const bass = (spectrum.bands[1] + spectrum.bands[2] + spectrum.bands[3]) / 3;
+  const mid = (spectrum.bands[8] + spectrum.bands[9] + spectrum.bands[10]) / 3;
+  const air = (spectrum.bands[18] + spectrum.bands[20] + spectrum.bands[22]) / 3;
+  const flare = clamp(spectrum.pulse * 0.8 + bass * 0.45, 0, 1);
+  const haloRadius = minSize * (0.16 + bass * 0.12 + spectrum.pulse * 0.04);
+
+  context.save();
+  context.globalCompositeOperation = "source-over";
+
+  const background = context.createRadialGradient(centerX, centerY, minSize * 0.04, centerX, centerY, minSize * 0.95);
+  background.addColorStop(0, `rgba(255, 240, 180, ${0.08 + flare * 0.08})`);
+  background.addColorStop(0.18, `hsla(${28 + mid * 18} 96% 22% / 0.95)`);
+  background.addColorStop(0.46, "hsla(16 90% 10% / 0.98)");
+  background.addColorStop(0.78, "hsla(8 78% 5% / 0.98)");
+  background.addColorStop(1, "#010101");
   context.fillStyle = background;
   context.fillRect(0, 0, width, height);
 
-  const sigilCount = 6;
-  for (let ringIndex = 0; ringIndex < sigilCount; ringIndex += 1) {
-    const ratio = (ringIndex + 1) / sigilCount;
-    const bandEnergy = spectrum.bands[(ringIndex * 3) % spectrum.bands.length];
-    const radius = Math.min(width, height) * (0.1 + ratio * 0.12 + bandEnergy * 0.028 + Math.sin(time * (0.9 + bandEnergy) + ringIndex) * 0.004);
-    const hue = 24 + ringIndex * 14 + bandEnergy * 26;
-    context.beginPath();
-    context.arc(width * 0.5, height * 0.52, radius, 0, Math.PI * 2);
-    context.strokeStyle = `hsla(${hue} 100% 70% / ${0.12 + ratio * 0.11 + energy * 0.08})`;
-    context.lineWidth = Math.max(1, width * (0.0014 + ratio * 0.0008));
-    context.stroke();
+  context.globalCompositeOperation = "screen";
+  for (let cloud = 0; cloud < 8; cloud += 1) {
+    const cloudEnergy = spectrum.bands[(cloud * 3) % spectrum.bands.length];
+    const angle = time * (0.09 + cloud * 0.012) + cloud * 0.73 + playbackTime * 0.01;
+    const orbitX = minSize * (0.1 + (cloud % 4) * 0.055 + cloudEnergy * 0.03);
+    const orbitY = minSize * (0.06 + (cloud % 3) * 0.05 + cloudEnergy * 0.02);
+    const x = centerX + Math.cos(angle) * orbitX;
+    const y = centerY + Math.sin(angle * 1.18) * orbitY;
+    const radius = minSize * (0.12 + cloudEnergy * 0.08 + (cloud % 3) * 0.02);
+    const glow = context.createRadialGradient(x, y, 0, x, y, radius);
+    glow.addColorStop(0, `hsla(${24 + cloud * 7} 100% 72% / ${0.06 + cloudEnergy * 0.08})`);
+    glow.addColorStop(0.45, `hsla(${16 + cloud * 5} 92% 40% / ${0.05 + cloudEnergy * 0.06})`);
+    glow.addColorStop(1, "transparent");
+    context.fillStyle = glow;
+    context.fillRect(x - radius, y - radius, radius * 2, radius * 2);
   }
 
-  const spokeCount = 12;
+  const lobeCount = 6;
   context.save();
-  context.translate(width * 0.5, height * 0.52);
-  context.rotate(time * (0.2 + spectrum.drift * 0.3) + playbackTime * 0.01);
-  for (let spoke = 0; spoke < spokeCount; spoke += 1) {
-    const angle = (Math.PI * 2 * spoke) / spokeCount;
-    const inner = Math.min(width, height) * 0.1;
-    const bandEnergy = spectrum.bands[(spoke * 2) % spectrum.bands.length];
-    const outer = Math.min(width, height) * (0.22 + bandEnergy * 0.16 + (spoke % 3) * 0.018 + spectrum.pulse * 0.03);
+  context.translate(centerX, centerY);
+  context.rotate(time * (0.16 + spectrum.drift * 0.12) + playbackTime * 0.008);
+  for (let lobe = 0; lobe < lobeCount; lobe += 1) {
+    const baseAngle = (Math.PI * 2 * lobe) / lobeCount;
+    const bandEnergy = spectrum.bands[(lobe * 4) % spectrum.bands.length];
+    const length = minSize * (0.18 + bandEnergy * 0.18 + flare * 0.05);
+    const widthScale = minSize * (0.06 + mid * 0.035 + (lobe % 2) * 0.008);
+
+    context.save();
+    context.rotate(baseAngle);
+    const petal = context.createRadialGradient(length * 0.18, 0, 0, length * 0.18, 0, length * 1.05);
+    petal.addColorStop(0, `hsla(${30 + lobe * 4} 100% 82% / ${0.34 + bandEnergy * 0.14})`);
+    petal.addColorStop(0.28, `hsla(${22 + lobe * 5} 100% 60% / ${0.26 + bandEnergy * 0.12})`);
+    petal.addColorStop(0.68, `hsla(${12 + lobe * 4} 90% 36% / ${0.12 + bandEnergy * 0.1})`);
+    petal.addColorStop(1, "transparent");
+    context.fillStyle = petal;
     context.beginPath();
-    context.moveTo(Math.cos(angle) * inner, Math.sin(angle) * inner);
-    context.lineTo(Math.cos(angle) * outer, Math.sin(angle) * outer);
-    context.strokeStyle = `hsla(${34 + spoke * 6} 100% 72% / ${0.18 + energy * 0.16})`;
-    context.lineWidth = Math.max(1, width * 0.0022);
-    context.stroke();
+    context.moveTo(minSize * 0.04, 0);
+    context.bezierCurveTo(length * 0.26, -widthScale, length * 0.78, -widthScale * 0.46, length, 0);
+    context.bezierCurveTo(length * 0.78, widthScale * 0.46, length * 0.26, widthScale, minSize * 0.04, 0);
+    context.fill();
+    context.restore();
   }
   context.restore();
 
-  const orbCount = 18;
-  for (let i = 0; i < orbCount; i += 1) {
-    const bandEnergy = spectrum.bands[(i + 5) % spectrum.bands.length];
-    const orbit = 0.16 + (i % 6) * 0.042 + normalizedVolume * 0.04 + bandEnergy * 0.03;
-    const angle = time * (0.32 + (i % 5) * 0.05 + bandEnergy * 0.12) + i * 0.62 + playbackTime * 0.03;
-    const x = width * 0.5 + Math.cos(angle) * width * orbit;
-    const y = height * 0.52 + Math.sin(angle * 1.18) * height * orbit * 0.78;
-    const radius = width * (0.003 + (i % 3) * 0.0018 + bandEnergy * 0.0042);
-    const glow = context.createRadialGradient(x, y, 0, x, y, radius * 7);
-    glow.addColorStop(0, `hsla(${36 + i * 5} 100% 74% / ${0.32 + energy * 0.18})`);
-    glow.addColorStop(1, "transparent");
-    context.fillStyle = glow;
-    context.fillRect(x - radius * 7, y - radius * 7, radius * 14, radius * 14);
+  context.globalCompositeOperation = "lighter";
+  const ringCount = 5;
+  for (let ring = 0; ring < ringCount; ring += 1) {
+    const ratio = (ring + 1) / ringCount;
+    const ringEnergy = spectrum.bands[(ring * 5 + 3) % spectrum.bands.length];
+    const radius = minSize * (0.11 + ratio * 0.135 + ringEnergy * 0.03);
+    const dashA = Math.max(6, radius * (0.1 + ringEnergy * 0.03));
+    const dashB = Math.max(4, radius * (0.045 + air * 0.04));
+    context.beginPath();
+    context.setLineDash([dashA, dashB]);
+    context.lineDashOffset = -(time * 70 * (0.2 + ratio * 0.3));
+    context.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    context.strokeStyle = `hsla(${28 + ring * 8 + ringEnergy * 18} 100% 72% / ${0.18 + ratio * 0.08 + flare * 0.06})`;
+    context.lineWidth = Math.max(1.1, minSize * (0.002 + ratio * 0.0012));
+    context.stroke();
+  }
+  context.setLineDash([]);
+
+  const sparkCount = 26;
+  for (let spark = 0; spark < sparkCount; spark += 1) {
+    const bandEnergy = spectrum.bands[spark % spectrum.bands.length];
+    const angle = time * (0.35 + bandEnergy * 0.3) + spark * 0.48 + playbackTime * 0.03;
+    const orbit = minSize * (0.18 + (spark % 7) * 0.031 + bandEnergy * 0.06);
+    const x = centerX + Math.cos(angle) * orbit;
+    const y = centerY + Math.sin(angle * 1.13) * orbit * 0.72;
+    const radius = minSize * (0.003 + bandEnergy * 0.007);
+    const sparkGlow = context.createRadialGradient(x, y, 0, x, y, radius * 10);
+    sparkGlow.addColorStop(0, `hsla(${38 + spark * 2} 100% 82% / ${0.45 + bandEnergy * 0.18})`);
+    sparkGlow.addColorStop(0.4, `hsla(${26 + spark * 2} 100% 58% / ${0.16 + bandEnergy * 0.08})`);
+    sparkGlow.addColorStop(1, "transparent");
+    context.fillStyle = sparkGlow;
+    context.fillRect(x - radius * 10, y - radius * 10, radius * 20, radius * 20);
   }
 
-  const flameColumns = 20;
-  const columnWidth = width / flameColumns;
-  for (let i = 0; i < flameColumns; i += 1) {
-    const bandEnergy = spectrum.bands[Math.floor((i / flameColumns) * spectrum.bands.length)];
-    const phase = time * (1.3 + bandEnergy) + i * 0.27 + playbackTime * 0.05;
-    const flameHeight = height * clamp(0.08 + bandEnergy * 0.62 + Math.sin(phase) * 0.05 + spectrum.pulse * 0.08, 0.08, 0.72);
-    const x = i * columnWidth;
-    const y = height - flameHeight;
-    const flameFill = context.createLinearGradient(0, y, 0, height);
-    flameFill.addColorStop(0, "rgba(255, 243, 173, 0.82)");
-    flameFill.addColorStop(0.24, "rgba(255, 180, 66, 0.78)");
-    flameFill.addColorStop(0.68, "rgba(196, 58, 8, 0.48)");
-    flameFill.addColorStop(1, "rgba(38, 4, 2, 0)");
-    context.fillStyle = flameFill;
-    context.fillRect(x + columnWidth * 0.18, y, columnWidth * 0.64, flameHeight);
-  }
+  context.globalCompositeOperation = "screen";
+  const coreGlow = context.createRadialGradient(centerX, centerY, 0, centerX, centerY, haloRadius * 1.5);
+  coreGlow.addColorStop(0, `rgba(255, 248, 222, ${0.52 + flare * 0.12})`);
+  coreGlow.addColorStop(0.22, `rgba(255, 202, 112, ${0.34 + flare * 0.12})`);
+  coreGlow.addColorStop(0.5, `rgba(255, 124, 32, ${0.1 + flare * 0.08})`);
+  coreGlow.addColorStop(1, "transparent");
+  context.fillStyle = coreGlow;
+  context.fillRect(centerX - haloRadius * 1.5, centerY - haloRadius * 1.5, haloRadius * 3, haloRadius * 3);
 
+  context.globalCompositeOperation = "source-over";
   context.beginPath();
-  for (let i = 0; i <= width; i += Math.max(4, Math.round(width / 90))) {
-    const bandIndex = Math.floor((i / width) * (VISUALIZER_BAR_COUNT - 1));
+  for (let i = 0; i <= width; i += Math.max(3, Math.round(width / 120))) {
+    const normalized = i / width;
+    const bandIndex = Math.floor(normalized * (VISUALIZER_BAR_COUNT - 1));
     const bandEnergy = spectrum.bands[bandIndex];
-    const wave = Math.sin((i / width) * Math.PI * (7 + spectrum.drift * 3) + time * (1 + bandEnergy) + playbackTime * 0.06);
-    const shimmer = Math.cos((i / width) * Math.PI * 3 - time * 0.55);
-    const y = height * (0.58 - bandEnergy * 0.18 + wave * (0.02 + bandEnergy * 0.08) + shimmer * 0.01);
+    const ribbon = Math.sin(normalized * Math.PI * (8 + spectrum.drift * 4) + time * (1.1 + bandEnergy * 0.6));
+    const wobble = Math.cos(normalized * Math.PI * 3 - time * 0.7 + playbackTime * 0.04);
+    const y = centerY + ribbon * minSize * (0.016 + bandEnergy * 0.05) + wobble * minSize * 0.012 - bandEnergy * minSize * 0.12;
     if (i === 0) context.moveTo(i, y);
     else context.lineTo(i, y);
   }
-  context.strokeStyle = `rgba(255, 248, 214, ${0.34 + normalizedVolume * 0.24})`;
-  context.lineWidth = Math.max(1, width * 0.003);
+  context.strokeStyle = `rgba(255, 247, 214, ${0.34 + air * 0.24})`;
+  context.lineWidth = Math.max(1.2, minSize * 0.004);
   context.stroke();
+
+  context.globalCompositeOperation = "multiply";
+  const vignette = context.createRadialGradient(centerX, centerY, minSize * 0.22, centerX, centerY, minSize * 0.88);
+  vignette.addColorStop(0, "rgba(0, 0, 0, 0)");
+  vignette.addColorStop(0.72, "rgba(12, 0, 0, 0.16)");
+  vignette.addColorStop(1, "rgba(0, 0, 0, 0.46)");
+  context.fillStyle = vignette;
+  context.fillRect(0, 0, width, height);
+  context.restore();
 }
 
 function startWinampVisualizer() {
