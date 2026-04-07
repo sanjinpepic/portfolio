@@ -632,6 +632,16 @@ function removeTrackFromWinampPlaylist(index) {
   updateWinampUi();
 }
 
+function addDirectYouTubeSearchResult({ playNow = false } = {}) {
+  const directId = extractYouTubeVideoId(S.winampSearchQuery);
+  if (!directId) return false;
+  addTrackToWinampPlaylist({
+    id: directId,
+    title: `YouTube video ${directId}`,
+  }, { playNow });
+  return true;
+}
+
 function setupWinampPlaylistUi() {
   if (!S.winampChannelList) return;
   const filteredPlaylist = WINAMP_PLAYLIST.map((track, index) => ({ ...track, index }));
@@ -720,12 +730,27 @@ function renderWinampSearchResults() {
       const nextIndex = Number(channelButton.dataset.winampIndex);
       if (nextIndex >= 0) {
         selectWinampChannel(nextIndex);
+        return;
+      }
+
+      const directId = channelButton.dataset.winampVideoId || "";
+      if (directId) {
+        addTrackToWinampPlaylist({
+          id: directId,
+          title: `YouTube video ${directId}`,
+        }, { playNow: true });
       }
     });
     if (S.winampSearchInput) {
       S.winampSearchInput.addEventListener("input", () => {
         S.winampSearchQuery = S.winampSearchInput.value || "";
         renderWinampSearchResults();
+      });
+      S.winampSearchInput.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter") return;
+        if (addDirectYouTubeSearchResult({ playNow: true })) {
+          event.preventDefault();
+        }
       });
     }
     S.winampSearchBound = true;
