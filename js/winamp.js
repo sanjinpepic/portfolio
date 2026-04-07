@@ -8,6 +8,66 @@ import { vintageSpeaker } from "./sounds.js";
 
 let winampClockTimer = null;
 const VISUALIZER_BAR_COUNT = 24;
+const WINAMP_VISUAL_MODES = ["video", "visualizer", "alchemy"];
+const pseudoSpectrum = {
+  bands: Array.from({ length: VISUALIZER_BAR_COUNT }, (_, index) => 0.22 + ((index % 5) * 0.045)),
+  pulse: 0.18,
+  bloom: 0.2,
+  drift: 0.24,
+  lastStep: -1,
+  trackSeed: 0,
+};
+
+function fract(value) {
+  return value - Math.floor(value);
+}
+
+function pseudoNoise(seed) {
+  return fract(Math.sin(seed * 127.1 + 311.7) * 43758.5453123);
+}
+
+function getTrackSeed() {
+  const track = getCurrentTrack();
+  if (!track?.id) return 1;
+  return [...track.id].reduce((acc, char, index) => acc + char.charCodeAt(0) * (index + 1), 0);
+}
+
+function updatePseudoSpectrum(playbackTime, normalizedVolume) {
+  const trackSeed = getTrackSeed();
+  if (pseudoSpectrum.trackSeed !== trackSeed) {
+    pseudoSpectrum.trackSeed = trackSeed;
+    pseudoSpectrum.lastStep = -1;
+    pseudoSpectrum.bands = pseudoSpectrum.bands.map((_, index) => 0.2 + pseudoNoise(trackSeed * 0.017 + index * 1.13) * 0.18);
+  }
+
+  const step = Math.floor(playbackTime * 6);
+  const stepChanged = step !== pseudoSpectrum.lastStep;
+  if (stepChanged) {
+    pseudoSpectrum.lastStep = step;
+    const section = Math.floor(playbackTime / 8);
+    const sectionBias = 0.72 + pseudoNoise(trackSeed * 0.001 + section * 0.63) * 0.78;
+    const accent = pseudoNoise(trackSeed * 0.019 + step * 0.73);
+    pseudoSpectrum.pulse = 0.18 + accent * 0.72 * normalizedVolume * sectionBias;
+    pseudoSpectrum.bloom = 0.12 + pseudoNoise(trackSeed * 0.023 + step * 0.41) * 0.64;
+    pseudoSpectrum.drift = pseudoNoise(trackSeed * 0.029 + section * 0.37);
+
+    pseudoSpectrum.bands = pseudoSpectrum.bands.map((band, index) => {
+      const group = Math.floor(index / 4);
+      const phrase = pseudoNoise(trackSeed * 0.007 + step * 0.17 + index * 0.91);
+      const groove = pseudoNoise(trackSeed * 0.011 + section * 0.53 + group * 1.27);
+      const kick = index < 5 ? pseudoSpectrum.pulse * 0.46 : 0;
+      const snare = index >= 8 && index <= 15 ? pseudoSpectrum.pulse * 0.28 * (0.4 + accent) : 0;
+      const sparkle = index > 15 ? pseudoSpectrum.bloom * 0.22 : 0;
+      const target = clamp(0.08 + phrase * 0.45 + groove * 0.26 + kick + snare + sparkle, 0.06, 1);
+      return band * 0.36 + target * 0.64;
+    });
+  }
+
+  const decay = stepChanged ? 0.82 : 0.94;
+  pseudoSpectrum.pulse *= decay;
+  pseudoSpectrum.bloom *= 0.96;
+  return pseudoSpectrum;
+}
 
 function resizeWinampVisualizer(canvas) {
   if (!canvas) return null;
@@ -36,8 +96,15 @@ function drawWinampVisualizerFrame() {
   const playbackTime = Number(S.winampPlayer?.getCurrentTime?.()) || 0;
   const normalizedVolume = clamp((S.winampMuted ? 0 : S.winampLastVolume) / 100, 0, 1);
   const energy = S.winampPlaying ? 0.3 + normalizedVolume * 0.9 : 0.08;
+  const spectrum = updatePseudoSpectrum(playbackTime, normalizedVolume);
 
   context.clearRect(0, 0, width, height);
+
+  if (S.winampVisualMode === "alchemy") {
+    drawAlchemyVisualizerFrame(context, width, height, time, playbackTime, normalizedVolume, energy, spectrum);
+    S.winampVisualizerFrame = window.requestAnimationFrame(drawWinampVisualizerFrame);
+    return;
+  }
 
   const backgroundGradient = context.createLinearGradient(0, 0, width, height);
   backgroundGradient.addColorStop(0, `hsl(${(time * 45 + playbackTime * 12) % 360} 80% 9%)`);
@@ -47,12 +114,13 @@ function drawWinampVisualizerFrame() {
   context.fillRect(0, 0, width, height);
 
   for (let i = 0; i < 18; i += 1) {
-    const pulse = 0.35 + Math.sin(time * 1.3 + i * 0.9 + playbackTime * 0.6) * 0.18;
+    const bandEnergy = spectrum.bands[i % spectrum.bands.length];
+    const pulse = 0.26 + bandEnergy * 0.42 + Math.sin(time * (0.8 + bandEnergy) + i * 0.9 + playbackTime * 0.22) * 0.12;
     const glowX = (i / 17) * width;
-    const glowY = height * (0.18 + ((i % 5) / 10));
+    const glowY = height * (0.14 + ((i % 5) / 10) + bandEnergy * 0.05);
     const glowRadius = width * (0.07 + pulse * 0.06);
     const glow = context.createRadialGradient(glowX, glowY, 0, glowX, glowY, glowRadius);
-    glow.addColorStop(0, `hsla(${(time * 90 + i * 18) % 360} 100% 65% / ${0.22 + energy * 0.18})`);
+    glow.addColorStop(0, `hsla(${(time * 90 + i * 18 + bandEnergy * 90) % 360} 100% 65% / ${0.14 + bandEnergy * 0.22 + energy * 0.08})`);
     glow.addColorStop(1, "transparent");
     context.fillStyle = glow;
     context.fillRect(glowX - glowRadius, glowY - glowRadius, glowRadius * 2, glowRadius * 2);
@@ -60,15 +128,17 @@ function drawWinampVisualizerFrame() {
 
   const barWidth = width / VISUALIZER_BAR_COUNT;
   for (let i = 0; i < VISUALIZER_BAR_COUNT; i += 1) {
-    const phase = time * (1.6 + normalizedVolume) + i * 0.42 + playbackTime * 0.2;
-    const harmonic = Math.sin(phase) + Math.sin(phase * 1.9) * 0.45 + Math.cos(phase * 0.65) * 0.25;
-    const normalizedHeight = clamp(0.18 + energy * 0.95 * (0.5 + harmonic * 0.25 + (i % 5) * 0.03), 0.08, 0.96);
+    const phase = time * (1.1 + normalizedVolume * 0.8) + i * 0.36 + playbackTime * 0.11;
+    const harmonic = Math.sin(phase) + Math.sin(phase * 1.7) * 0.28 + Math.cos(phase * 0.53) * 0.22;
+    const bandEnergy = spectrum.bands[i];
+    const neighborEnergy = spectrum.bands[(i + 1) % VISUALIZER_BAR_COUNT] * 0.18 + spectrum.bands[(i + VISUALIZER_BAR_COUNT - 1) % VISUALIZER_BAR_COUNT] * 0.18;
+    const normalizedHeight = clamp(0.06 + bandEnergy * 0.78 + neighborEnergy + harmonic * 0.06 + spectrum.pulse * 0.12, 0.04, 0.96);
     const barHeight = normalizedHeight * height;
     const x = i * barWidth + barWidth * 0.11;
     const y = height - barHeight;
     const fill = context.createLinearGradient(0, y, 0, height);
-    fill.addColorStop(0, `hsla(${(time * 120 + i * 11) % 360} 100% 68% / 0.95)`);
-    fill.addColorStop(0.45, `hsla(${(time * 120 + i * 11 + 58) % 360} 100% 55% / 0.9)`);
+    fill.addColorStop(0, `hsla(${(time * 120 + i * 11 + bandEnergy * 80) % 360} 100% 68% / 0.95)`);
+    fill.addColorStop(0.45, `hsla(${(time * 120 + i * 11 + 58 + bandEnergy * 45) % 360} 100% 55% / 0.9)`);
     fill.addColorStop(1, "hsla(210 100% 8% / 0.6)");
     context.fillStyle = fill;
     context.fillRect(x, y, barWidth * 0.78, barHeight);
@@ -81,15 +151,111 @@ function drawWinampVisualizerFrame() {
   context.lineWidth = Math.max(1, width * 0.0024);
   context.beginPath();
   for (let i = 0; i <= width; i += Math.max(4, Math.round(width / 80))) {
-    const wave = Math.sin((i / width) * Math.PI * 7 + time * 3.2 + playbackTime * 0.4);
-    const mod = Math.cos((i / width) * Math.PI * 2.3 - time * 2.1);
-    const y = height * (0.54 + wave * 0.09 * energy + mod * 0.03);
+    const bandIndex = Math.floor((i / width) * (VISUALIZER_BAR_COUNT - 1));
+    const bandEnergy = spectrum.bands[bandIndex];
+    const wave = Math.sin((i / width) * Math.PI * 7 + time * (2 + bandEnergy) + playbackTime * 0.16);
+    const mod = Math.cos((i / width) * Math.PI * (2.1 + spectrum.drift) - time * (1.1 + bandEnergy));
+    const y = height * (0.58 - bandEnergy * 0.22 + wave * (0.025 + bandEnergy * 0.075) + mod * 0.018);
     if (i === 0) context.moveTo(i, y);
     else context.lineTo(i, y);
   }
   context.stroke();
 
   S.winampVisualizerFrame = window.requestAnimationFrame(drawWinampVisualizerFrame);
+}
+
+function drawAlchemyVisualizerFrame(context, width, height, time, playbackTime, normalizedVolume, energy, spectrum) {
+  const background = context.createRadialGradient(
+    width * 0.5,
+    height * 0.52,
+    width * 0.06,
+    width * 0.5,
+    height * 0.52,
+    width * 0.82
+  );
+  background.addColorStop(0, "rgba(255, 242, 169, 0.16)");
+  background.addColorStop(0.28, `hsla(${32 + normalizedVolume * 28} 88% 20% / 0.88)`);
+  background.addColorStop(0.62, "hsla(18 84% 9% / 0.96)");
+  background.addColorStop(1, "#020202");
+  context.fillStyle = background;
+  context.fillRect(0, 0, width, height);
+
+  const sigilCount = 6;
+  for (let ringIndex = 0; ringIndex < sigilCount; ringIndex += 1) {
+    const ratio = (ringIndex + 1) / sigilCount;
+    const bandEnergy = spectrum.bands[(ringIndex * 3) % spectrum.bands.length];
+    const radius = Math.min(width, height) * (0.1 + ratio * 0.12 + bandEnergy * 0.028 + Math.sin(time * (0.9 + bandEnergy) + ringIndex) * 0.004);
+    const hue = 24 + ringIndex * 14 + bandEnergy * 26;
+    context.beginPath();
+    context.arc(width * 0.5, height * 0.52, radius, 0, Math.PI * 2);
+    context.strokeStyle = `hsla(${hue} 100% 70% / ${0.12 + ratio * 0.11 + energy * 0.08})`;
+    context.lineWidth = Math.max(1, width * (0.0014 + ratio * 0.0008));
+    context.stroke();
+  }
+
+  const spokeCount = 12;
+  context.save();
+  context.translate(width * 0.5, height * 0.52);
+  context.rotate(time * (0.2 + spectrum.drift * 0.3) + playbackTime * 0.01);
+  for (let spoke = 0; spoke < spokeCount; spoke += 1) {
+    const angle = (Math.PI * 2 * spoke) / spokeCount;
+    const inner = Math.min(width, height) * 0.1;
+    const bandEnergy = spectrum.bands[(spoke * 2) % spectrum.bands.length];
+    const outer = Math.min(width, height) * (0.22 + bandEnergy * 0.16 + (spoke % 3) * 0.018 + spectrum.pulse * 0.03);
+    context.beginPath();
+    context.moveTo(Math.cos(angle) * inner, Math.sin(angle) * inner);
+    context.lineTo(Math.cos(angle) * outer, Math.sin(angle) * outer);
+    context.strokeStyle = `hsla(${34 + spoke * 6} 100% 72% / ${0.18 + energy * 0.16})`;
+    context.lineWidth = Math.max(1, width * 0.0022);
+    context.stroke();
+  }
+  context.restore();
+
+  const orbCount = 18;
+  for (let i = 0; i < orbCount; i += 1) {
+    const bandEnergy = spectrum.bands[(i + 5) % spectrum.bands.length];
+    const orbit = 0.16 + (i % 6) * 0.042 + normalizedVolume * 0.04 + bandEnergy * 0.03;
+    const angle = time * (0.32 + (i % 5) * 0.05 + bandEnergy * 0.12) + i * 0.62 + playbackTime * 0.03;
+    const x = width * 0.5 + Math.cos(angle) * width * orbit;
+    const y = height * 0.52 + Math.sin(angle * 1.18) * height * orbit * 0.78;
+    const radius = width * (0.003 + (i % 3) * 0.0018 + bandEnergy * 0.0042);
+    const glow = context.createRadialGradient(x, y, 0, x, y, radius * 7);
+    glow.addColorStop(0, `hsla(${36 + i * 5} 100% 74% / ${0.32 + energy * 0.18})`);
+    glow.addColorStop(1, "transparent");
+    context.fillStyle = glow;
+    context.fillRect(x - radius * 7, y - radius * 7, radius * 14, radius * 14);
+  }
+
+  const flameColumns = 20;
+  const columnWidth = width / flameColumns;
+  for (let i = 0; i < flameColumns; i += 1) {
+    const bandEnergy = spectrum.bands[Math.floor((i / flameColumns) * spectrum.bands.length)];
+    const phase = time * (1.3 + bandEnergy) + i * 0.27 + playbackTime * 0.05;
+    const flameHeight = height * clamp(0.08 + bandEnergy * 0.62 + Math.sin(phase) * 0.05 + spectrum.pulse * 0.08, 0.08, 0.72);
+    const x = i * columnWidth;
+    const y = height - flameHeight;
+    const flameFill = context.createLinearGradient(0, y, 0, height);
+    flameFill.addColorStop(0, "rgba(255, 243, 173, 0.82)");
+    flameFill.addColorStop(0.24, "rgba(255, 180, 66, 0.78)");
+    flameFill.addColorStop(0.68, "rgba(196, 58, 8, 0.48)");
+    flameFill.addColorStop(1, "rgba(38, 4, 2, 0)");
+    context.fillStyle = flameFill;
+    context.fillRect(x + columnWidth * 0.18, y, columnWidth * 0.64, flameHeight);
+  }
+
+  context.beginPath();
+  for (let i = 0; i <= width; i += Math.max(4, Math.round(width / 90))) {
+    const bandIndex = Math.floor((i / width) * (VISUALIZER_BAR_COUNT - 1));
+    const bandEnergy = spectrum.bands[bandIndex];
+    const wave = Math.sin((i / width) * Math.PI * (7 + spectrum.drift * 3) + time * (1 + bandEnergy) + playbackTime * 0.06);
+    const shimmer = Math.cos((i / width) * Math.PI * 3 - time * 0.55);
+    const y = height * (0.58 - bandEnergy * 0.18 + wave * (0.02 + bandEnergy * 0.08) + shimmer * 0.01);
+    if (i === 0) context.moveTo(i, y);
+    else context.lineTo(i, y);
+  }
+  context.strokeStyle = `rgba(255, 248, 214, ${0.34 + normalizedVolume * 0.24})`;
+  context.lineWidth = Math.max(1, width * 0.003);
+  context.stroke();
 }
 
 function startWinampVisualizer() {
@@ -104,17 +270,20 @@ function stopWinampVisualizer() {
 }
 
 function setWinampVisualMode(mode) {
-  S.winampVisualMode = mode === "visualizer" ? "visualizer" : "video";
+  S.winampVisualMode = WINAMP_VISUAL_MODES.includes(mode) ? mode : "video";
   if (S.winampScreenWrap) {
     S.winampScreenWrap.dataset.visualMode = S.winampVisualMode;
   }
   if (S.winampVisualModeToggle) {
-    const showingVisualizer = S.winampVisualMode === "visualizer";
-    S.winampVisualModeToggle.textContent = showingVisualizer ? "Video" : "Visualizer";
-    S.winampVisualModeToggle.setAttribute("aria-pressed", showingVisualizer ? "true" : "false");
+    const currentIndex = WINAMP_VISUAL_MODES.indexOf(S.winampVisualMode);
+    const nextMode = WINAMP_VISUAL_MODES[(currentIndex + 1) % WINAMP_VISUAL_MODES.length];
+    const nextModeLabel = nextMode === "video" ? "Video" : nextMode === "alchemy" ? "Alchemy" : "Visualizer";
+    S.winampVisualModeToggle.textContent = nextModeLabel;
+    S.winampVisualModeToggle.setAttribute("aria-pressed", S.winampVisualMode === "video" ? "false" : "true");
   }
   if (S.winampModeLabel) {
-    S.winampModeLabel.textContent = S.winampVisualMode === "visualizer" ? "Visualizer" : "Video";
+    S.winampModeLabel.textContent =
+      S.winampVisualMode === "alchemy" ? "Alchemy" : S.winampVisualMode === "visualizer" ? "Visualizer" : "Video";
   }
 }
 
@@ -322,6 +491,15 @@ function selectWinampChannel(index, { autoPlay = true } = {}) {
   updateWinampUi();
 }
 
+function shuffleWinampChannel() {
+  if (!S.winampPlayer || WINAMP_PLAYLIST.length <= 1) return;
+  let nextIndex = S.winampActiveIndex;
+  while (nextIndex === S.winampActiveIndex) {
+    nextIndex = Math.floor(Math.random() * WINAMP_PLAYLIST.length);
+  }
+  selectWinampChannel(nextIndex);
+}
+
 function getWinampGroupLabel(trackTitle = "") {
   const artistName = trackTitle.split(" - ")[0]?.trim();
   if (!artistName) return "Misc";
@@ -440,6 +618,11 @@ export async function bindWinampControls() {
       selectWinampChannel(next);
     });
   }
+  if (S.winampShuffle) {
+    S.winampShuffle.addEventListener("click", () => {
+      shuffleWinampChannel();
+    });
+  }
   if (S.winampToggle) {
     S.winampToggle.addEventListener("click", () => {
       if (!S.winampPlayer) return;
@@ -471,7 +654,8 @@ export async function bindWinampControls() {
   }
   if (S.winampVisualModeToggle) {
     S.winampVisualModeToggle.addEventListener("click", () => {
-      const nextMode = S.winampVisualMode === "video" ? "visualizer" : "video";
+      const currentIndex = WINAMP_VISUAL_MODES.indexOf(S.winampVisualMode);
+      const nextMode = WINAMP_VISUAL_MODES[(currentIndex + 1) % WINAMP_VISUAL_MODES.length];
       setWinampVisualMode(nextMode);
     });
   }

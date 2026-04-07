@@ -73,6 +73,7 @@ export const S = {
   winampToggle: null,
   winampPrev: null,
   winampNext: null,
+  winampShuffle: null,
   winampMuteToggle: null,
   winampVisualModeToggle: null,
   winampVolume: null,
@@ -115,6 +116,7 @@ export function syncDynamicElements() {
   S.winampToggle = document.getElementById("winamp-toggle");
   S.winampPrev = document.getElementById("winamp-prev");
   S.winampNext = document.getElementById("winamp-next");
+  S.winampShuffle = document.getElementById("winamp-shuffle");
   S.winampMuteToggle = document.getElementById("winamp-mute-toggle");
   S.winampVisualModeToggle = document.getElementById("winamp-visual-mode-toggle");
   S.winampVolume = document.getElementById("winamp-volume");

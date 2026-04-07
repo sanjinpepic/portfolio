@@ -1797,12 +1797,17 @@ a {
   opacity: 0;
 }
 
-.winamp-screen-wrap[data-visual-mode="visualizer"] .winamp-visualizer {
+.winamp-screen-wrap[data-visual-mode="visualizer"] .winamp-visualizer,
+.winamp-screen-wrap[data-visual-mode="alchemy"] .winamp-visualizer {
   opacity: 1;
 }
 
 .winamp-screen-wrap[data-visual-mode="video"] .winamp-player {
   opacity: 1;
+}
+
+.winamp-screen-wrap[data-visual-mode="alchemy"] .winamp-player {
+  opacity: 0;
 }
 
 .winamp-crt-overlay {
