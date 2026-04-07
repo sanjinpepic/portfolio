@@ -867,31 +867,60 @@
         <div class="window-content winamp-content" ><!-- START:inline windows/winamp-tv.html -->
 <div class="winamp-shell">
   <div class="winamp-now-playing-panel">
-    <div class="winamp-screen-wrap">
-      <div id="winamp-youtube-player" class="winamp-player" aria-label="Winamp style music video player"></div>
-      <div class="winamp-crt-overlay" aria-hidden="true"></div>
-      <div class="winamp-screen-door" aria-hidden="true"></div>
-    </div>
+    <div class="winamp-main-deck">
+      <div class="winamp-display-stack">
+        <div class="winamp-lcd-panel">
+          <div class="winamp-led-readout" aria-hidden="true">
+            <span class="winamp-led-track">01</span>
+            <span class="winamp-led-time">1:23</span>
+          </div>
+          <div class="winamp-meta-grid">
+            <div class="winamp-meta-block">
+              <span class="winamp-meta-label">TRACK</span>
+              <span id="winamp-track-title" class="winamp-meta-value">Loading lineup...</span>
+            </div>
+            <div class="winamp-meta-block">
+              <span class="winamp-meta-label">BITRATE</span>
+              <span class="winamp-meta-value">128 kbps</span>
+            </div>
+            <div class="winamp-meta-block">
+              <span class="winamp-meta-label">MODE</span>
+              <span class="winamp-meta-value">Stereo</span>
+            </div>
+          </div>
+        </div>
 
-    <div class="winamp-controls">
-      <button type="button" class="retro-btn" id="winamp-prev">⏮ Prev</button>
-      <button type="button" class="retro-btn" id="winamp-toggle">▶ Play</button>
-      <button type="button" class="retro-btn" id="winamp-next">Next ⏭</button>
-    </div>
+        <div class="winamp-screen-wrap">
+          <div id="winamp-youtube-player" class="winamp-player" aria-label="Winamp style music video player"></div>
+          <div class="winamp-crt-overlay" aria-hidden="true"></div>
+          <div class="winamp-screen-door" aria-hidden="true"></div>
+        </div>
+      </div>
 
-    <div class="winamp-controls">
-      <button type="button" class="retro-btn" id="winamp-mute-toggle">🔇 Muted</button>
-      <label class="winamp-volume-label" for="winamp-volume">Volume</label>
-      <input id="winamp-volume" type="range" min="0" max="100" value="0" step="1" />
+      <div class="winamp-transport">
+        <div class="winamp-controls winamp-controls--transport">
+          <button type="button" class="winamp-metal-btn" id="winamp-prev">|&lt;&lt;</button>
+          <button type="button" class="winamp-metal-btn" id="winamp-toggle">Play</button>
+          <button type="button" class="winamp-metal-btn" id="winamp-next">&gt;&gt;|</button>
+          <button type="button" class="winamp-metal-btn winamp-metal-btn--wide" id="winamp-mute-toggle">Muted</button>
+        </div>
+
+        <div class="winamp-controls winamp-controls--secondary">
+          <label class="winamp-volume-label" for="winamp-volume">Volume</label>
+          <input id="winamp-volume" type="range" min="0" max="100" value="0" step="1" />
+          <button type="button" class="winamp-metal-btn winamp-metal-btn--small">Shuffle</button>
+          <button type="button" class="winamp-metal-btn winamp-metal-btn--small">Eq</button>
+        </div>
+      </div>
     </div>
   </div>
 
   <aside class="winamp-playlist-panel" aria-label="Playlist">
-    <p class="winamp-playlist-heading">Playlist</p>
+    <p class="winamp-playlist-heading">Winamp TV Playlist</p>
     <div id="winamp-channel-list" class="winamp-channel-list" role="listbox" aria-label="Video channels"></div>
   </aside>
 
-  <p id="winamp-status" class="resume-note">Loading curated channel lineup…</p>
+  <p id="winamp-status" class="resume-note">Loading curated channel lineup...</p>
   <p class="resume-note">Source: YouTube embed (no-cookie). Ads cannot be fully controlled by this site.</p>
 </div>
 <!-- END:inline windows/winamp-tv.html --></div>

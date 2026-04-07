@@ -1,10 +1,25 @@
-// js/winamp.js — Winamp player module
+// js/winamp.js - Winamp player module
 
 import { S, WINAMP_PLAYLIST, WINAMP_PLAYLIST_URL } from "./state.js";
 import { clamp } from "./utils.js";
 import { vintageSpeaker } from "./sounds.js";
 
-// ── Internal helpers ──────────────────────────────────────────
+// Internal helpers
+
+function getCurrentTrack() {
+  return WINAMP_PLAYLIST[S.winampActiveIndex] || WINAMP_PLAYLIST[0] || null;
+}
+
+function updateWinampNowPlaying() {
+  const currentTrack = getCurrentTrack();
+  const trackTitleNode = document.getElementById("winamp-track-title");
+  if (trackTitleNode) {
+    trackTitleNode.textContent = currentTrack?.title || "Loading lineup...";
+  }
+  if (S.winampStatus) {
+    S.winampStatus.textContent = currentTrack ? `Now tuned to: ${currentTrack.title}` : "Loading lineup...";
+  }
+}
 
 async function fetchYouTubeTitle(videoId) {
   try {
@@ -52,7 +67,7 @@ function parsePlaylistText(playlistText = "") {
       if (!id) return null;
       return {
         id,
-        title: customTitle || "Loading title…",
+        title: customTitle || "Loading title...",
       };
     })
     .filter(Boolean);
@@ -90,15 +105,13 @@ async function hydrateWinampPlaylistTitles() {
 
   if (!hasChanges) return;
   setupWinampPlaylistUi();
-  if (S.winampStatus && WINAMP_PLAYLIST[S.winampActiveIndex]) {
-    S.winampStatus.textContent = `Now tuned to: ${WINAMP_PLAYLIST[S.winampActiveIndex].title}`;
-  }
+  updateWinampNowPlaying();
 }
 
 function updateWinampUi() {
-  if (S.winampToggle) S.winampToggle.textContent = S.winampPlaying ? "⏸ Pause" : "▶ Play";
+  if (S.winampToggle) S.winampToggle.textContent = S.winampPlaying ? "Pause" : "Play";
   if (S.winampMuteToggle) {
-    S.winampMuteToggle.textContent = S.winampMuted ? "🔇 Muted" : "🔊 Sound On";
+    S.winampMuteToggle.textContent = S.winampMuted ? "Muted" : "Sound On";
   }
   if (S.winampChannelList) {
     [...S.winampChannelList.querySelectorAll(".winamp-channel-btn")].forEach((button) => {
@@ -158,7 +171,7 @@ function selectWinampChannel(index, { autoPlay = true } = {}) {
   S.winampActiveIndex = index;
   S.winampPlayer.loadVideoById(WINAMP_PLAYLIST[index].id);
   if (autoPlay) S.winampPlayer.playVideo();
-  if (S.winampStatus) S.winampStatus.textContent = `Now tuned to: ${WINAMP_PLAYLIST[index].title}`;
+  updateWinampNowPlaying();
   updateWinampUi();
 }
 
@@ -184,7 +197,7 @@ function setupWinampPlaylistUi() {
       const groupLabel = getWinampGroupLabel(title);
       const groupHeader = groupLabel !== previousGroup ? `<p class="winamp-channel-group">${groupLabel}</p>` : "";
       previousGroup = groupLabel;
-      return `${groupHeader}<button type="button" class="retro-btn winamp-channel-btn" data-winamp-index="${index}" role="option">CH ${String(index + 1).padStart(2, "0")} · ${title}</button>`;
+      return `${groupHeader}<button type="button" class="retro-btn winamp-channel-btn" data-winamp-index="${index}" role="option">CH ${String(index + 1).padStart(2, "0")} - ${title}</button>`;
     }).join("\n");
   }
 
@@ -227,7 +240,7 @@ function initWinampPlayer() {
         event.target.setVolume(0);
         if (S.winampVolume) S.winampVolume.value = "0";
         S.winampMuted = true;
-        if (S.winampStatus) S.winampStatus.textContent = `Now tuned to: ${WINAMP_PLAYLIST[0].title}`;
+        updateWinampNowPlaying();
         updateWinampUi();
         restartWinampFlutter();
         event.target.playVideo();
@@ -259,14 +272,14 @@ function initWinampPlayer() {
   });
 }
 
-// ── Exported functions ────────────────────────────────────────
+// Exported functions
 
 export async function bindWinampControls() {
   const loadedCustomPlaylist = await loadWinampPlaylistFromFile();
   setupWinampPlaylistUi();
   hydrateWinampPlaylistTitles();
-  if (!loadedCustomPlaylist && S.winampStatus) {
-    S.winampStatus.textContent = "Using built-in channels. Add URLs to assets/winamp-playlist.txt to customize.";
+  if (!loadedCustomPlaylist) {
+    updateWinampNowPlaying();
   }
   if (S.winampPrev) {
     S.winampPrev.addEventListener("click", () => {

@@ -382,14 +382,14 @@ body {
 }
 
 @media (max-width: 900px) {
-  /* Full-screen fixed layout — real small-screen desktop feel */
+  /* Full-screen fixed layout â€” real small-screen desktop feel */
   html,
   body {
     height: 100%;
     overflow: hidden;
   }
 
-  /* ── Nav bar: single row, always ── */
+  /* â”€â”€ Nav bar: single row, always â”€â”€ */
   .menu-bar {
     position: fixed;
     height: 2rem;
@@ -417,7 +417,7 @@ body {
     padding: 0.1rem 0.3rem;
   }
 
-  /* ── Mobile app nav bar (shown when a window is open) ── */
+  /* â”€â”€ Mobile app nav bar (shown when a window is open) â”€â”€ */
   .mobile-app-nav {
     display: none;
     position: absolute;
@@ -472,7 +472,7 @@ body {
     pointer-events: none;
   }
 
-  /* ── Desktop: fixed, full remaining height ── */
+  /* â”€â”€ Desktop: fixed, full remaining height â”€â”€ */
   .desktop {
     position: fixed;
     inset: 2rem 0 0 0;
@@ -480,7 +480,7 @@ body {
     overflow: hidden;
   }
 
-  /* ── Icons: multi-column grid filling the screen ── */
+  /* â”€â”€ Icons: multi-column grid filling the screen â”€â”€ */
   .desktop-shell {
     display: block;
     height: 100%;
@@ -521,7 +521,7 @@ body {
     text-align: center;
   }
 
-  /* ── Windows: fullscreen below the nav bar ── */
+  /* â”€â”€ Windows: fullscreen below the nav bar â”€â”€ */
   .window {
     position: absolute;
     left: 0;
@@ -539,7 +539,7 @@ body {
     flex-direction: column;
   }
 
-  /* Hide window title bar on mobile — nav bar handles it */
+  /* Hide window title bar on mobile â€” nav bar handles it */
   .window .title-bar {
     display: none;
   }
@@ -578,7 +578,7 @@ body {
   }
 }
 
-/* Mobile icon grid wrapper — only rendered on mobile via JS */
+/* Mobile icon grid wrapper â€” only rendered on mobile via JS */
 .mobile-icon-grid {
   display: contents; /* Invisible on desktop */
 }
@@ -696,7 +696,7 @@ body {
   outline-offset: 2px;
 }
 
-/* ── Netscape Navigator browser ─────────────────────────── */
+/* â”€â”€ Netscape Navigator browser â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 .browser-content {
   display: flex;
@@ -880,7 +880,7 @@ body {
   color: #606060;
 }
 
-/* ── General links ──────────────────────────────────────── */
+/* â”€â”€ General links â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 a {
   color: #133f9a;
@@ -895,7 +895,7 @@ a {
   outline-offset: 2px;
 }
 
-/* ── Retro button ───────────────────────────────────────── */
+/* â”€â”€ Retro button â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 .retro-btn {
   font: inherit;
@@ -996,7 +996,7 @@ a {
   background: #ececec;
 }
 
-/* ── Contact form ────────────────────────────────────────────── */
+/* â”€â”€ Contact form â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 .contact-shell {
   display: flex;
@@ -1119,7 +1119,7 @@ a {
   margin: 0;
 }
 
-/* ── Case Studies window ─────────────────────────────────────── */
+/* â”€â”€ Case Studies window â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 .case-studies-shell {
   display: flex;
@@ -1228,7 +1228,7 @@ a {
   }
 }
 
-/* ── Timeline workbench ──────────────────────────────────────── */
+/* â”€â”€ Timeline workbench â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 .timeline-workbench {
   display: flex;
@@ -1375,7 +1375,7 @@ a {
   }
 }
 
-/* ── Boot sequence ───────────────────────────────────────────── */
+/* â”€â”€ Boot sequence â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #boot-overlay {
   position: fixed;
   inset: 0;
@@ -1446,7 +1446,7 @@ a {
   animation: blink-cursor 1.2s step-end infinite;
 }
 
-/* ── Window open/close animations ───────────────────────────── */
+/* â”€â”€ Window open/close animations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .window {
   transform-origin: top left;
 }
@@ -1469,7 +1469,7 @@ a {
   animation: windowClose 0.11s ease-in forwards;
 }
 
-/* ── Active vs inactive title bars ──────────────────────────── */
+/* â”€â”€ Active vs inactive title bars â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .window .title-bar {
   background: repeating-linear-gradient(
     90deg,
@@ -1498,7 +1498,7 @@ a {
   color: var(--title-text);
 }
 
-/* ── Desktop icon hover animations ─────────────────────────── */
+/* â”€â”€ Desktop icon hover animations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @keyframes iconBounce {
   0%   { transform: translateY(0); }
   35%  { transform: translateY(-5px); }
@@ -1520,7 +1520,7 @@ a {
   padding: 0 0.2rem;
 }
 
-/* ── Glitch text effect ─────────────────────────────────────── */
+/* â”€â”€ Glitch text effect â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .glitch-text {
   position: relative;
   display: inline-block;
@@ -1564,7 +1564,7 @@ a {
   92%  { opacity: 0; transform: none; }
 }
 
-/* ── Typewriter cursor ──────────────────────────────────────── */
+/* â”€â”€ Typewriter cursor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .typewriter-cursor {
   display: inline-block;
   width: 0.55em;
@@ -1580,7 +1580,7 @@ a {
   50%      { opacity: 0; }
 }
 
-/* ── Easter egg error dialog ────────────────────────────────── */
+/* â”€â”€ Easter egg error dialog â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .error-dialog-body {
   display: flex;
   align-items: flex-start;
@@ -1605,28 +1605,235 @@ a {
 }
 
 .winamp-content {
-  padding: 0.65rem;
-  color: var(--text-main);
+  padding: 0.45rem;
+  color: #101010;
+  background:
+    linear-gradient(180deg, #7e8498 0%, #5f667a 10%, #3d4355 55%, #2b3040 100%);
 }
 
 .winamp-shell {
   display: grid;
-  gap: 0.55rem;
-  grid-template-columns: minmax(0, 1.15fr) minmax(14rem, 0.85fr);
+  gap: 0.45rem;
+  grid-template-columns: minmax(0, 1.2fr) minmax(15rem, 0.8fr);
   grid-template-areas:
     "player playlist"
     "status status"
     "source source";
   align-items: start;
   min-height: 100%;
-  color: var(--text-main);
+  color: #e6ecff;
 }
 
 .winamp-now-playing-panel {
   grid-area: player;
+}
+
+.winamp-main-deck,
+.winamp-playlist-panel {
+  border: 2px solid;
+  border-color: #c7cad4 #171a24 #171a24 #c7cad4;
+  background:
+    linear-gradient(180deg, #858ba1 0%, #6b7188 12%, #4a5165 55%, #363c4f 100%);
+  box-shadow:
+    inset 1px 1px rgba(255, 255, 255, 0.22),
+    inset -1px -1px rgba(0, 0, 0, 0.35),
+    2px 2px 0 rgba(0, 0, 0, 0.45);
+  padding: 0.4rem;
+}
+
+.winamp-main-deck {
   display: grid;
-  gap: 0.55rem;
-  align-content: start;
+  gap: 0.4rem;
+}
+
+.winamp-display-stack {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(12rem, 0.9fr);
+  gap: 0.4rem;
+  align-items: stretch;
+}
+
+.winamp-lcd-panel {
+  border: 2px solid;
+  border-color: #0f1520 #8e93a7 #8e93a7 #0f1520;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(133, 255, 93, 0.16), transparent 32%),
+    linear-gradient(180deg, #283321 0%, #192015 100%);
+  color: #8cff5f;
+  padding: 0.35rem 0.45rem;
+  box-shadow: inset 0 0 14px rgba(0, 0, 0, 0.62);
+}
+
+.winamp-led-readout {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 0.28rem;
+  font-family: "VT323", monospace;
+  text-shadow: 0 0 6px rgba(130, 255, 110, 0.45);
+}
+
+.winamp-led-track {
+  font-size: 1.1rem;
+}
+
+.winamp-led-time {
+  font-size: 2rem;
+  letter-spacing: 0.08em;
+}
+
+.winamp-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+
+.winamp-meta-block {
+  min-width: 0;
+}
+
+.winamp-meta-label {
+  display: block;
+  font-size: 0.72rem;
+  color: #c4f2b2;
+  letter-spacing: 0.08em;
+}
+
+.winamp-meta-value {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.84rem;
+  color: #9cff72;
+}
+
+.winamp-screen-wrap {
+  position: relative;
+  border: 2px solid;
+  border-color: #161a23 #bfc4d3 #bfc4d3 #161a23;
+  background: #030303;
+  box-shadow:
+    inset 0 0 56px rgba(0, 0, 0, 0.88),
+    inset 0 0 0 1px #12151e,
+    0 0 12px rgba(0, 0, 0, 0.45);
+  aspect-ratio: 16 / 10;
+  max-height: clamp(8rem, 24vh, 11rem);
+  overflow: hidden;
+}
+
+.winamp-screen-wrap::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.14), transparent 42%);
+}
+
+.winamp-screen-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0 2px, rgba(0, 0, 0, 0.18) 2px 4px);
+  mix-blend-mode: soft-light;
+}
+
+.winamp-player,
+.winamp-player iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  image-rendering: pixelated;
+  filter: contrast(1.12) saturate(0.78) hue-rotate(-8deg) blur(0.35px);
+}
+
+.winamp-crt-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% -10%, rgba(255, 255, 255, 0.2), transparent 52%),
+    repeating-linear-gradient(180deg, rgba(0, 0, 0, 0) 0 2px, rgba(0, 0, 0, 0.26) 2px 4px),
+    repeating-linear-gradient(90deg, rgba(255, 60, 60, 0.06) 0 1px, rgba(60, 255, 180, 0.06) 1px 2px, rgba(80, 80, 255, 0.05) 2px 3px);
+  mix-blend-mode: screen;
+  filter: blur(0.35px);
+  animation: crt-flicker 95ms steps(2, end) infinite;
+}
+
+.winamp-screen-door {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: repeating-linear-gradient(90deg, transparent 0 2px, rgba(0, 0, 0, 0.08) 2px 3px);
+  mix-blend-mode: multiply;
+}
+
+.winamp-transport {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.winamp-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.winamp-controls--transport {
+  justify-content: flex-start;
+}
+
+.winamp-controls--secondary {
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+  padding-top: 0.28rem;
+}
+
+.winamp-metal-btn {
+  min-width: 2.1rem;
+  height: 1.55rem;
+  padding: 0 0.45rem;
+  border: 2px solid;
+  border-color: #d9dce5 #171a24 #171a24 #d9dce5;
+  background: linear-gradient(180deg, #d6d8df 0%, #a4a8b6 42%, #7b8194 100%);
+  color: #151922;
+  font: inherit;
+  line-height: 1;
+  box-shadow: inset 1px 1px rgba(255,255,255,0.4);
+}
+
+.winamp-metal-btn--wide {
+  min-width: 4.8rem;
+}
+
+.winamp-metal-btn--small {
+  min-width: 3.3rem;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+}
+
+.winamp-metal-btn:active {
+  border-color: #171a24 #d9dce5 #d9dce5 #171a24;
+  background: linear-gradient(180deg, #7b8194 0%, #a4a8b6 55%, #d6d8df 100%);
+}
+
+.winamp-volume-label {
+  color: #f2f4fb;
+  text-transform: uppercase;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+}
+
+#winamp-volume {
+  flex: 1;
+  min-width: 7rem;
+  accent-color: #b7d34f;
 }
 
 .winamp-playlist-panel {
@@ -1639,191 +1846,76 @@ a {
 
 .winamp-playlist-heading {
   margin: 0;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: var(--text-main);
-}
-
-.winamp-screen-wrap {
-  position: relative;
-  border: 2px solid;
-  border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
-  background: #030303;
-  /* Screen curvature + deep corner vignette + outer glow */
-  border-radius: 3% / 4%;
-  box-shadow:
-    inset 0 0 70px rgba(0, 0, 0, 0.92),
-    inset 0 0 28px rgba(0, 0, 0, 0.6),
-    inset 0 0 0 2px #161616,
-    0 0 18px rgba(0, 0, 0, 0.65);
-  aspect-ratio: 16 / 10;
-  max-height: clamp(8rem, 26vh, 12rem);
-  overflow: hidden;
-}
-
-/* Glass panel shine — diagonal highlight like real CRT glass */
-.winamp-screen-wrap::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 4;
-  pointer-events: none;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.13) 0%,
-    rgba(255, 255, 255, 0.04) 22%,
-    transparent 48%
-  );
-  border-radius: inherit;
-}
-
-/* Subtle soft-light scanline base (behind overlay) */
-.winamp-screen-wrap::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background: repeating-linear-gradient(
-    0deg,
-    rgba(255, 255, 255, 0.025) 0 2px,
-    rgba(0, 0, 0, 0.1) 2px 4px
-  );
-  mix-blend-mode: soft-light;
-}
-
-
-.winamp-player,
-.winamp-player iframe {
-  width: 100%;
-  height: 100%;
-  border: 0;
-  image-rendering: pixelated;
-  filter: contrast(1.14) saturate(0.82) hue-rotate(-6deg) blur(0.45px);
-  transform: scale(1.012);
-  transform-origin: center;
-}
-
-.winamp-crt-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  background:
-    /* Phosphor bloom — top glow where electron beam starts */
-    radial-gradient(ellipse at 50% -10%, rgba(255, 255, 255, 0.28), transparent 58%),
-    /* Blue-tint at bottom (phosphor cool-down) */
-    radial-gradient(ellipse at 50% 110%, rgba(40, 120, 255, 0.08), transparent 50%),
-    /* Horizontal scanlines — main CRT effect */
-    repeating-linear-gradient(
-      180deg,
-      rgba(0, 0, 0, 0) 0 2px,
-      rgba(0, 0, 0, 0.3) 2px 4px
-    ),
-    /* RGB sub-pixel shadow mask (aperture grille) */
-    repeating-linear-gradient(
-      90deg,
-      rgba(255, 40, 40, 0.07) 0 1px,
-      rgba(40, 255, 220, 0.07) 1px 2px,
-      rgba(40, 40, 255, 0.065) 2px 3px
-    );
-  mix-blend-mode: screen;
-  /* Slight blur for phosphor dot bleed */
-  filter: blur(0.4px);
-  animation: crt-flicker 95ms steps(2, end) infinite;
-}
-
-/* Screen-door mesh: vertical shadow mask gaps */
-.winamp-screen-door {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  background: repeating-linear-gradient(
-    90deg,
-    transparent 0 2px,
-    rgba(0, 0, 0, 0.06) 2px 3px
-  );
-  mix-blend-mode: multiply;
-}
-
-.winamp-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  flex-wrap: wrap;
-  color: var(--text-main);
-}
-
-.winamp-volume-label {
-  margin-left: 0.25rem;
-}
-
-#winamp-volume {
-  flex: 1;
-  min-width: 7rem;
+  color: #f0f3ff;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-shadow: 1px 1px #141823;
 }
 
 .winamp-channel-list {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 0.35rem;
+  gap: 0.2rem;
   align-content: start;
   max-height: clamp(12rem, 40vh, 18rem);
   overflow: auto;
-  padding-right: 0.2rem;
-}
-
-.winamp-channel-filter {
-  width: 100%;
+  padding: 0.2rem;
   border: 2px solid;
-  border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
-  background: #ffffff;
-  padding: 0.2rem 0.4rem;
-  font: inherit;
+  border-color: #121620 #8f95a8 #8f95a8 #121620;
+  background: #020304;
 }
 
 .winamp-channel-group {
   grid-column: 1 / -1;
-  margin-top: 0.35rem;
-  font-size: 0.95rem;
-  color: #1d2f40;
+  margin-top: 0.25rem;
+  font-size: 0.82rem;
+  color: #b2bbd9;
 }
 
 .winamp-channel-empty {
   grid-column: 1 / -1;
   margin: 0.25rem 0;
-  color: #333;
+  color: #d3d8e8;
 }
 
 .winamp-channel-btn {
   width: 100%;
-  min-height: 2.1rem;
-  padding-top: 0.42rem;
-  padding-bottom: 0.42rem;
-  line-height: 1.15;
+  min-height: 1.85rem;
+  padding: 0.28rem 0.45rem;
   display: flex;
   align-items: center;
   text-align: left;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: var(--text-main);
+  color: #65ff61;
+  border: 1px solid transparent;
+  background: #020304;
+  box-shadow: none;
+}
+
+.winamp-channel-btn:hover,
+.winamp-channel-btn:focus-visible {
+  background: #101926;
+  color: #afffa5;
 }
 
 .winamp-channel-btn.active {
-  background: #9fd2ff;
-  color: var(--text-main);
+  background: linear-gradient(180deg, #15305e 0%, #0c1d3f 100%);
+  color: #f8ff79;
+  border-color: #546fa8;
 }
 
 #winamp-status {
   grid-area: status;
-  color: var(--text-main);
+  color: #eef3ff;
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+  padding-top: 0.2rem;
 }
 
 .winamp-shell > .resume-note:last-child {
   grid-area: source;
-  color: var(--text-main);
+  color: #d4dbef;
 }
 
 @media (max-width: 960px) {
@@ -1836,12 +1928,15 @@ a {
       "source";
   }
 
+  .winamp-display-stack {
+    grid-template-columns: 1fr;
+  }
+
   .winamp-channel-list {
     max-height: 10rem;
   }
 }
-
-/* ── DOOM window ────────────────────────────────────────────── */
+/* â”€â”€ DOOM window â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .doom-content {
   padding: 0;
   overflow: hidden;
@@ -1908,13 +2003,13 @@ a {
   100% { background-position: 0 0, 0 0, 0 4px, 0 0; }
 }
 
-/* ── Window drag ghost shadow ───────────────────────────────── */
+/* â”€â”€ Window drag ghost shadow â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .window.dragging {
   opacity: 0.9;
   box-shadow: 6px 8px 0 rgba(0, 0, 0, 0.55), 2px 2px 0 #000;
 }
 
-/* ── Close button red hover ─────────────────────────────────── */
+/* â”€â”€ Close button red hover â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .close-btn {
   transition: background 0.08s ease, border-color 0.08s ease, color 0.08s ease;
 }
@@ -1925,7 +2020,7 @@ a {
   border-color: #ff6b6b #7b0000 #7b0000 #ff6b6b;
 }
 
-/* ── Menu bar transitions ───────────────────────────────────── */
+/* â”€â”€ Menu bar transitions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .menu-item {
   transition: background 0.07s ease, color 0.07s ease;
 }
@@ -1934,7 +2029,7 @@ a {
   transition: background 0.06s ease, color 0.06s ease;
 }
 
-/* ── Marching title bar on focused window ───────────────────── */
+/* â”€â”€ Marching title bar on focused window â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @keyframes titlebar-march {
   from { background-position: 0 0; }
   to   { background-position: 4px 0; }
@@ -1945,7 +2040,7 @@ a {
   animation: titlebar-march 0.4s linear infinite;
 }
 
-/* ── Terminal window ────────────────────────────────────────── */
+/* â”€â”€ Terminal window â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .terminal-content {
   display: flex;
   flex-direction: column;
@@ -2025,7 +2120,7 @@ a {
   letter-spacing: -0.05em;
 }
 
-/* ── Right-click context menu ───────────────────────────────── */
+/* â”€â”€ Right-click context menu â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .context-menu {
   position: fixed;
   z-index: 10001;
@@ -2071,7 +2166,7 @@ a {
   margin: 0.25rem 0.3rem;
 }
 
-/* ── Sticky notes ───────────────────────────────────────────── */
+/* â”€â”€ Sticky notes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sticky-note {
   position: absolute;
   min-width: 11rem;
@@ -2129,7 +2224,7 @@ a {
   overflow: auto;
 }
 
-/* ── Screen saver ───────────────────────────────────────────── */
+/* â”€â”€ Screen saver â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #screensaver {
   position: fixed;
   inset: 0;
@@ -2178,7 +2273,7 @@ a {
   );
 }
 
-/* ── BSOD Easter egg ────────────────────────────────────────── */
+/* â”€â”€ BSOD Easter egg â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #bsod-overlay {
   position: fixed;
   inset: 0;
@@ -2220,7 +2315,7 @@ a {
   font-style: italic;
 }
 
-/* ── News feed app ─────────────────────────────────────────── */
+/* â”€â”€ News feed app â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .news-content {
   background: #dce7fa;
 }
@@ -2312,7 +2407,7 @@ a {
   line-height: 1.2;
 }
 
-/* ── Dashboard app ─────────────────────────────────────────── */
+/* â”€â”€ Dashboard app â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .dashboard-content {
   background: #dce7fa;
 }
@@ -2550,3 +2645,4 @@ a {
   border: 1px solid #98a9cf;
   background: #edf2ff;
 }
+
