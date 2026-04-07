@@ -1,10 +1,10 @@
-// js/extras.js — Boot sequence, screensaver, BSOD, context menu, sticky notes
+﻿// js/extras.js â€” Boot sequence, screensaver, BSOD, context menu, sticky notes
 
 import { desktop, windows, mobileLayoutQuery, S } from "./state.js";
 import { escapeHtml } from "./utils.js";
 import { RetroSounds } from "./sounds.js";
 
-// ── Boot sequence ──────────────────────────────────────────────
+// â”€â”€ Boot sequence â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export function runBootSequence() {
   const overlay = document.getElementById("boot-overlay");
   if (!overlay) return;
@@ -77,7 +77,7 @@ export function runBootSequence() {
   setTimeout(finish, 2900);
 }
 
-// ── Screen saver ───────────────────────────────────────────────
+// â”€â”€ Screen saver â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let screensaverTimer = null;
 const SCREENSAVER_DELAY = 90 * 1000; // 90 seconds
 
@@ -110,7 +110,7 @@ export function bindScreensaver() {
   resetScreensaverTimer();
 }
 
-// ── BSOD Easter egg ────────────────────────────────────────────
+// â”€â”€ BSOD Easter egg â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let bsodActive = false;
 
 export function triggerBsod() {
@@ -140,7 +140,7 @@ export function triggerBsod() {
   setTimeout(dismiss, 6000);
 }
 
-// ── Right-click context menu ───────────────────────────────────
+// â”€â”€ Right-click context menu â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export function bindContextMenu(menuActionHandler) {
   const menu = document.getElementById("context-menu");
   if (!menu) return;
@@ -181,7 +181,7 @@ export function bindContextMenu(menuActionHandler) {
   });
 }
 
-// ── Sticky notes ───────────────────────────────────────────────
+// â”€â”€ Sticky notes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const STICKIES_KEY = "portfolio.stickies.v1";
 const STICKY_COLORS = ["#ffffa5", "#c5e8ff", "#ffd6e7"];
 let stickyColorIndex = 0;
@@ -218,10 +218,10 @@ export function createStickyNote({ id, x, y, w, h, text, color } = {}) {
   // Darken header colour slightly
   el.innerHTML = `
     <div class="sticky-note-header" style="background:${noteColor}; filter:brightness(0.85)">
-      <span>📌 Note</span>
-      <button class="sticky-note-close" aria-label="Delete sticky note">×</button>
+      <span>ðŸ“Œ Note</span>
+      <button class="sticky-note-close" aria-label="Delete sticky note">X</button>
     </div>
-    <textarea class="sticky-note-body" placeholder="Type here…">${escapeHtml(text || "")}</textarea>
+    <textarea class="sticky-note-body" placeholder="Type hereâ€¦">${escapeHtml(text || "")}</textarea>
   `;
 
   // Drag on header
@@ -278,3 +278,5 @@ export function loadStickyNotes() {
     if (Array.isArray(data)) data.forEach((n) => createStickyNote(n));
   } catch (_) {}
 }
+
+
