@@ -22,7 +22,7 @@
   <rect width="1200" height="630" fill="url(#desktopLines)" />
 
   <rect x="0" y="0" width="1200" height="26" fill="#d6d6d6" stroke="#8a8a8a" stroke-width="1" />
-  <text x="12" y="18" class="menu">ï£¿ File View Special</text>
+  <text x="12" y="18" class="menu">[ ] File View Special</text>
   <text x="1025" y="18" class="menu">Tue 11:04 AM</text>
   <rect x="1175" y="5" width="14" height="14" fill="#e9e9e9" stroke="#a0a0a0" stroke-width="1" />
 

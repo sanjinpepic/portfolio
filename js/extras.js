@@ -221,7 +221,7 @@ export function createStickyNote({ id, x, y, w, h, text, color } = {}) {
       <span>ðŸ“Œ Note</span>
       <button class="sticky-note-close" aria-label="Delete sticky note">X</button>
     </div>
-    <textarea class="sticky-note-body" placeholder="Type hereâ€¦">${escapeHtml(text || "")}</textarea>
+    <textarea class="sticky-note-body" placeholder="Type here...">${escapeHtml(text || "")}</textarea>
   `;
 
   // Drag on header
@@ -278,5 +278,6 @@ export function loadStickyNotes() {
     if (Array.isArray(data)) data.forEach((n) => createStickyNote(n));
   } catch (_) {}
 }
+
 
 
