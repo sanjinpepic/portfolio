@@ -6,13 +6,50 @@ import { vintageSpeaker } from "./sounds.js";
 
 // Internal helpers
 
+let winampClockTimer = null;
+
+function formatWinampTime(secondsValue) {
+  const totalSeconds = Math.max(0, Math.floor(Number(secondsValue) || 0));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
+}
+
+function updateWinampClock() {
+  const timeNode = document.getElementById("winamp-led-time");
+  if (!timeNode) return;
+  const currentTime = Number(S.winampPlayer?.getCurrentTime?.());
+  if (!Number.isFinite(currentTime)) {
+    timeNode.textContent = "--:--";
+    return;
+  }
+  timeNode.textContent = formatWinampTime(currentTime);
+}
+
+function stopWinampClock() {
+  if (winampClockTimer) {
+    window.clearInterval(winampClockTimer);
+    winampClockTimer = null;
+  }
+}
+
+function startWinampClock() {
+  updateWinampClock();
+  if (winampClockTimer) return;
+  winampClockTimer = window.setInterval(updateWinampClock, 500);
+}
+
 function getCurrentTrack() {
   return WINAMP_PLAYLIST[S.winampActiveIndex] || WINAMP_PLAYLIST[0] || null;
 }
 
 function updateWinampNowPlaying() {
   const currentTrack = getCurrentTrack();
+  const trackNumberNode = document.getElementById("winamp-led-track");
   const trackTitleNode = document.getElementById("winamp-track-title");
+  if (trackNumberNode) {
+    trackNumberNode.textContent = String(S.winampActiveIndex + 1).padStart(2, "0");
+  }
   if (trackTitleNode) {
     trackTitleNode.textContent = currentTrack?.title || "Loading lineup...";
   }
@@ -127,6 +164,7 @@ export function stopWinampPlayback({ terminate = true } = {}) {
     window.clearInterval(S.winampFlutterTimer);
     S.winampFlutterTimer = null;
   }
+  stopWinampClock();
   if (S.winampPlayer) {
     if (terminate && typeof S.winampPlayer.stopVideo === "function") {
       S.winampPlayer.stopVideo();
@@ -169,9 +207,11 @@ export function restartWinampFlutter() {
 function selectWinampChannel(index, { autoPlay = true } = {}) {
   if (!S.winampPlayer || !WINAMP_PLAYLIST[index]) return;
   S.winampActiveIndex = index;
+  stopWinampClock();
   S.winampPlayer.loadVideoById(WINAMP_PLAYLIST[index].id);
   if (autoPlay) S.winampPlayer.playVideo();
   updateWinampNowPlaying();
+  updateWinampClock();
   updateWinampUi();
 }
 
@@ -249,6 +289,12 @@ function initWinampPlayer() {
         S.winampPlaying = event.data === window.YT.PlayerState.PLAYING;
         syncWinampAudioState();
         restartWinampFlutter();
+        if (S.winampPlaying) {
+          startWinampClock();
+        } else {
+          stopWinampClock();
+          updateWinampClock();
+        }
         if (S.winampPlaying && !S.winampMuted) {
           vintageSpeaker.setVolume(S.winampLastVolume);
         } else {
@@ -262,6 +308,7 @@ function initWinampPlayer() {
         updateWinampUi();
       },
       onError: () => {
+        stopWinampClock();
         if (S.winampStatus) {
           S.winampStatus.textContent = "This channel is unavailable in embed mode. Skipping to next.";
         }
