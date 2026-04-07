@@ -2096,6 +2096,7 @@ a {
   padding: 0;
   overflow: hidden;
   max-height: none;
+  overscroll-behavior: none;
 }
 
 #doom-window {
@@ -2103,6 +2104,7 @@ a {
   min-height: calc(500px + 2rem);
   resize: none;
   overflow: hidden;
+  overscroll-behavior: none;
 }
 
 .doom-shell {
@@ -2134,6 +2136,13 @@ a {
 #doom-window .doom-content {
   flex: 1;
   overflow: hidden;
+}
+
+#doom-window,
+#doom-window .window-content,
+#doom-window .doom-shell,
+#doom-window .doom-frame {
+  scrollbar-width: none;
 }
 
 .sr-only {
