@@ -711,56 +711,62 @@ function renderWinampSearchResults() {
     emptyText: "No YouTube matches in the current lineup.",
     resultMode: true,
   });
+}
 
-  if (!S.winampSearchBound) {
-    S.winampSearchResults.addEventListener("click", (event) => {
-      const actionButton = event.target.closest(".winamp-channel-action");
-      if (actionButton) {
-        const actionIndex = Number(actionButton.dataset.winampIndex);
-        const directId = actionButton.dataset.winampVideoId || "";
-        if (actionIndex >= 0 && WINAMP_PLAYLIST[actionIndex]) {
-          addTrackToWinampPlaylist(WINAMP_PLAYLIST[actionIndex]);
-          return;
-        }
-        if (directId) {
-          addTrackToWinampPlaylist({
-            id: directId,
-            title: `YouTube video ${directId}`,
-          });
-        }
+function bindWinampSearchInteractions() {
+  if (S.winampSearchBound) return;
+  if (!S.winampSearchResults) return;
+
+  S.winampSearchResults.addEventListener("click", (event) => {
+    const actionButton = event.target.closest(".winamp-channel-action");
+    if (actionButton) {
+      const actionIndex = Number(actionButton.dataset.winampIndex);
+      const directId = actionButton.dataset.winampVideoId || "";
+      if (actionIndex >= 0 && WINAMP_PLAYLIST[actionIndex]) {
+        addTrackToWinampPlaylist(WINAMP_PLAYLIST[actionIndex]);
         return;
       }
-
-      const channelButton = event.target.closest(".winamp-channel-btn");
-      if (!channelButton || !S.winampPlayer) return;
-      const nextIndex = Number(channelButton.dataset.winampIndex);
-      if (nextIndex >= 0) {
-        selectWinampChannel(nextIndex);
-        return;
-      }
-
-      const directId = channelButton.dataset.winampVideoId || "";
       if (directId) {
         addTrackToWinampPlaylist({
           id: directId,
           title: `YouTube video ${directId}`,
-        }, { playNow: true });
+        });
+      }
+      return;
+    }
+
+    const channelButton = event.target.closest(".winamp-channel-btn");
+    if (!channelButton || !S.winampPlayer) return;
+    const nextIndex = Number(channelButton.dataset.winampIndex);
+    if (nextIndex >= 0) {
+      selectWinampChannel(nextIndex);
+      return;
+    }
+
+    const directId = channelButton.dataset.winampVideoId || "";
+    if (directId) {
+      addTrackToWinampPlaylist({
+        id: directId,
+        title: `YouTube video ${directId}`,
+      }, { playNow: true });
+    }
+  });
+
+  if (S.winampSearchInput) {
+    S.winampSearchInput.addEventListener("input", () => {
+      S.winampSearchQuery = S.winampSearchInput.value || "";
+      renderWinampSearchResults();
+    });
+    S.winampSearchInput.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter") return;
+      S.winampSearchQuery = S.winampSearchInput.value || "";
+      if (addDirectYouTubeSearchResult({ playNow: true })) {
+        event.preventDefault();
       }
     });
-    if (S.winampSearchInput) {
-      S.winampSearchInput.addEventListener("input", () => {
-        S.winampSearchQuery = S.winampSearchInput.value || "";
-        renderWinampSearchResults();
-      });
-      S.winampSearchInput.addEventListener("keydown", (event) => {
-        if (event.key !== "Enter") return;
-        if (addDirectYouTubeSearchResult({ playNow: true })) {
-          event.preventDefault();
-        }
-      });
-    }
-    S.winampSearchBound = true;
   }
+
+  S.winampSearchBound = true;
 }
 
 function setWinampLibraryTab(tab) {
@@ -806,7 +812,9 @@ function bindWinampLibraryTabs() {
 }
 
 function setupWinampSearchUi() {
+  bindWinampSearchInteractions();
   renderWinampSearchResults();
+}
 }
 
 function initWinampPlayer() {
