@@ -459,6 +459,7 @@ async function hydrateWinampPlaylistTitles() {
 
   if (!hasChanges) return;
   setupWinampPlaylistUi();
+  renderWinampSearchResults();
   updateWinampNowPlaying();
 }
 
@@ -468,13 +469,13 @@ function updateWinampUi() {
     S.winampMuteToggle.textContent = S.winampMuted ? "Muted" : "Sound On";
   }
   setWinampVisualMode(S.winampVisualMode);
-  if (S.winampChannelList) {
-    [...S.winampChannelList.querySelectorAll(".winamp-channel-btn")].forEach((button) => {
+  [S.winampChannelList, S.winampSearchResults].filter(Boolean).forEach((listElement) => {
+    [...listElement.querySelectorAll(".winamp-channel-btn")].forEach((button) => {
       const channelIndex = Number(button.dataset.winampIndex);
       button.setAttribute("aria-selected", channelIndex === S.winampActiveIndex ? "true" : "false");
       button.classList.toggle("active", channelIndex === S.winampActiveIndex);
     });
-  }
+  });
 }
 
 export function stopWinampPlayback({ terminate = true } = {}) {
@@ -548,37 +549,233 @@ function getWinampGroupLabel(trackTitle = "") {
   return /[A-Z]/.test(firstChar) ? firstChar : "#";
 }
 
+function escapeWinampHtml(value = "") {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
+function renderWinampTrackList(listElement, items, { emptyText, resultMode = false } = {}) {
+  if (!listElement) return;
+
+  if (!items.length) {
+    listElement.innerHTML = `<p class="winamp-channel-empty">${emptyText}</p>`;
+    return;
+  }
+
+  let previousGroup = "";
+  listElement.innerHTML = items.map(({ title, index, subtitle = "", id = "", action = "" }) => {
+    const groupLabel = getWinampGroupLabel(title);
+    const groupHeader = groupLabel !== previousGroup ? `<p class="winamp-channel-group">${groupLabel}</p>` : "";
+    previousGroup = groupLabel;
+    const subtitleMarkup = subtitle ? `<span class="winamp-channel-subtitle">${escapeWinampHtml(subtitle)}</span>` : "";
+    const prefix = resultMode ? "YT" : "CH";
+    const actionLabel = action === "remove" ? "-" : action === "add" ? "+" : "";
+    const actionMarkup = actionLabel
+      ? `<button type="button" class="winamp-channel-action" data-winamp-action="${action}" data-winamp-index="${index}" data-winamp-video-id="${escapeWinampHtml(id)}" aria-label="${action === "remove" ? "Remove from playlist" : "Add to playlist"}">${actionLabel}</button>`
+      : "";
+    return `${groupHeader}<div class="winamp-channel-row">${actionMarkup}<button type="button" class="retro-btn winamp-channel-btn" data-winamp-index="${index}" data-winamp-video-id="${escapeWinampHtml(id)}" role="option">${prefix} ${String(Math.max(index + 1, 1)).padStart(2, "0")} - ${escapeWinampHtml(title)}${subtitleMarkup}</button></div>`;
+  }).join("\n");
+}
+
+function addTrackToWinampPlaylist(track, { playNow = false } = {}) {
+  if (!track?.id) return;
+  WINAMP_PLAYLIST.push({
+    id: track.id,
+    title: track.title || `YouTube video ${track.id}`,
+  });
+  setupWinampPlaylistUi();
+  renderWinampSearchResults();
+  if (playNow && S.winampPlayer) {
+    selectWinampChannel(WINAMP_PLAYLIST.length - 1);
+  } else {
+    updateWinampUi();
+  }
+}
+
+function removeTrackFromWinampPlaylist(index) {
+  if (!Number.isInteger(index) || index < 0 || index >= WINAMP_PLAYLIST.length) return;
+
+  const removingActive = index === S.winampActiveIndex;
+  WINAMP_PLAYLIST.splice(index, 1);
+
+  if (!WINAMP_PLAYLIST.length) {
+    S.winampActiveIndex = 0;
+    stopWinampClock();
+    S.winampPlaying = false;
+    if (S.winampPlayer) {
+      S.winampPlayer.stopVideo?.();
+    }
+    updateWinampNowPlaying();
+    updateWinampClock();
+    setupWinampPlaylistUi();
+    renderWinampSearchResults();
+    updateWinampUi();
+    return;
+  }
+
+  if (index < S.winampActiveIndex) {
+    S.winampActiveIndex -= 1;
+  } else if (removingActive) {
+    S.winampActiveIndex = Math.min(index, WINAMP_PLAYLIST.length - 1);
+    if (S.winampPlayer) {
+      selectWinampChannel(S.winampActiveIndex);
+      return;
+    }
+  }
+
+  setupWinampPlaylistUi();
+  renderWinampSearchResults();
+  updateWinampNowPlaying();
+  updateWinampUi();
+}
+
 function setupWinampPlaylistUi() {
   if (!S.winampChannelList) return;
-  const filterValue = S.winampChannelFilter?.value.trim().toLowerCase() || "";
-  const filteredPlaylist = WINAMP_PLAYLIST
-    .map((track, index) => ({ ...track, index }))
-    .filter(({ title }) => !filterValue || title.toLowerCase().includes(filterValue));
+  const filteredPlaylist = WINAMP_PLAYLIST.map((track, index) => ({ ...track, index }));
 
-  if (!filteredPlaylist.length) {
-    S.winampChannelList.innerHTML = '<p class="winamp-channel-empty">No channels match your filter.</p>';
-  } else {
-    let previousGroup = "";
-    S.winampChannelList.innerHTML = filteredPlaylist.map(({ title, index }) => {
-      const groupLabel = getWinampGroupLabel(title);
-      const groupHeader = groupLabel !== previousGroup ? `<p class="winamp-channel-group">${groupLabel}</p>` : "";
-      previousGroup = groupLabel;
-      return `${groupHeader}<button type="button" class="retro-btn winamp-channel-btn" data-winamp-index="${index}" role="option">CH ${String(index + 1).padStart(2, "0")} - ${title}</button>`;
-    }).join("\n");
-  }
+  renderWinampTrackList(S.winampChannelList, filteredPlaylist, {
+    emptyText: "Playlist unavailable right now.",
+    resultMode: false,
+  });
 
   if (!S.winampPlaylistBound) {
     S.winampChannelList.addEventListener("click", (event) => {
+      const actionButton = event.target.closest(".winamp-channel-action");
+      if (actionButton) {
+        removeTrackFromWinampPlaylist(Number(actionButton.dataset.winampIndex));
+        return;
+      }
       const channelButton = event.target.closest(".winamp-channel-btn");
       if (!channelButton) return;
       selectWinampChannel(Number(channelButton.dataset.winampIndex));
     });
-    if (S.winampChannelFilter) {
-      S.winampChannelFilter.addEventListener("input", setupWinampPlaylistUi);
-    }
     S.winampPlaylistBound = true;
   }
   updateWinampUi();
+}
+
+function renderWinampSearchResults() {
+  if (!S.winampSearchResults) return;
+
+  const query = S.winampSearchQuery.trim();
+  if (!query) {
+    renderWinampTrackList(S.winampSearchResults, [], {
+      emptyText: "Type a title, artist, YouTube URL, or video id to search.",
+      resultMode: true,
+    });
+    return;
+  }
+
+  const directVideoId = extractYouTubeVideoId(query);
+  const normalizedQuery = query.toLowerCase();
+  const matchedPlaylist = WINAMP_PLAYLIST
+    .map((track, index) => ({ ...track, index }))
+    .filter(({ title, id }) => title.toLowerCase().includes(normalizedQuery) || id.toLowerCase().includes(normalizedQuery));
+
+  const searchItems = [];
+  if (directVideoId) {
+    searchItems.push({
+      id: directVideoId,
+      index: -1,
+      title: "Pasted YouTube video",
+      subtitle: directVideoId,
+      action: "add",
+    });
+  }
+  searchItems.push(...matchedPlaylist.map((track) => ({
+    ...track,
+    subtitle: "From playlist",
+    action: "add",
+  })));
+
+  renderWinampTrackList(S.winampSearchResults, searchItems, {
+    emptyText: "No YouTube matches in the current lineup.",
+    resultMode: true,
+  });
+
+  if (!S.winampSearchBound) {
+    S.winampSearchResults.addEventListener("click", (event) => {
+      const actionButton = event.target.closest(".winamp-channel-action");
+      if (actionButton) {
+        const actionIndex = Number(actionButton.dataset.winampIndex);
+        const directId = actionButton.dataset.winampVideoId || "";
+        if (actionIndex >= 0 && WINAMP_PLAYLIST[actionIndex]) {
+          addTrackToWinampPlaylist(WINAMP_PLAYLIST[actionIndex]);
+          return;
+        }
+        if (directId) {
+          addTrackToWinampPlaylist({
+            id: directId,
+            title: `YouTube video ${directId}`,
+          });
+        }
+        return;
+      }
+
+      const channelButton = event.target.closest(".winamp-channel-btn");
+      if (!channelButton || !S.winampPlayer) return;
+      const nextIndex = Number(channelButton.dataset.winampIndex);
+      if (nextIndex >= 0) {
+        selectWinampChannel(nextIndex);
+      }
+    });
+    if (S.winampSearchInput) {
+      S.winampSearchInput.addEventListener("input", () => {
+        S.winampSearchQuery = S.winampSearchInput.value || "";
+        renderWinampSearchResults();
+      });
+    }
+    S.winampSearchBound = true;
+  }
+}
+
+function setWinampLibraryTab(tab) {
+  S.winampLibraryTab = tab === "search" ? "search" : "playlist";
+
+  if (S.winampTabPlaylist) {
+    const active = S.winampLibraryTab === "playlist";
+    S.winampTabPlaylist.classList.toggle("active", active);
+    S.winampTabPlaylist.setAttribute("aria-selected", active ? "true" : "false");
+  }
+  if (S.winampTabSearch) {
+    const active = S.winampLibraryTab === "search";
+    S.winampTabSearch.classList.toggle("active", active);
+    S.winampTabSearch.setAttribute("aria-selected", active ? "true" : "false");
+  }
+  if (S.winampPlaylistView) {
+    const active = S.winampLibraryTab === "playlist";
+    S.winampPlaylistView.classList.toggle("active", active);
+    S.winampPlaylistView.hidden = !active;
+  }
+  if (S.winampSearchView) {
+    const active = S.winampLibraryTab === "search";
+    S.winampSearchView.classList.toggle("active", active);
+    S.winampSearchView.hidden = !active;
+  }
+  if (S.winampLibraryTab === "search") {
+    renderWinampSearchResults();
+  }
+}
+
+function bindWinampLibraryTabs() {
+  if (S.winampTabPlaylist) {
+    S.winampTabPlaylist.addEventListener("click", () => {
+      setWinampLibraryTab("playlist");
+    });
+  }
+  if (S.winampTabSearch) {
+    S.winampTabSearch.addEventListener("click", () => {
+      setWinampLibraryTab("search");
+      S.winampSearchInput?.focus();
+    });
+  }
+}
+
+function setupWinampSearchUi() {
+  renderWinampSearchResults();
 }
 
 function initWinampPlayer() {
@@ -642,6 +839,9 @@ function initWinampPlayer() {
 export async function bindWinampControls() {
   const loadedCustomPlaylist = await loadWinampPlaylistFromFile();
   setupWinampPlaylistUi();
+  setupWinampSearchUi();
+  bindWinampLibraryTabs();
+  setWinampLibraryTab(S.winampLibraryTab);
   hydrateWinampPlaylistTitles();
   if (!loadedCustomPlaylist) {
     updateWinampNowPlaying();

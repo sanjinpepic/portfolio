@@ -76,9 +76,14 @@ export const S = {
   winampShuffle: null,
   winampMuteToggle: null,
   winampVisualModeToggle: null,
+  winampTabPlaylist: null,
+  winampTabSearch: null,
   winampVolume: null,
   winampChannelList: null,
-  winampChannelFilter: null,
+  winampSearchInput: null,
+  winampSearchResults: null,
+  winampPlaylistView: null,
+  winampSearchView: null,
   winampModeLabel: null,
   winampScreenWrap: null,
   winampVisualizer: null,
@@ -93,9 +98,12 @@ export const S = {
   winampMuted: true,
   winampLastVolume: 35,
   winampVisualMode: "video",
+  winampLibraryTab: "playlist",
+  winampSearchQuery: "",
   winampFlutterTimer: null,
   winampVisualizerFrame: null,
   winampPlaylistBound: false,
+  winampSearchBound: false,
 };
 
 // ── Populate element refs from the DOM ────────────────────────
@@ -119,9 +127,14 @@ export function syncDynamicElements() {
   S.winampShuffle = document.getElementById("winamp-shuffle");
   S.winampMuteToggle = document.getElementById("winamp-mute-toggle");
   S.winampVisualModeToggle = document.getElementById("winamp-visual-mode-toggle");
+  S.winampTabPlaylist = document.getElementById("winamp-tab-playlist");
+  S.winampTabSearch = document.getElementById("winamp-tab-search");
   S.winampVolume = document.getElementById("winamp-volume");
   S.winampChannelList = document.getElementById("winamp-channel-list");
-  S.winampChannelFilter = document.getElementById("winamp-channel-filter");
+  S.winampSearchInput = document.getElementById("winamp-search-input");
+  S.winampSearchResults = document.getElementById("winamp-search-results");
+  S.winampPlaylistView = document.getElementById("winamp-playlist-view");
+  S.winampSearchView = document.getElementById("winamp-search-view");
   S.winampModeLabel = document.getElementById("winamp-mode-label");
   S.winampScreenWrap = document.getElementById("winamp-screen-wrap");
   S.winampVisualizer = document.getElementById("winamp-visualizer");

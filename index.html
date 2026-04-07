@@ -919,8 +919,24 @@
   </div>
 
   <aside class="winamp-playlist-panel" aria-label="Playlist">
-    <p class="winamp-playlist-heading">Winamp TV Playlist</p>
-    <div id="winamp-channel-list" class="winamp-channel-list" role="listbox" aria-label="Video channels"></div>
+    <div class="winamp-playlist-head">
+      <p class="winamp-playlist-heading">Winamp TV Library</p>
+      <div class="winamp-tab-row" role="tablist" aria-label="Winamp library sections">
+        <button type="button" class="winamp-tab-btn active" id="winamp-tab-playlist" data-winamp-tab="playlist" role="tab" aria-selected="true">Playlist</button>
+        <button type="button" class="winamp-tab-btn" id="winamp-tab-search" data-winamp-tab="search" role="tab" aria-selected="false">Search</button>
+      </div>
+    </div>
+    <div class="winamp-library-panel">
+      <div class="winamp-library-view active" id="winamp-playlist-view" data-winamp-view="playlist">
+        <div id="winamp-channel-list" class="winamp-channel-list" role="listbox" aria-label="Video channels"></div>
+      </div>
+      <div class="winamp-library-view" id="winamp-search-view" data-winamp-view="search" hidden>
+        <label class="winamp-search-label" for="winamp-search-input">Search or paste a YouTube link</label>
+        <input id="winamp-search-input" class="winamp-search-input" type="search" placeholder="Search current lineup or paste a YouTube URL / video id" autocomplete="off" />
+        <p class="winamp-search-note">Search filters the current YouTube lineup. Pasting a full YouTube URL or 11-character video id opens it directly.</p>
+        <div id="winamp-search-results" class="winamp-channel-list" role="listbox" aria-label="Search results"></div>
+      </div>
+    </div>
   </aside>
 
   <p class="resume-note">Source: YouTube embed (no-cookie). Ads cannot be fully controlled by this site.</p>

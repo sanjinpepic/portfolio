@@ -1914,12 +1914,91 @@ a {
   height: 100%;
 }
 
+.winamp-playlist-head {
+  display: grid;
+  gap: 0.35rem;
+}
+
 .winamp-playlist-heading {
   margin: 0;
   color: #f0f3ff;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   text-shadow: 1px 1px #141823;
+}
+
+.winamp-tab-row {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.winamp-tab-btn {
+  min-height: 1.75rem;
+  padding: 0.18rem 0.55rem;
+  border: 1px solid #151925;
+  background: linear-gradient(180deg, #676d80 0%, #8f95a5 48%, #cfd4df 100%);
+  color: #131826;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+
+.winamp-tab-btn.active,
+.winamp-tab-btn[aria-selected="true"] {
+  background: linear-gradient(180deg, #173362 0%, #0c1d3f 100%);
+  color: #f7ff8a;
+  border-color: #6078af;
+}
+
+.winamp-library-panel {
+  min-height: 0;
+  height: 100%;
+}
+
+.winamp-library-view {
+  display: none;
+  min-height: 0;
+  height: 100%;
+}
+
+.winamp-library-view.active {
+  display: grid;
+  grid-template-rows: auto auto auto minmax(0, 1fr);
+  gap: 0.35rem;
+}
+
+.winamp-library-view[data-winamp-view="playlist"].active {
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.winamp-search-label {
+  color: #f2f4fb;
+  text-transform: uppercase;
+  font-size: 0.76rem;
+  letter-spacing: 0.06em;
+}
+
+.winamp-search-input {
+  width: 100%;
+  min-width: 0;
+  padding: 0.38rem 0.45rem;
+  border: 2px solid;
+  border-color: #121620 #8f95a8 #8f95a8 #121620;
+  background: #020304;
+  color: #dbffbd;
+  font: inherit;
+}
+
+.winamp-search-input::placeholder {
+  color: #88a78d;
+}
+
+.winamp-search-note {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #c4cce3;
+  line-height: 1.35;
 }
 
 .winamp-channel-list {
@@ -1946,6 +2025,40 @@ a {
   grid-column: 1 / -1;
   margin: 0.25rem 0;
   color: #d3d8e8;
+}
+
+.winamp-channel-subtitle {
+  display: block;
+  margin-top: 0.15rem;
+  color: #9bb4d5;
+  font-size: 0.74rem;
+  white-space: normal;
+}
+
+.winamp-channel-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.28rem;
+  align-items: stretch;
+}
+
+.winamp-channel-action {
+  min-width: 1.7rem;
+  min-height: 1.85rem;
+  padding: 0 0.2rem;
+  border: 1px solid #34405b;
+  background: linear-gradient(180deg, #6f7688 0%, #949aaa 48%, #d7dbe3 100%);
+  color: #162039;
+  font: inherit;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.winamp-channel-action:hover,
+.winamp-channel-action:focus-visible {
+  background: linear-gradient(180deg, #8c9447 0%, #b8c45c 48%, #ebefad 100%);
+  color: #101607;
 }
 
 .winamp-channel-btn {
