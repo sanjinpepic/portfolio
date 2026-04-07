@@ -327,7 +327,11 @@ async function initDesktop() {
   bindIconFallbackHandlers();
   initDragHandlers();
   bindDynamicContentEvents();
-  bindWinampControls();
+  try {
+    bindWinampControls();
+  } catch (error) {
+    console.error("Winamp initialization failed:", error);
+  }
   bindTerminal();
   bindContextMenu(runMenuAction);
   bindScreensaver();

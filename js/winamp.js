@@ -586,13 +586,24 @@ function addTrackToWinampPlaylist(track, { playNow = false } = {}) {
     id: track.id,
     title: track.title || `YouTube video ${track.id}`,
   });
+  const addedIndex = WINAMP_PLAYLIST.length - 1;
   setupWinampPlaylistUi();
   renderWinampSearchResults();
   if (playNow && S.winampPlayer) {
     setWinampLibraryTab("playlist");
-    selectWinampChannel(WINAMP_PLAYLIST.length - 1);
+    selectWinampChannel(addedIndex);
   } else {
     updateWinampUi();
+  }
+  if (!track.title || track.title === `YouTube video ${track.id}`) {
+    fetchYouTubeTitle(track.id).then((fetchedTitle) => {
+      const playlistTrack = WINAMP_PLAYLIST[addedIndex];
+      if (!playlistTrack || playlistTrack.id !== track.id || !fetchedTitle) return;
+      playlistTrack.title = fetchedTitle;
+      setupWinampPlaylistUi();
+      renderWinampSearchResults();
+      updateWinampNowPlaying();
+    });
   }
 }
 
