@@ -173,15 +173,20 @@ function drawAlchemyVisualizerFrame(context, width, height, time, playbackTime, 
   const air = (spectrum.bands[18] + spectrum.bands[20] + spectrum.bands[22]) / 3;
   const flare = clamp(spectrum.pulse * 0.8 + bass * 0.45, 0, 1);
   const haloRadius = minSize * (0.16 + bass * 0.12 + spectrum.pulse * 0.04);
+  const paletteWave = 0.5 + 0.5 * Math.sin(time * 0.65 + playbackTime * 0.015 + spectrum.drift * 2.2);
+  const paletteShift = 20 + paletteWave * 52;
+  const emberHue = 14 + paletteShift * 0.4;
+  const goldHue = 34 + paletteShift * 0.32;
+  const flameHue = 54 + paletteShift * 0.18;
 
   context.save();
   context.globalCompositeOperation = "source-over";
 
   const background = context.createRadialGradient(centerX, centerY, minSize * 0.04, centerX, centerY, minSize * 0.95);
-  background.addColorStop(0, `rgba(255, 240, 180, ${0.08 + flare * 0.08})`);
-  background.addColorStop(0.18, `hsla(${28 + mid * 18} 96% 22% / 0.95)`);
-  background.addColorStop(0.46, "hsla(16 90% 10% / 0.98)");
-  background.addColorStop(0.78, "hsla(8 78% 5% / 0.98)");
+  background.addColorStop(0, `hsla(${flameHue} 92% 76% / ${0.08 + flare * 0.08})`);
+  background.addColorStop(0.18, `hsla(${goldHue} 96% 22% / 0.95)`);
+  background.addColorStop(0.46, `hsla(${emberHue} 90% 10% / 0.98)`);
+  background.addColorStop(0.78, `hsla(${emberHue - 8} 78% 5% / 0.98)`);
   background.addColorStop(1, "#010101");
   context.fillStyle = background;
   context.fillRect(0, 0, width, height);
@@ -196,8 +201,9 @@ function drawAlchemyVisualizerFrame(context, width, height, time, playbackTime, 
     const y = centerY + Math.sin(angle * 1.18) * orbitY;
     const radius = minSize * (0.12 + cloudEnergy * 0.08 + (cloud % 3) * 0.02);
     const glow = context.createRadialGradient(x, y, 0, x, y, radius);
-    glow.addColorStop(0, `hsla(${24 + cloud * 7} 100% 72% / ${0.06 + cloudEnergy * 0.08})`);
-    glow.addColorStop(0.45, `hsla(${16 + cloud * 5} 92% 40% / ${0.05 + cloudEnergy * 0.06})`);
+    const cloudHue = goldHue + cloud * 2.6;
+    glow.addColorStop(0, `hsla(${cloudHue} 100% 72% / ${0.06 + cloudEnergy * 0.08})`);
+    glow.addColorStop(0.45, `hsla(${cloudHue - 14} 92% 40% / ${0.05 + cloudEnergy * 0.06})`);
     glow.addColorStop(1, "transparent");
     context.fillStyle = glow;
     context.fillRect(x - radius, y - radius, radius * 2, radius * 2);
@@ -216,9 +222,10 @@ function drawAlchemyVisualizerFrame(context, width, height, time, playbackTime, 
     context.save();
     context.rotate(baseAngle);
     const petal = context.createRadialGradient(length * 0.18, 0, 0, length * 0.18, 0, length * 1.05);
-    petal.addColorStop(0, `hsla(${30 + lobe * 4} 100% 82% / ${0.34 + bandEnergy * 0.14})`);
-    petal.addColorStop(0.28, `hsla(${22 + lobe * 5} 100% 60% / ${0.26 + bandEnergy * 0.12})`);
-    petal.addColorStop(0.68, `hsla(${12 + lobe * 4} 90% 36% / ${0.12 + bandEnergy * 0.1})`);
+    const petalHue = goldHue + lobe * 2.2;
+    petal.addColorStop(0, `hsla(${petalHue} 100% 82% / ${0.34 + bandEnergy * 0.14})`);
+    petal.addColorStop(0.28, `hsla(${petalHue - 10} 100% 60% / ${0.26 + bandEnergy * 0.12})`);
+    petal.addColorStop(0.68, `hsla(${petalHue - 24} 90% 36% / ${0.12 + bandEnergy * 0.1})`);
     petal.addColorStop(1, "transparent");
     context.fillStyle = petal;
     context.beginPath();
@@ -240,9 +247,9 @@ function drawAlchemyVisualizerFrame(context, width, height, time, playbackTime, 
     const dashB = Math.max(4, radius * (0.045 + air * 0.04));
     context.beginPath();
     context.setLineDash([dashA, dashB]);
-    context.lineDashOffset = -(time * 70 * (0.2 + ratio * 0.3));
+    context.lineDashOffset = -(time * 34 * (0.18 + ratio * 0.16));
     context.arc(centerX, centerY, radius, 0, Math.PI * 2);
-    context.strokeStyle = `hsla(${28 + ring * 8 + ringEnergy * 18} 100% 72% / ${0.18 + ratio * 0.08 + flare * 0.06})`;
+    context.strokeStyle = `hsla(${goldHue + ring * 4.5 + ringEnergy * 10} 100% 72% / ${0.18 + ratio * 0.08 + flare * 0.06})`;
     context.lineWidth = Math.max(1.1, minSize * (0.002 + ratio * 0.0012));
     context.stroke();
   }
@@ -257,8 +264,9 @@ function drawAlchemyVisualizerFrame(context, width, height, time, playbackTime, 
     const y = centerY + Math.sin(angle * 1.13) * orbit * 0.72;
     const radius = minSize * (0.003 + bandEnergy * 0.007);
     const sparkGlow = context.createRadialGradient(x, y, 0, x, y, radius * 10);
-    sparkGlow.addColorStop(0, `hsla(${38 + spark * 2} 100% 82% / ${0.45 + bandEnergy * 0.18})`);
-    sparkGlow.addColorStop(0.4, `hsla(${26 + spark * 2} 100% 58% / ${0.16 + bandEnergy * 0.08})`);
+    const sparkHue = flameHue + spark * 0.8;
+    sparkGlow.addColorStop(0, `hsla(${sparkHue} 100% 82% / ${0.3 + bandEnergy * 0.12})`);
+    sparkGlow.addColorStop(0.4, `hsla(${sparkHue - 12} 100% 58% / ${0.1 + bandEnergy * 0.06})`);
     sparkGlow.addColorStop(1, "transparent");
     context.fillStyle = sparkGlow;
     context.fillRect(x - radius * 10, y - radius * 10, radius * 20, radius * 20);
@@ -266,9 +274,9 @@ function drawAlchemyVisualizerFrame(context, width, height, time, playbackTime, 
 
   context.globalCompositeOperation = "screen";
   const coreGlow = context.createRadialGradient(centerX, centerY, 0, centerX, centerY, haloRadius * 1.5);
-  coreGlow.addColorStop(0, `rgba(255, 248, 222, ${0.52 + flare * 0.12})`);
-  coreGlow.addColorStop(0.22, `rgba(255, 202, 112, ${0.34 + flare * 0.12})`);
-  coreGlow.addColorStop(0.5, `rgba(255, 124, 32, ${0.1 + flare * 0.08})`);
+  coreGlow.addColorStop(0, `hsla(${flameHue} 100% 92% / ${0.42 + flare * 0.08})`);
+  coreGlow.addColorStop(0.22, `hsla(${goldHue} 100% 68% / ${0.28 + flare * 0.08})`);
+  coreGlow.addColorStop(0.5, `hsla(${emberHue} 100% 52% / ${0.1 + flare * 0.05})`);
   coreGlow.addColorStop(1, "transparent");
   context.fillStyle = coreGlow;
   context.fillRect(centerX - haloRadius * 1.5, centerY - haloRadius * 1.5, haloRadius * 3, haloRadius * 3);
@@ -285,7 +293,7 @@ function drawAlchemyVisualizerFrame(context, width, height, time, playbackTime, 
     if (i === 0) context.moveTo(i, y);
     else context.lineTo(i, y);
   }
-  context.strokeStyle = `rgba(255, 247, 214, ${0.34 + air * 0.24})`;
+  context.strokeStyle = `hsla(${flameHue} 88% 88% / ${0.28 + air * 0.14})`;
   context.lineWidth = Math.max(1.2, minSize * 0.004);
   context.stroke();
 
