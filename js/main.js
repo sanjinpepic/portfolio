@@ -347,39 +347,51 @@ async function initDesktop() {
     });
   }
 
-  // Contact form — AJAX submit via Web3Forms
-  const contactForm = document.getElementById("contact-form");
-  const contactSubmit = document.getElementById("contact-submit");
-  const contactStatus = document.getElementById("contact-status");
-  if (contactForm) {
-    contactForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      contactSubmit.disabled = true;
-      contactStatus.textContent = "Sending…";
-      contactStatus.className = "contact-status";
-      try {
-        const response = await fetch(contactForm.action, {
-          method: "POST",
-          body: new FormData(contactForm),
-          headers: { Accept: "application/json" },
-        });
-        const data = await response.json().catch(() => ({}));
-        if (data.success) {
-          contactStatus.textContent = "Message sent. I'll be in touch.";
-          contactStatus.className = "contact-status ok";
-          contactForm.reset();
-        } else {
-          contactStatus.textContent = data.message || "Something went wrong. Try emailing directly.";
-          contactStatus.className = "contact-status err";
+  // Contact form — AJAX submit via Web3Forms (document-level delegation)
+  document.addEventListener("submit", async (event) => {
+    if (!event.target.matches("#contact-form")) return;
+    event.preventDefault();
+    const form = event.target;
+    const submitBtn = document.getElementById("contact-submit");
+    const statusEl = document.getElementById("contact-status");
+    if (submitBtn) submitBtn.disabled = true;
+    if (statusEl) {
+      statusEl.textContent = "Sending…";
+      statusEl.className = "contact-status";
+    }
+    try {
+      const response = await fetch(form.action, {
+        method: "POST",
+        body: new FormData(form),
+        headers: { Accept: "application/json" },
+      });
+      const data = await response.json().catch(() => ({}));
+      if (data.success) {
+        // Replace form with a retro success panel
+        const shell = form.closest(".contact-shell");
+        if (shell) {
+          shell.innerHTML = `
+            <div class="contact-success">
+              <p class="contact-success-icon">▣</p>
+              <p><strong>TRANSMISSION SENT</strong></p>
+              <p>Message received. I'll be in touch.</p>
+            </div>`;
         }
-      } catch {
-        contactStatus.textContent = "Network error. Try emailing directly.";
-        contactStatus.className = "contact-status err";
-      } finally {
-        contactSubmit.disabled = false;
+      } else {
+        if (statusEl) {
+          statusEl.textContent = data.message || "Something went wrong. Try emailing directly.";
+          statusEl.className = "contact-status err";
+        }
+        if (submitBtn) submitBtn.disabled = false;
       }
-    });
-  }
+    } catch {
+      if (statusEl) {
+        statusEl.textContent = "Network error. Try emailing directly.";
+        statusEl.className = "contact-status err";
+      }
+      if (submitBtn) submitBtn.disabled = false;
+    }
+  });
 
   await loadResumeTextFile();
   await loadCaseStudy("erasteel");
