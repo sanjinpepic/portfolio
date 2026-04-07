@@ -219,7 +219,7 @@ export function createStickyNote({ id, x, y, w, h, text, color } = {}) {
   el.innerHTML = `
     <div class="sticky-note-header" style="background:${noteColor}; filter:brightness(0.85)">
       <span>ðŸ“Œ Note</span>
-      <button class="sticky-note-close" aria-label="Delete sticky note">X</button>
+      <button class="sticky-note-close" aria-label="Delete sticky note">x</button>
     </div>
     <textarea class="sticky-note-body" placeholder="Type here...">${escapeHtml(text || "")}</textarea>
   `;
@@ -278,6 +278,7 @@ export function loadStickyNotes() {
     if (Array.isArray(data)) data.forEach((n) => createStickyNote(n));
   } catch (_) {}
 }
+
 
 
 
