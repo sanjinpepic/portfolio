@@ -81,7 +81,16 @@ export function runBootSequence() {
 let screensaverTimer = null;
 const SCREENSAVER_DELAY = 90 * 1000; // 90 seconds
 
+function isDoomActive() {
+  const doomWindow = document.getElementById("doom-window");
+  return Boolean(doomWindow?.classList.contains("open"));
+}
+
 function showScreensaver() {
+  if (isDoomActive()) {
+    resetScreensaverTimer();
+    return;
+  }
   const ss = document.getElementById("screensaver");
   if (!ss) return;
   ss.removeAttribute("aria-hidden");
@@ -97,6 +106,7 @@ function hideScreensaver() {
 
 function resetScreensaverTimer() {
   clearTimeout(screensaverTimer);
+  if (isDoomActive()) return;
   if (document.getElementById("screensaver")?.classList.contains("active")) {
     hideScreensaver();
     return;
