@@ -7,7 +7,39 @@
   let volcanoRefreshTimer = null;
   let mouseKpiTimer = null;
   let mouseListenerAttached = false;
+  let careerImpactAnimationFrame = null;
   const FACT_CACHE_MS = 90 * 1000;
+
+  const CAREER_IMPACT_SERIES = [
+    {
+      role: "Anyfin analytics",
+      period: "2021",
+      score: 58,
+      stat: "+26% conversion",
+      color: "#2b66d9"
+    },
+    {
+      role: "Anyfin product",
+      period: "2021-2022",
+      score: 72,
+      stat: "+100% activity",
+      color: "#6b4fd3"
+    },
+    {
+      role: "Tibber",
+      period: "2022-2024",
+      score: 88,
+      stat: "50M SEK savings",
+      color: "#1d8d5f"
+    },
+    {
+      role: "Erasteel",
+      period: "2024-now",
+      score: 94,
+      stat: "EUR 18M initiatives",
+      color: "#c76628"
+    }
+  ];
 
   const mouseStats = {
     lastX: null,
@@ -135,6 +167,104 @@
     }
 
     renderFactList(factListNode, cachedFact);
+  }
+
+  function renderCareerImpactKpis(dashboardWindow) {
+    const winsNode = dashboardWindow.querySelector("#career-impact-wins");
+    const valueNode = dashboardWindow.querySelector("#career-impact-value");
+    const sectorsNode = dashboardWindow.querySelector("#career-impact-sectors");
+    const spanNode = dashboardWindow.querySelector("#career-impact-span");
+    const badgeNode = dashboardWindow.querySelector("#career-impact-badge");
+
+    if (winsNode) winsNode.textContent = "6+ wins";
+    if (valueNode) valueNode.textContent = "50M SEK + EUR 18M";
+    if (sectorsNode) sectorsNode.textContent = "Energy, fintech, industry";
+    if (spanNode) spanNode.textContent = "2018-now";
+    if (badgeNode) {
+      badgeNode.textContent = "Outcome-led";
+      badgeNode.className = "volcano-risk-badge volcano-risk-medium";
+    }
+  }
+
+  function drawCareerImpactChart(canvas, progress = 1) {
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const width = canvas.width;
+    const height = canvas.height;
+    const paddingLeft = 20;
+    const paddingRight = 18;
+    const paddingTop = 18;
+    const paddingBottom = 16;
+    const labelWidth = 200;
+    const statWidth = 118;
+    const rowGap = 16;
+    const barHeight = 18;
+    const rowHeight = 42;
+    const trackX = paddingLeft + labelWidth;
+    const trackWidth = width - trackX - statWidth - paddingRight;
+
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = "#edf2ff";
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.strokeStyle = "#a5b6de";
+    ctx.lineWidth = 1;
+    for (let row = 0; row <= 4; row += 1) {
+      const y = paddingTop + row * 46;
+      ctx.beginPath();
+      ctx.moveTo(trackX, y + 22);
+      ctx.lineTo(trackX + trackWidth, y + 22);
+      ctx.stroke();
+    }
+
+    CAREER_IMPACT_SERIES.forEach((entry, index) => {
+      const rowY = paddingTop + index * (rowHeight + rowGap);
+      const barY = rowY + 18;
+      const fillWidth = (trackWidth * (entry.score / 100)) * progress;
+
+      ctx.fillStyle = "#163677";
+      ctx.font = "16px VT323";
+      ctx.fillText(entry.role, paddingLeft, rowY + 14);
+
+      ctx.fillStyle = "#4561a2";
+      ctx.font = "13px VT323";
+      ctx.fillText(entry.period, paddingLeft, rowY + 30);
+
+      ctx.fillStyle = "#d9e1f6";
+      ctx.fillRect(trackX, barY, trackWidth, barHeight);
+
+      ctx.fillStyle = entry.color;
+      ctx.fillRect(trackX, barY, fillWidth, barHeight);
+
+      ctx.strokeStyle = "#8296c4";
+      ctx.strokeRect(trackX, barY, trackWidth, barHeight);
+
+      ctx.fillStyle = "#213c77";
+      ctx.font = "13px VT323";
+      ctx.fillText(entry.stat, trackX + trackWidth + 10, rowY + 30);
+    });
+  }
+
+  function animateCareerImpactChart(canvas) {
+    if (!canvas) return;
+    if (careerImpactAnimationFrame) window.cancelAnimationFrame(careerImpactAnimationFrame);
+
+    const startedAt = performance.now();
+    const duration = 900;
+
+    function step(now) {
+      const elapsed = Math.min(1, (now - startedAt) / duration);
+      const eased = 1 - Math.pow(1 - elapsed, 3);
+      drawCareerImpactChart(canvas, eased);
+      if (elapsed < 1) {
+        careerImpactAnimationFrame = window.requestAnimationFrame(step);
+      } else {
+        careerImpactAnimationFrame = null;
+      }
+    }
+
+    careerImpactAnimationFrame = window.requestAnimationFrame(step);
   }
 
   function buildPizzaForecastSeries() {
@@ -463,6 +593,10 @@
     const dashboardWindow = document.getElementById("dashboard-window");
     if (!dashboardWindow) return;
 
+    renderCareerImpactKpis(dashboardWindow);
+    const careerImpactCanvas = dashboardWindow.querySelector("#career-impact-chart");
+    if (careerImpactCanvas) animateCareerImpactChart(careerImpactCanvas);
+
     loadFacts(dashboardWindow);
 
     const refreshFactsButton = dashboardWindow.querySelector("#dashboard-refresh-facts");
@@ -504,5 +638,6 @@
     if (volcanoRefreshTimer) window.clearInterval(volcanoRefreshTimer);
     if (mouseKpiTimer) window.clearInterval(mouseKpiTimer);
     if (mouseListenerAttached) window.removeEventListener("pointermove", recordMouseMotion);
+    if (careerImpactAnimationFrame) window.cancelAnimationFrame(careerImpactAnimationFrame);
   });
 })();

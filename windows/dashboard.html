@@ -1,4 +1,36 @@
 <div class="dashboard-shell">
+  <section class="dashboard-impact" aria-labelledby="career-impact-heading">
+    <div class="dashboard-section-head">
+      <h3 id="career-impact-heading">Career impact tracker</h3>
+      <span class="volcano-risk-badge volcano-risk-medium" id="career-impact-badge">Outcome-led</span>
+    </div>
+    <div class="volcano-kpi-grid" aria-label="Career impact KPIs">
+      <article class="volcano-kpi">
+        <h4>Quantified wins</h4>
+        <p class="volcano-kpi-value" id="career-impact-wins">--</p>
+      </article>
+      <article class="volcano-kpi">
+        <h4>Value pools</h4>
+        <p class="volcano-kpi-value" id="career-impact-value">--</p>
+      </article>
+      <article class="volcano-kpi">
+        <h4>Sectors</h4>
+        <p class="volcano-kpi-value" id="career-impact-sectors">--</p>
+      </article>
+      <article class="volcano-kpi">
+        <h4>Career span</h4>
+        <p class="volcano-kpi-value" id="career-impact-span">--</p>
+      </article>
+    </div>
+    <canvas
+      class="volcano-chart"
+      id="career-impact-chart"
+      width="760"
+      height="250"
+      aria-label="Animated horizontal bar chart showing career impact by role"
+    ></canvas>
+  </section>
+
   <section class="dashboard-facts" aria-labelledby="dashboard-facts-heading">
     <div class="dashboard-section-head">
       <h3 id="dashboard-facts-heading">Live internet facts</h3>
