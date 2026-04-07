@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Case studies icon">
+  <rect width="128" height="128" fill="#f6d8a8"/>
+  <rect x="24" y="22" width="58" height="74" fill="#fff8ec" stroke="#8a6231" stroke-width="4" transform="rotate(-8 53 59)"/>
+  <rect x="46" y="30" width="58" height="74" fill="#fffdf7" stroke="#6d4f28" stroke-width="4"/>
+  <path d="M58 50h34M58 62h30M58 74h34" stroke="#6d4f28" stroke-width="4" stroke-linecap="square"/>
+  <circle cx="40" cy="52" r="8" fill="#cf6a32"/>
+  <path d="M35 52h10M40 47v10" stroke="#fff4e8" stroke-width="3"/>
+</svg>
