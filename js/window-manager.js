@@ -1,11 +1,21 @@
-// js/window-manager.js — Window management, desktop state, themes, drag, clock
+// js/window-manager.js - Window management, desktop state, themes, drag, clock
 
 import {
-  desktop, windows, mobileLayoutQuery, menuBar,
-  mobileAppNav, mobileAppTitle, clock,
-  DESKTOP_STATE_KEY, THEME_STATE_KEY, BACKGROUND_MODE_STATE_KEY,
-  DEFAULT_THEME, DEFAULT_BACKGROUND_MODE, LEGACY_DARK_THEME,
-  THEME_PROFILES, S
+  desktop,
+  windows,
+  mobileLayoutQuery,
+  menuBar,
+  mobileAppNav,
+  mobileAppTitle,
+  clock,
+  DESKTOP_STATE_KEY,
+  THEME_STATE_KEY,
+  BACKGROUND_MODE_STATE_KEY,
+  DEFAULT_THEME,
+  DEFAULT_BACKGROUND_MODE,
+  LEGACY_DARK_THEME,
+  THEME_PROFILES,
+  S,
 } from "./state.js";
 import { clamp, parseNumericStyle, markdownToRetroHtml } from "./utils.js";
 import { RetroSounds } from "./sounds.js";
@@ -37,8 +47,6 @@ function stopDoomSession() {
   }
 }
 
-// ── Internal helpers ──────────────────────────────────────────
-
 function applyClampedWindowPosition(win, left, top) {
   if (!Number.isFinite(left) || !Number.isFinite(top)) return;
   const maxX = Math.max(0, desktop.clientWidth - win.offsetWidth);
@@ -50,19 +58,17 @@ function applyClampedWindowPosition(win, left, top) {
 function collectDesktopState() {
   const state = {
     openWindowIds: windows.filter((win) => win.classList.contains("open")).map((win) => win.id),
-    windows: {}
+    windows: {},
   };
   windows.forEach((win) => {
     state.windows[win.id] = {
       left: parseNumericStyle(win.style.left),
       top: parseNumericStyle(win.style.top),
-      zIndex: parseNumericStyle(win.style.zIndex)
+      zIndex: parseNumericStyle(win.style.zIndex),
     };
   });
   return state;
 }
-
-// ── Theme system ─────────────────────────────────────────────
 
 function resolveThemeName(rawThemeName) {
   if (typeof rawThemeName !== "string") return DEFAULT_THEME;
@@ -74,9 +80,10 @@ function updateThemeMenuLabels() {
   const themeOptionButtons = [...document.querySelectorAll("[data-theme-option]")];
   themeOptionButtons.forEach((button) => {
     const option = button.dataset.themeOption;
-    const baseLabel = button.dataset.themeLabel || button.textContent.replace(/^✓\s*/, "").trim();
+    const baseLabel = button.dataset.themeLabel
+      || button.textContent.replace(/^\[[ x]\]\s*/, "").replace(/^[^\w]+\s*/, "").trim();
     button.dataset.themeLabel = baseLabel;
-    button.textContent = option === S.activeThemeName ? `✓ ${baseLabel}` : baseLabel;
+    button.textContent = option === S.activeThemeName ? `[x] ${baseLabel}` : baseLabel;
     button.setAttribute("aria-checked", option === S.activeThemeName ? "true" : "false");
   });
 }
@@ -93,9 +100,10 @@ function updateBackgroundModeMenuLabels() {
   const backgroundOptionButtons = [...document.querySelectorAll("[data-bg-mode-option]")];
   backgroundOptionButtons.forEach((button) => {
     const option = button.dataset.bgModeOption;
-    const baseLabel = button.dataset.modeLabel || button.textContent.replace(/^âœ“\s*/, "").trim();
+    const baseLabel = button.dataset.modeLabel
+      || button.textContent.replace(/^\[[ x]\]\s*/, "").replace(/^[^\w]+\s*/, "").trim();
     button.dataset.modeLabel = baseLabel;
-    button.textContent = option === S.activeBackgroundMode ? `âœ“ ${baseLabel}` : baseLabel;
+    button.textContent = option === S.activeBackgroundMode ? `[x] ${baseLabel}` : baseLabel;
     button.setAttribute("aria-checked", option === S.activeBackgroundMode ? "true" : "false");
   });
 }
@@ -150,8 +158,6 @@ export function restoreBackgroundModePreference() {
   }
   applyBackgroundMode(savedMode || DEFAULT_BACKGROUND_MODE, { persist: false });
 }
-
-// ── Exported functions ────────────────────────────────────────
 
 export function saveDesktopState() {
   if (S.isRestoringDesktopState) return;
@@ -219,7 +225,7 @@ export function updateClock() {
   clock.textContent = now.toLocaleString([], {
     weekday: "short",
     hour: "2-digit",
-    minute: "2-digit"
+    minute: "2-digit",
   });
 }
 
@@ -254,7 +260,6 @@ export function bringToFront(win) {
 export function openWindow(id) {
   const win = document.getElementById(id);
   if (!win) return;
-  // Cancel any in-progress close animation
   win.classList.remove("closing");
   if (mobileLayoutQuery.matches) {
     windows.forEach((windowEl) => {
@@ -298,7 +303,6 @@ export function closeWindow(id) {
   if (id === "doom-window") {
     stopDoomSession();
   }
-  // Transfer focus immediately
   if (S.activeWindowId === id) {
     win.classList.remove("focused");
     const topOpenWindow = windows
@@ -308,9 +312,7 @@ export function closeWindow(id) {
     S.activeWindowId = topOpenWindow?.id || null;
     if (topOpenWindow) topOpenWindow.classList.add("focused");
   }
-  // On mobile, hide the app nav when closing
   if (mobileLayoutQuery.matches) updateMobileNav(null);
-  // Animate close
   RetroSounds.close();
   win.classList.add("closing");
   win.addEventListener("animationend", () => {
@@ -323,7 +325,9 @@ export function closeFocusedWindow() {
 }
 
 export function closeAllWindows() {
-  windows.forEach((win) => { if (win.classList.contains("open")) closeWindow(win.id); });
+  windows.forEach((win) => {
+    if (win.classList.contains("open")) closeWindow(win.id);
+  });
   S.activeWindowId = null;
   windows.forEach((w) => w.classList.remove("focused"));
   saveDesktopState();
@@ -353,8 +357,6 @@ export function cascadeWindows() {
   saveDesktopState();
 }
 
-// ── Typewriter effect ─────────────────────────────────────────
-
 let typewriterDone = false;
 
 export function startTypewriter() {
@@ -374,24 +376,20 @@ export function startTypewriter() {
   let i = 0;
   function type() {
     if (i >= fullText.length) {
-      // Remove cursor after a pause
       setTimeout(() => cursor.remove(), 1800);
       return;
     }
     target.insertBefore(document.createTextNode(fullText[i]), cursor);
-    i++;
+    i += 1;
     setTimeout(type, 28 + Math.random() * 22);
   }
-  // Small delay so window animation finishes first
   setTimeout(type, 200);
 }
-
-// ── Case study loader ─────────────────────────────────────────
 
 export async function loadCaseStudy(id) {
   if (!S.caseStudyContent) return;
   S.caseStudyActiveId = id;
-  S.caseStudyContent.textContent = "Loading…";
+  S.caseStudyContent.textContent = "Loading...";
   try {
     const response = await fetch(`assets/case-study-${id}.md`, { cache: "no-cache" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -399,13 +397,11 @@ export async function loadCaseStudy(id) {
     S.caseStudyContent.innerHTML = markdownToRetroHtml(markdown);
   } catch (error) {
     S.caseStudyContent.textContent = [
-      `ERROR: Could not load case study.`,
-      `Details: ${error.message}`
+      "ERROR: Could not load case study.",
+      `Details: ${error.message}`,
     ].join("\n");
   }
 }
-
-// ── Resume loader ─────────────────────────────────────────────
 
 export async function loadResumeTextFile() {
   if (!S.resumeText) return;
@@ -419,12 +415,10 @@ export async function loadResumeTextFile() {
       "ERROR: Could not load SANJIN.MD",
       "Please make sure assets/sanjin.md exists.",
       "",
-      `Details: ${error.message}`
+      `Details: ${error.message}`,
     ].join("\n");
   }
 }
-
-// ── Icon fallback handlers ────────────────────────────────────
 
 export function bindIconFallbackHandlers() {
   const icons = [...document.querySelectorAll(".icon-image")];
@@ -440,8 +434,6 @@ export function bindIconFallbackHandlers() {
   });
 }
 
-// ── Drag handlers ─────────────────────────────────────────────
-
 export function initDragHandlers() {
   windows.forEach((win) => {
     const handle = win.querySelector(".drag-handle");
@@ -449,6 +441,7 @@ export function initDragHandlers() {
     let dragging = false;
     let offsetX = 0;
     let offsetY = 0;
+
     function onMove(event) {
       if (!dragging) return;
       const x = event.clientX - offsetX;
@@ -458,6 +451,7 @@ export function initDragHandlers() {
       win.style.left = `${Math.max(0, Math.min(x, maxX))}px`;
       win.style.top = `${Math.max(0, Math.min(y, maxY))}px`;
     }
+
     handle.addEventListener("pointerdown", (event) => {
       if (mobileLayoutQuery.matches) return;
       if (event.target.closest(".close-btn")) return;
@@ -470,18 +464,21 @@ export function initDragHandlers() {
       offsetY = event.clientY - (rect.top - desktopRect.top);
       handle.setPointerCapture(event.pointerId);
     });
+
     handle.addEventListener("pointerup", (event) => {
       dragging = false;
       win.classList.remove("dragging");
       if (handle.hasPointerCapture(event.pointerId)) handle.releasePointerCapture(event.pointerId);
       saveDesktopState();
     });
+
     handle.addEventListener("pointercancel", (event) => {
       dragging = false;
       win.classList.remove("dragging");
       if (handle.hasPointerCapture(event.pointerId)) handle.releasePointerCapture(event.pointerId);
       saveDesktopState();
     });
+
     handle.addEventListener("pointermove", onMove);
     win.addEventListener("mousedown", () => {
       if (mobileLayoutQuery.matches) return;
