@@ -1782,10 +1782,33 @@ a {
   filter: contrast(1.12) saturate(0.78) hue-rotate(-8deg) blur(0.35px);
 }
 
+.winamp-visualizer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  display: block;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.winamp-screen-wrap[data-visual-mode="visualizer"] .winamp-player {
+  opacity: 0;
+}
+
+.winamp-screen-wrap[data-visual-mode="visualizer"] .winamp-visualizer {
+  opacity: 1;
+}
+
+.winamp-screen-wrap[data-visual-mode="video"] .winamp-player {
+  opacity: 1;
+}
+
 .winamp-crt-overlay {
   position: absolute;
   inset: 0;
-  z-index: 2;
+  z-index: 3;
   pointer-events: none;
   background:
     radial-gradient(ellipse at 50% -10%, rgba(255, 255, 255, 0.2), transparent 52%),
@@ -1799,7 +1822,7 @@ a {
 .winamp-screen-door {
   position: absolute;
   inset: 0;
-  z-index: 2;
+  z-index: 3;
   pointer-events: none;
   background: repeating-linear-gradient(90deg, transparent 0 2px, rgba(0, 0, 0, 0.08) 2px 3px);
   mix-blend-mode: multiply;
@@ -1850,6 +1873,12 @@ a {
   min-width: 3.3rem;
   text-transform: uppercase;
   font-size: 0.8rem;
+}
+
+.winamp-metal-btn--mode {
+  min-width: 5.9rem;
+  font-size: 0.76rem;
+  letter-spacing: 0.03em;
 }
 
 .winamp-metal-btn:active {

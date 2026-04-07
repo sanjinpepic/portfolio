@@ -74,9 +74,13 @@ export const S = {
   winampPrev: null,
   winampNext: null,
   winampMuteToggle: null,
+  winampVisualModeToggle: null,
   winampVolume: null,
   winampChannelList: null,
   winampChannelFilter: null,
+  winampModeLabel: null,
+  winampScreenWrap: null,
+  winampVisualizer: null,
   // Timeline
   timelineWindowContent: null,
   // Case studies
@@ -87,7 +91,9 @@ export const S = {
   winampPlaying: false,
   winampMuted: true,
   winampLastVolume: 35,
+  winampVisualMode: "video",
   winampFlutterTimer: null,
+  winampVisualizerFrame: null,
   winampPlaylistBound: false,
 };
 
@@ -110,9 +116,13 @@ export function syncDynamicElements() {
   S.winampPrev = document.getElementById("winamp-prev");
   S.winampNext = document.getElementById("winamp-next");
   S.winampMuteToggle = document.getElementById("winamp-mute-toggle");
+  S.winampVisualModeToggle = document.getElementById("winamp-visual-mode-toggle");
   S.winampVolume = document.getElementById("winamp-volume");
   S.winampChannelList = document.getElementById("winamp-channel-list");
   S.winampChannelFilter = document.getElementById("winamp-channel-filter");
+  S.winampModeLabel = document.getElementById("winamp-mode-label");
+  S.winampScreenWrap = document.getElementById("winamp-screen-wrap");
+  S.winampVisualizer = document.getElementById("winamp-visualizer");
   S.timelineWindowContent = document.getElementById("timeline-window-content");
   S.caseStudyContent = document.getElementById("case-study-content");
 }

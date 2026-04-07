@@ -7,6 +7,116 @@ import { vintageSpeaker } from "./sounds.js";
 // Internal helpers
 
 let winampClockTimer = null;
+const VISUALIZER_BAR_COUNT = 24;
+
+function resizeWinampVisualizer(canvas) {
+  if (!canvas) return null;
+  const rect = canvas.getBoundingClientRect();
+  const pixelRatio = window.devicePixelRatio || 1;
+  const width = Math.max(1, Math.round(rect.width * pixelRatio));
+  const height = Math.max(1, Math.round(rect.height * pixelRatio));
+  if (canvas.width !== width || canvas.height !== height) {
+    canvas.width = width;
+    canvas.height = height;
+  }
+  return { width, height };
+}
+
+function drawWinampVisualizerFrame() {
+  const canvas = S.winampVisualizer;
+  if (!canvas) return;
+  const size = resizeWinampVisualizer(canvas);
+  if (!size) return;
+
+  const context = canvas.getContext("2d");
+  if (!context) return;
+
+  const { width, height } = size;
+  const time = performance.now() * 0.0018;
+  const playbackTime = Number(S.winampPlayer?.getCurrentTime?.()) || 0;
+  const normalizedVolume = clamp((S.winampMuted ? 0 : S.winampLastVolume) / 100, 0, 1);
+  const energy = S.winampPlaying ? 0.3 + normalizedVolume * 0.9 : 0.08;
+
+  context.clearRect(0, 0, width, height);
+
+  const backgroundGradient = context.createLinearGradient(0, 0, width, height);
+  backgroundGradient.addColorStop(0, `hsl(${(time * 45 + playbackTime * 12) % 360} 80% 9%)`);
+  backgroundGradient.addColorStop(0.5, `hsl(${(time * 70 + 110) % 360} 85% 18%)`);
+  backgroundGradient.addColorStop(1, "#03040a");
+  context.fillStyle = backgroundGradient;
+  context.fillRect(0, 0, width, height);
+
+  for (let i = 0; i < 18; i += 1) {
+    const pulse = 0.35 + Math.sin(time * 1.3 + i * 0.9 + playbackTime * 0.6) * 0.18;
+    const glowX = (i / 17) * width;
+    const glowY = height * (0.18 + ((i % 5) / 10));
+    const glowRadius = width * (0.07 + pulse * 0.06);
+    const glow = context.createRadialGradient(glowX, glowY, 0, glowX, glowY, glowRadius);
+    glow.addColorStop(0, `hsla(${(time * 90 + i * 18) % 360} 100% 65% / ${0.22 + energy * 0.18})`);
+    glow.addColorStop(1, "transparent");
+    context.fillStyle = glow;
+    context.fillRect(glowX - glowRadius, glowY - glowRadius, glowRadius * 2, glowRadius * 2);
+  }
+
+  const barWidth = width / VISUALIZER_BAR_COUNT;
+  for (let i = 0; i < VISUALIZER_BAR_COUNT; i += 1) {
+    const phase = time * (1.6 + normalizedVolume) + i * 0.42 + playbackTime * 0.2;
+    const harmonic = Math.sin(phase) + Math.sin(phase * 1.9) * 0.45 + Math.cos(phase * 0.65) * 0.25;
+    const normalizedHeight = clamp(0.18 + energy * 0.95 * (0.5 + harmonic * 0.25 + (i % 5) * 0.03), 0.08, 0.96);
+    const barHeight = normalizedHeight * height;
+    const x = i * barWidth + barWidth * 0.11;
+    const y = height - barHeight;
+    const fill = context.createLinearGradient(0, y, 0, height);
+    fill.addColorStop(0, `hsla(${(time * 120 + i * 11) % 360} 100% 68% / 0.95)`);
+    fill.addColorStop(0.45, `hsla(${(time * 120 + i * 11 + 58) % 360} 100% 55% / 0.9)`);
+    fill.addColorStop(1, "hsla(210 100% 8% / 0.6)");
+    context.fillStyle = fill;
+    context.fillRect(x, y, barWidth * 0.78, barHeight);
+
+    context.fillStyle = "rgba(255, 255, 255, 0.22)";
+    context.fillRect(x, y, barWidth * 0.78, Math.max(2, height * 0.01));
+  }
+
+  context.strokeStyle = `rgba(180, 255, 146, ${0.28 + normalizedVolume * 0.25})`;
+  context.lineWidth = Math.max(1, width * 0.0024);
+  context.beginPath();
+  for (let i = 0; i <= width; i += Math.max(4, Math.round(width / 80))) {
+    const wave = Math.sin((i / width) * Math.PI * 7 + time * 3.2 + playbackTime * 0.4);
+    const mod = Math.cos((i / width) * Math.PI * 2.3 - time * 2.1);
+    const y = height * (0.54 + wave * 0.09 * energy + mod * 0.03);
+    if (i === 0) context.moveTo(i, y);
+    else context.lineTo(i, y);
+  }
+  context.stroke();
+
+  S.winampVisualizerFrame = window.requestAnimationFrame(drawWinampVisualizerFrame);
+}
+
+function startWinampVisualizer() {
+  if (!S.winampVisualizer || S.winampVisualizerFrame) return;
+  S.winampVisualizerFrame = window.requestAnimationFrame(drawWinampVisualizerFrame);
+}
+
+function stopWinampVisualizer() {
+  if (!S.winampVisualizerFrame) return;
+  window.cancelAnimationFrame(S.winampVisualizerFrame);
+  S.winampVisualizerFrame = null;
+}
+
+function setWinampVisualMode(mode) {
+  S.winampVisualMode = mode === "visualizer" ? "visualizer" : "video";
+  if (S.winampScreenWrap) {
+    S.winampScreenWrap.dataset.visualMode = S.winampVisualMode;
+  }
+  if (S.winampVisualModeToggle) {
+    const showingVisualizer = S.winampVisualMode === "visualizer";
+    S.winampVisualModeToggle.textContent = showingVisualizer ? "Video" : "Visualizer";
+    S.winampVisualModeToggle.setAttribute("aria-pressed", showingVisualizer ? "true" : "false");
+  }
+  if (S.winampModeLabel) {
+    S.winampModeLabel.textContent = S.winampVisualMode === "visualizer" ? "Visualizer" : "Video";
+  }
+}
 
 function formatWinampTime(secondsValue) {
   const totalSeconds = Math.max(0, Math.floor(Number(secondsValue) || 0));
@@ -147,6 +257,7 @@ function updateWinampUi() {
   if (S.winampMuteToggle) {
     S.winampMuteToggle.textContent = S.winampMuted ? "Muted" : "Sound On";
   }
+  setWinampVisualMode(S.winampVisualMode);
   if (S.winampChannelList) {
     [...S.winampChannelList.querySelectorAll(".winamp-channel-btn")].forEach((button) => {
       const channelIndex = Number(button.dataset.winampIndex);
@@ -170,6 +281,7 @@ export function stopWinampPlayback({ terminate = true } = {}) {
     }
   }
   S.winampPlaying = false;
+  stopWinampVisualizer();
   vintageSpeaker.mute();
   updateWinampUi();
 }
@@ -186,19 +298,17 @@ function syncWinampAudioState() {
 }
 
 export function restartWinampFlutter() {
+  startWinampVisualizer();
   if (S.winampFlutterTimer) {
     window.clearInterval(S.winampFlutterTimer);
     S.winampFlutterTimer = null;
   }
-  if (!S.winampPlayer || S.winampMuted || !S.winampPlaying || S.winampLastVolume <= 0) return;
-  const flutterRange = Math.max(1, Number(S.activeThemeProfile?.flutterRange) || 4);
-  const flutterInterval = Math.max(250, Number(S.activeThemeProfile?.flutterInterval) || 900);
-  S.winampFlutterTimer = window.setInterval(() => {
-    if (!S.winampPlayer || S.winampMuted || !S.winampPlaying) return;
-    const flutterAmount = Math.round((Math.random() - 0.5) * flutterRange);
-    const adjustedVolume = clamp(S.winampLastVolume + flutterAmount, 1, 100);
-    S.winampPlayer.setVolume(adjustedVolume);
-  }, flutterInterval);
+  vintageSpeaker.syncPlaybackState({
+    playing: S.winampPlaying,
+    muted: S.winampMuted,
+    volume: S.winampLastVolume,
+    profile: S.activeThemeProfile,
+  });
 }
 
 function selectWinampChannel(index, { autoPlay = true } = {}) {
@@ -292,11 +402,6 @@ function initWinampPlayer() {
           stopWinampClock();
           updateWinampClock();
         }
-        if (S.winampPlaying && !S.winampMuted) {
-          vintageSpeaker.setVolume(S.winampLastVolume);
-        } else {
-          vintageSpeaker.mute();
-        }
         if (event.data === window.YT.PlayerState.ENDED) {
           const next = (S.winampActiveIndex + 1) % WINAMP_PLAYLIST.length;
           selectWinampChannel(next);
@@ -322,6 +427,7 @@ export async function bindWinampControls() {
   if (!loadedCustomPlaylist) {
     updateWinampNowPlaying();
   }
+  startWinampVisualizer();
   if (S.winampPrev) {
     S.winampPrev.addEventListener("click", () => {
       const previous = (S.winampActiveIndex - 1 + WINAMP_PLAYLIST.length) % WINAMP_PLAYLIST.length;
@@ -354,15 +460,19 @@ export async function bindWinampControls() {
         if (S.winampVolume) S.winampVolume.value = String(restoreVolume);
         S.winampPlayer.unMute();
         S.winampMuted = false;
-        vintageSpeaker.setVolume(restoreVolume);
         restartWinampFlutter();
       } else {
         S.winampPlayer.mute();
         S.winampMuted = true;
-        vintageSpeaker.mute();
         restartWinampFlutter();
       }
       updateWinampUi();
+    });
+  }
+  if (S.winampVisualModeToggle) {
+    S.winampVisualModeToggle.addEventListener("click", () => {
+      const nextMode = S.winampVisualMode === "video" ? "visualizer" : "video";
+      setWinampVisualMode(nextMode);
     });
   }
   if (S.winampVolume) {
@@ -370,7 +480,6 @@ export async function bindWinampControls() {
       if (!S.winampPlayer) return;
       const volume = Number(S.winampVolume.value);
       S.winampPlayer.setVolume(volume);
-      vintageSpeaker.setVolume(volume);
       if (volume > 0) {
         S.winampLastVolume = volume;
         S.winampPlayer.unMute();
@@ -388,4 +497,5 @@ export async function bindWinampControls() {
   } else {
     window.onYouTubeIframeAPIReady = initWinampPlayer;
   }
+  updateWinampUi();
 }

@@ -1,116 +1,218 @@
-// js/sounds.js — Retro sound effects and vintage speaker simulation
+// js/sounds.js - Retro sound effects and vintage speaker simulation
 
 import { clamp } from "./utils.js";
 
-// ── Vintage speaker simulation ────────────────────────────────
-// YouTube audio lives in a cross-origin iframe so we can't route
-// it through Web Audio. Instead we generate authentic period-correct
-// artefacts (tape hiss, AC hum, capacitor crackle) that play on top —
-// exactly how cheap 90s PC speakers behaved independent of the signal.
+// Vintage speaker simulation
+// YouTube audio lives in a cross-origin iframe, so we cannot route or EQ
+// the actual track. Instead we layer subtle speaker artifacts on top.
 export const vintageSpeaker = (() => {
   let ctx = null;
   let masterGain = null;
+  let hissGain = null;
+  let boxGain = null;
+  let rumbleGain = null;
+  let humGain = null;
+  let tuningGain = null;
+  let tuningFilter = null;
   let crackleClock = null;
+  let textureMotionClock = null;
 
   function buildNoise(seconds) {
     const len = Math.ceil(ctx.sampleRate * seconds);
     const buf = ctx.createBuffer(1, len, ctx.sampleRate);
-    const d = buf.getChannelData(0);
-    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < len; i += 1) data[i] = Math.random() * 2 - 1;
     return buf;
   }
 
-  function loopNoise(buf, gainVal, filterType, filterFreq, filterQ = 1) {
+  function createFilteredNoise(buf, filterType, filterFreq, filterQ = 1) {
     const src = ctx.createBufferSource();
     src.buffer = buf;
     src.loop = true;
-    const filt = ctx.createBiquadFilter();
-    filt.type = filterType;
-    filt.frequency.value = filterFreq;
-    filt.Q.value = filterQ;
-    const g = ctx.createGain();
-    g.gain.value = gainVal;
-    src.connect(filt);
-    filt.connect(g);
-    g.connect(masterGain);
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = filterType;
+    filter.frequency.value = filterFreq;
+    filter.Q.value = filterQ;
+
+    src.connect(filter);
     src.start();
-    return src;
+    return filter;
   }
 
-  function addHum(freq, gainVal) {
+  function createHum(freq, gainValue) {
     const osc = ctx.createOscillator();
-    const g = ctx.createGain();
+    const gain = ctx.createGain();
     osc.type = "sine";
     osc.frequency.value = freq;
-    g.gain.value = gainVal;
-    osc.connect(g);
-    g.connect(masterGain);
+    gain.gain.value = gainValue;
+    osc.connect(gain);
     osc.start();
+    return gain;
+  }
+
+  function clearTextureMotion() {
+    clearInterval(textureMotionClock);
+    textureMotionClock = null;
+  }
+
+  function scheduleCrackle() {
+    clearTimeout(crackleClock);
+    crackleClock = setTimeout(() => {
+      if (!ctx || !masterGain || masterGain.gain.value < 0.01) {
+        scheduleCrackle();
+        return;
+      }
+
+      const t = ctx.currentTime;
+      const crackle = ctx.createBufferSource();
+      crackle.buffer = buildNoise(0.04);
+
+      const filter = ctx.createBiquadFilter();
+      filter.type = "bandpass";
+      filter.frequency.value = 2600 + Math.random() * 2200;
+      filter.Q.value = 1.4;
+
+      const env = ctx.createGain();
+      env.gain.setValueAtTime(0, t);
+      env.gain.linearRampToValueAtTime(0.12, t + 0.002);
+      env.gain.exponentialRampToValueAtTime(0.001, t + 0.032);
+
+      crackle.connect(filter);
+      filter.connect(env);
+      env.connect(masterGain);
+      crackle.start(t);
+      crackle.stop(t + 0.04);
+
+      scheduleCrackle();
+    }, 2600 + Math.random() * 5400);
+  }
+
+  function syncTextureMotion(profile = {}) {
+    clearTextureMotion();
+    if (!ctx || !tuningFilter || !tuningGain || !masterGain || masterGain.gain.value < 0.01) return;
+
+    const driftInterval = Math.max(420, Number(profile.flutterInterval) || 900);
+    const driftAmount = clamp((Number(profile.flutterRange) || 4) / 5, 0.4, 1.3);
+
+    textureMotionClock = setInterval(() => {
+      const t = ctx.currentTime;
+      const nextFrequency = 950 + Math.random() * 1400 * driftAmount;
+      const nextQ = 0.8 + Math.random() * 1.2;
+      const nextGain = 0.0015 + Math.random() * 0.005 * driftAmount;
+
+      tuningFilter.frequency.setTargetAtTime(nextFrequency, t, 0.35);
+      tuningFilter.Q.setTargetAtTime(nextQ, t, 0.4);
+      tuningGain.gain.setTargetAtTime(nextGain, t, 0.4);
+    }, driftInterval);
+  }
+
+  function applyPlaybackState({ volume = 0, muted = true, playing = false, profile = {} } = {}) {
+    const normalizedVolume = clamp(Number(volume) / 100, 0, 1);
+    const active = playing && !muted && normalizedVolume > 0;
+
+    if ((active || normalizedVolume > 0) && !ctx) init();
+    if (!ctx || !masterGain) return;
+
+    ctx.resume().catch(() => {});
+
+    const body = 0.01 + normalizedVolume * 0.03;
+    const air = 0.012 + normalizedVolume * 0.018;
+    const hum = 0.0025 + normalizedVolume * 0.0035;
+    const rumble = 0.003 + normalizedVolume * 0.005;
+    const texture = 0.001 + normalizedVolume * 0.0025;
+    const themeSpread = clamp((Number(profile.flutterRange) || 4) / 5, 0.45, 1.25);
+
+    masterGain.gain.setTargetAtTime(active ? 0.14 + normalizedVolume * 0.12 : 0, ctx.currentTime, 0.16);
+    hissGain.gain.setTargetAtTime(active ? air : 0, ctx.currentTime, 0.2);
+    boxGain.gain.setTargetAtTime(active ? body : 0, ctx.currentTime, 0.24);
+    rumbleGain.gain.setTargetAtTime(active ? rumble : 0, ctx.currentTime, 0.24);
+    humGain.gain.setTargetAtTime(active ? hum : 0, ctx.currentTime, 0.3);
+    tuningGain.gain.setTargetAtTime(active ? texture * themeSpread : 0, ctx.currentTime, 0.28);
+
+    if (!active) {
+      clearTextureMotion();
+      return;
+    }
+
+    tuningFilter.frequency.setTargetAtTime(1250 + normalizedVolume * 900, ctx.currentTime, 0.32);
+    tuningFilter.Q.setTargetAtTime(1.2, ctx.currentTime, 0.32);
+    syncTextureMotion(profile);
   }
 
   function init() {
     if (ctx) return;
+
     try {
       ctx = new (window.AudioContext || window.webkitAudioContext)();
       masterGain = ctx.createGain();
       masterGain.gain.value = 0;
       masterGain.connect(ctx.destination);
 
+      hissGain = ctx.createGain();
+      boxGain = ctx.createGain();
+      rumbleGain = ctx.createGain();
+      humGain = ctx.createGain();
+      tuningGain = ctx.createGain();
+
+      hissGain.gain.value = 0;
+      boxGain.gain.value = 0;
+      rumbleGain.gain.value = 0;
+      humGain.gain.value = 0;
+      tuningGain.gain.value = 0;
+
+      tuningFilter = ctx.createBiquadFilter();
+      tuningFilter.type = "bandpass";
+      tuningFilter.frequency.value = 1250;
+      tuningFilter.Q.value = 1.2;
+
       const noiseBuf = buildNoise(3);
+      createFilteredNoise(noiseBuf, "bandpass", 4300, 0.85).connect(hissGain);
+      createFilteredNoise(noiseBuf, "peaking", 340, 2.8).connect(boxGain);
+      createFilteredNoise(noiseBuf, "lowpass", 165, 0.9).connect(rumbleGain);
 
-      // Tape hiss: band-pass centred on ~4 kHz (upper midrange roll-off)
-      loopNoise(noiseBuf, 0.04, "bandpass", 4000, 0.7);
-      // Speaker cone resonance/boxy colouration: low-mid bump
-      loopNoise(noiseBuf, 0.018, "peaking", 320, 2.5);
-      // Speaker cabinet rumble: low-pass thump
-      loopNoise(noiseBuf, 0.012, "lowpass", 180, 0.8);
+      const tuningSource = ctx.createBufferSource();
+      tuningSource.buffer = noiseBuf;
+      tuningSource.loop = true;
+      tuningSource.connect(tuningFilter);
+      tuningFilter.connect(tuningGain);
+      tuningSource.start();
 
-      // AC mains hum + harmonics (50 Hz European, plus 100 Hz / 150 Hz)
-      addHum(50, 0.01);
-      addHum(100, 0.005);
-      addHum(150, 0.003);
+      createHum(50, 1).connect(humGain);
+      createHum(100, 1).connect(humGain);
+      createHum(150, 0.7).connect(humGain);
 
-      // Random capacitor crackle pops
-      crackleClock = setInterval(() => {
-        if (!ctx || masterGain.gain.value < 0.01) return;
-        const t = ctx.currentTime;
-        const crackle = ctx.createBufferSource();
-        crackle.buffer = buildNoise(0.04);
-        const env = ctx.createGain();
-        env.gain.setValueAtTime(0, t);
-        env.gain.linearRampToValueAtTime(0.35, t + 0.002);
-        env.gain.exponentialRampToValueAtTime(0.001, t + 0.038);
-        crackle.connect(env);
-        env.connect(masterGain);
-        crackle.start(t);
-        crackle.stop(t + 0.04);
-      }, 4000 + Math.random() * 8000);
+      hissGain.connect(masterGain);
+      boxGain.connect(masterGain);
+      rumbleGain.connect(masterGain);
+      humGain.connect(masterGain);
+      tuningGain.connect(masterGain);
+
+      scheduleCrackle();
     } catch (_) {
-      /* AudioContext blocked — degrade gracefully */
+      // AudioContext can be blocked until user interaction.
     }
   }
 
   return {
-    /** vol: 0–100, mirrors the Winamp volume slider */
     setVolume(vol) {
-      if (vol > 0 && !ctx) init();
-      if (!masterGain) return;
-      ctx.resume().catch(() => {});
-      const level = Math.pow(Math.max(0, vol) / 100, 1.8) * 0.45;
-      masterGain.gain.setTargetAtTime(level, ctx.currentTime, 0.12);
+      applyPlaybackState({ volume: vol, muted: vol <= 0, playing: vol > 0 });
+    },
+    syncPlaybackState(state = {}) {
+      applyPlaybackState(state);
     },
     mute() {
-      if (!masterGain) return;
-      masterGain.gain.setTargetAtTime(0, ctx.currentTime, 0.08);
+      applyPlaybackState({ volume: 0, muted: true, playing: false });
     },
     destroy() {
-      clearInterval(crackleClock);
+      clearTimeout(crackleClock);
+      clearTextureMotion();
       ctx?.close();
     },
   };
 })();
 
-// ── Retro Sound Effects (Web Audio API) ───────────────────────
+// Retro Sound Effects (Web Audio API)
 export const RetroSounds = (() => {
   let ctx = null;
   let enabled = localStorage.getItem("portfolio.sounds") === "on";
