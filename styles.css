@@ -1952,6 +1952,7 @@ a {
 }
 
 .winamp-library-panel {
+  display: grid;
   min-height: 0;
   height: 100%;
 }
@@ -2006,6 +2007,7 @@ a {
   grid-template-columns: 1fr;
   gap: 0.2rem;
   align-content: start;
+  height: 100%;
   min-height: clamp(14rem, 46vh, 22rem);
   overflow: auto;
   padding: 0.2rem;

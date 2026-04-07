@@ -589,6 +589,7 @@ function addTrackToWinampPlaylist(track, { playNow = false } = {}) {
   setupWinampPlaylistUi();
   renderWinampSearchResults();
   if (playNow && S.winampPlayer) {
+    setWinampLibraryTab("playlist");
     selectWinampChannel(WINAMP_PLAYLIST.length - 1);
   } else {
     updateWinampUi();
@@ -639,6 +640,11 @@ function addDirectYouTubeSearchResult({ playNow = false } = {}) {
     id: directId,
     title: `YouTube video ${directId}`,
   }, { playNow });
+  if (S.winampSearchInput) {
+    S.winampSearchInput.value = "";
+  }
+  S.winampSearchQuery = "";
+  renderWinampSearchResults();
   return true;
 }
 
