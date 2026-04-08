@@ -377,6 +377,8 @@
         groundY: 252
       };
 
+      const skylineHeights = [58, 86, 72, 96, 64, 80, 70, 92, 60, 84, 68, 88];
+
       const physics = {
         gravity: 0.48,
         jumpPower: -8.7,
@@ -414,7 +416,7 @@
       let score = 0;
       let combo = 1;
       let comboTimer = 0;
-      let spawnTimer = 72;
+      let spawnTimer = 88;
       let shake = 0;
       let toastTimer = 0;
       let toastText = "";
@@ -435,7 +437,7 @@
         score = 0;
         combo = 1;
         comboTimer = 0;
-        spawnTimer = 56;
+        spawnTimer = 84;
         shake = 0;
         toastTimer = 0;
         toastText = "";
@@ -570,37 +572,44 @@
         const x = world.w + 24;
         const patternRoll = Math.random();
         const level = Math.floor(distance / 100);
-        const tallChance = Math.min(0.5, 0.1 + level * 0.06);
+        const tallChance = Math.min(0.34, 0.08 + level * 0.04);
 
-        if (patternRoll < 0.24) {
+        if (patternRoll < 0.34) {
           spawnObstacle("cactus", x);
           if (Math.random() < 0.6) {
             spawnFishArc(x + 8, 2, world.groundY - 56);
           }
-          return 104 + Math.random() * 30;
+          return 136 + Math.random() * 34;
         }
 
-        if (patternRoll < 0.46) {
+        if (patternRoll < 0.6) {
           spawnObstacle(Math.random() < 0.5 ? "crate" : "cactus", x);
-          spawnObstacle("cactus", x + 92 + Math.random() * 16);
+          spawnObstacle("cactus", x + 126 + Math.random() * 20);
           spawnFishArc(x + 34, 3, world.groundY - 84);
-          return 128 + Math.random() * 28;
+          return 166 + Math.random() * 30;
         }
 
-        if (patternRoll < 0.7) {
+        if (patternRoll < 0.84 || distance < 180) {
           spawnObstacle(Math.random() < tallChance ? "tower" : "sign", x);
-          if (Math.random() < 0.55) {
-            spawnObstacle("cactus", x + 118 + Math.random() * 10);
+          if (distance > 220 && Math.random() < 0.34) {
+            spawnObstacle("cactus", x + 152 + Math.random() * 18);
           }
           spawnFishArc(x + 14, 1 + Math.floor(Math.random() * 2), world.groundY - 102);
-          return 142 + Math.random() * 26;
+          return 178 + Math.random() * 34;
+        }
+
+        if (distance < 320) {
+          spawnObstacle("crate", x);
+          spawnObstacle("cactus", x + 142);
+          spawnFishArc(x + 50, 3, world.groundY - 100);
+          return 194 + Math.random() * 28;
         }
 
         spawnObstacle("crate", x);
-        spawnObstacle("tower", x + 84);
-        spawnObstacle("cactus", x + 156);
+        spawnObstacle("tower", x + 118);
+        spawnObstacle("cactus", x + 246);
         spawnFishArc(x + 56, 4, world.groundY - 108);
-        return 178 + Math.random() * 28;
+        return 252 + Math.random() * 28;
       }
 
       function rectHit(a, b) {
@@ -632,8 +641,8 @@
           shake = Math.max(shake, 6);
         }
 
-        dangerLevel = Math.min(1, distance / 650);
-        speed = 4.2 + Math.min(4.4, distance * 0.0125);
+        dangerLevel = Math.min(1, distance / 900);
+        speed = 4 + Math.min(2.8, distance * 0.0072);
       }
 
       function updatePlayer() {
@@ -731,7 +740,7 @@
           updatePlayer();
           spawnTimer -= speed;
           if (spawnTimer <= 0) {
-            spawnTimer = spawnPattern() - dangerLevel * 24;
+            spawnTimer = spawnPattern() - dangerLevel * 10;
           }
           updateObstacles();
           updateFish();
@@ -775,10 +784,10 @@
           ctx.fillRect(x + 18, y, 26, 10);
         }
 
-        const skylineOffset = (tick * speed * 0.18) % 64;
+        const skylineOffset = (tick * speed * 0.08) % 64;
         for (let i = -1; i < 14; i += 1) {
           const x = i * 58 - skylineOffset;
-          const h = 34 + ((i + 3) % 4) * 16 + dangerLevel * 18;
+          const h = skylineHeights[((i % skylineHeights.length) + skylineHeights.length) % skylineHeights.length];
           ctx.fillStyle = `rgba(54, 95, 126, ${0.26 + (i % 3) * 0.06})`;
           ctx.fillRect(x, world.groundY - h - 26, 34, h);
         }
