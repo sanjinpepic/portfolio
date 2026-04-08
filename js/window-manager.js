@@ -21,7 +21,7 @@ import {
 } from "./state.js";
 import { clamp, parseNumericStyle, markdownToRetroHtml } from "./utils.js";
 import { RetroSounds } from "./sounds.js";
-import { loadBrowserHomePage } from "./browser.js";
+import { loadBrowserHomePage, stopBrowserSession } from "./browser.js";
 
 // Late-bound reference to avoid circular dependency with winamp.js
 let _restartWinampFlutter = null;
@@ -448,6 +448,9 @@ export function closeWindow(id) {
   setTaskbarAnimationOrigin(win);
   if (id === "winamp-window" && _stopWinampPlayback) {
     _stopWinampPlayback({ terminate: true });
+  }
+  if (id === "browser-window") {
+    stopBrowserSession();
   }
   if (id === "doom-window") {
     stopDoomSession();

@@ -356,6 +356,15 @@ export function loadBrowserHomePage() {
   if (S.browserThrobber) S.browserThrobber.classList.remove("loading");
 }
 
+export function stopBrowserSession() {
+  if (S.browserFrame) {
+    S.browserFrame.removeAttribute("srcdoc");
+    S.browserFrame.setAttribute("src", "about:blank");
+  }
+  if (S.browserStatus) S.browserStatus.textContent = "Browser closed.";
+  if (S.browserThrobber) S.browserThrobber.classList.remove("loading");
+}
+
 export function navigateBrowserTo(url) {
   const normalizedUrl = normalizeBrowserUrl(url);
   if (!normalizedUrl) return;
