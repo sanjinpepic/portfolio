@@ -374,6 +374,7 @@ body[data-bg-mode="tile"] {
   object-fit: contain;
   image-rendering: pixelated;
 }
+
 .label {
   color: var(--desktop-label-text);
   text-shadow: 1px 1px var(--desktop-label-shadow-strong), 0 0 8px var(--desktop-label-shadow-soft);
@@ -826,6 +827,171 @@ body[data-bg-mode="tile"] {
   color: #0a2c70;
   outline: 2px solid #1f4db4;
   outline-offset: 2px;
+}
+
+.vapour-content {
+  background:
+    radial-gradient(circle at top left, rgba(147, 202, 255, 0.35), transparent 35%),
+    linear-gradient(180deg, #c7daf4 0%, #aac0e6 100%);
+}
+
+#vapour-window.open {
+  display: flex;
+  flex-direction: column;
+}
+
+#vapour-window .window-content {
+  flex: 1;
+  max-height: none;
+}
+
+.vapour-shell {
+  display: grid;
+  gap: 0.8rem;
+  min-height: 100%;
+}
+
+.vapour-hero,
+.vapour-card {
+  border: 2px solid #6e88b7;
+  background: linear-gradient(180deg, rgba(250, 252, 255, 0.96), rgba(222, 232, 249, 0.97));
+  box-shadow: inset 1px 1px #ffffff, inset -1px -1px #97abd3;
+}
+
+.vapour-hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.9rem;
+  padding: 0.7rem 0.8rem;
+  align-items: start;
+}
+
+.vapour-kicker,
+.vapour-card-type,
+.vapour-status-label {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #305594;
+  font-size: 0.9rem;
+}
+
+.vapour-hero h3,
+.vapour-card h3 {
+  margin: 0.15rem 0 0.3rem;
+  color: #17366d;
+  font-size: 1.45rem;
+}
+
+.vapour-copy {
+  margin: 0;
+  max-width: 28rem;
+  color: #234272;
+}
+
+.vapour-status {
+  min-width: 8.5rem;
+  padding: 0.45rem 0.55rem;
+  background: linear-gradient(180deg, #26497f 0%, #18345c 100%);
+  border: 2px solid #d2e3ff;
+  color: #eef5ff;
+  box-shadow: inset 1px 1px rgba(255, 255, 255, 0.22);
+}
+
+.vapour-status strong {
+  display: block;
+  margin-top: 0.18rem;
+  font-size: 1.2rem;
+}
+
+.vapour-library {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 0.8rem;
+}
+
+.vapour-card {
+  display: grid;
+  grid-template-rows: 10rem 1fr;
+  overflow: hidden;
+}
+
+.vapour-card-media {
+  display: grid;
+  place-items: center;
+  background:
+    linear-gradient(135deg, rgba(12, 25, 52, 0.86), rgba(43, 74, 119, 0.94)),
+    linear-gradient(180deg, #2e4f85, #0f203d);
+  color: #f3f7ff;
+  border-bottom: 2px solid #6e88b7;
+}
+
+.vapour-card-media img {
+  width: 6.25rem;
+  height: 6.25rem;
+  object-fit: cover;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.4));
+}
+
+.vapour-card-media--runner {
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255, 236, 155, 0.35), transparent 22%),
+    linear-gradient(135deg, #6a4b9d 0%, #364f9d 45%, #1a265f 100%);
+}
+
+.vapour-runner-icon {
+  display: grid;
+  justify-items: center;
+  gap: 0.35rem;
+  text-align: center;
+}
+
+.vapour-runner-icon-face {
+  color: #fff1c9;
+  font-size: 2.15rem;
+  letter-spacing: 0.04em;
+  text-shadow: 2px 2px 0 rgba(20, 20, 55, 0.7);
+}
+
+.vapour-runner-icon-label {
+  color: #ffe9a5;
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  text-shadow: 2px 2px 0 rgba(20, 20, 55, 0.7);
+}
+
+.vapour-card-body {
+  display: grid;
+  align-content: start;
+  gap: 0.2rem;
+  padding: 0.65rem 0.75rem 0.75rem;
+}
+
+.vapour-card-body p {
+  color: #28446e;
+}
+
+.vapour-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.25rem;
+}
+
+@media (max-width: 900px) {
+  .vapour-hero {
+    flex-direction: column;
+  }
+
+  .vapour-status {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .vapour-library {
+    grid-template-columns: 1fr;
+  }
 }
 
 /*  Netscape Navigator browser  */

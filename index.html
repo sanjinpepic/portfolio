@@ -202,7 +202,7 @@
             <li role="none"><button role="menuitem" tabindex="-1" data-action="open-contact">Open Contact</button></li>
             <li role="none"><button role="menuitem" tabindex="-1" data-action="open-dashboard">Open Dashboard</button></li>
             <li role="none"><button role="menuitem" tabindex="-1" data-action="open-winamp">Open Winamp TV</button></li>
-            <li role="none"><button role="menuitem" tabindex="-1" data-action="open-doom">Open DOOM</button></li>
+            <li role="none"><button role="menuitem" tabindex="-1" data-action="open-vapour">Open Vapour</button></li>
             <li role="none"><button role="menuitem" tabindex="-1" data-action="open-case-studies">Open Case Studies</button></li>
             <li role="none"><button role="menuitem" tabindex="-1" data-action="open-terminal">Open Terminal</button></li>
             <li role="none"><button role="menuitem" tabindex="-1" data-action="close-focused">Close Focused (X)</button></li>
@@ -338,9 +338,9 @@
         <span class="icon" aria-hidden="true"><img class="icon-image" src="https://gitlab.com/metsatron/BeOS-r5-Icons/-/raw/master/apps/128/BeOS_terminal.png" data-fallback-src="assets/icon-fallback.svg" alt="" /></span>
         <span class="label">Terminal</span>
       </button>
-      <button class="desktop-icon" data-open="doom-window" style="--x: 3rem; --y: 92.5rem">
-        <span class="icon" aria-hidden="true"><img class="icon-image doom-icon-image" src="assets/Doom_1.png" data-fallback-src="assets/icon-fallback.svg" alt="" /></span>
-        <span class="label">DOOM</span>
+      <button class="desktop-icon" data-open="vapour-window" style="--x: 3rem; --y: 92.5rem">
+        <span class="icon" aria-hidden="true"><img class="icon-image" src="assets/icon-case-studies-beos.png" data-fallback-src="assets/icon-fallback.svg" alt="" /></span>
+        <span class="label">Vapour</span>
       </button>
       </div>
 
@@ -940,7 +940,7 @@
             </div>
           </div>
         </div>
-  
+
         <div class="winamp-screen-wrap" id="winamp-screen-wrap" data-visual-mode="video">
           <div id="winamp-youtube-player" class="winamp-player" aria-label="Winamp style music video player"></div>
           <canvas id="winamp-visualizer" class="winamp-visualizer" aria-label="Retro music visualizer"></canvas>
@@ -958,13 +958,13 @@
         </div>
 
         <div class="winamp-controls winamp-controls--secondary">
-            <label class="winamp-volume-label" for="winamp-volume">Volume</label>
-            <input id="winamp-volume" type="range" min="0" max="100" value="0" step="1" />
-            <button type="button" class="winamp-metal-btn winamp-metal-btn--small" id="winamp-shuffle">Shuffle</button>
-            <button type="button" class="winamp-metal-btn winamp-metal-btn--mode" id="winamp-visual-mode-toggle" aria-pressed="false">Visualizer</button>
-          </div>
+          <label class="winamp-volume-label" for="winamp-volume">Volume</label>
+          <input id="winamp-volume" type="range" min="0" max="100" value="0" step="1" />
+          <button type="button" class="winamp-metal-btn winamp-metal-btn--small" id="winamp-shuffle">Shuffle</button>
+          <button type="button" class="winamp-metal-btn winamp-metal-btn--mode" id="winamp-visual-mode-toggle" aria-pressed="false">Visualizer</button>
         </div>
       </div>
+    </div>
   </div>
 
   <aside class="winamp-playlist-panel" aria-label="Playlist">
@@ -991,6 +991,84 @@
   <p class="resume-note">Source: YouTube embed (no-cookie). Ads cannot be fully controlled by this site.</p>
 </div>
 <!-- END:inline windows/winamp-tv.html --></div>
+      </section>
+
+      <section
+        id="vapour-window"
+        class="window"
+        style="--left: 10rem; --top: 8rem; --width: 38rem; --height: 31rem"
+        aria-labelledby="vapour-title"
+      >
+        <header class="title-bar drag-handle">
+          <h2 id="vapour-title">Vapour</h2>
+          <div class="window-controls">
+            <button class="window-btn minimize-btn" data-role="minimize" data-minimize="vapour-window" aria-label="Minimize Vapour">_</button>
+            <button class="window-btn maximize-btn" data-role="maximize" data-maximize="vapour-window" aria-label="Maximize Vapour">□</button>
+            <button class="close-btn" data-close="vapour-window" aria-label="Close Vapour">x</button>
+          </div>
+        </header>
+        <div class="window-content vapour-content" ><!-- START:inline windows/vapour.html -->
+<div class="vapour-shell">
+  <section class="vapour-hero" aria-label="Vapour game center">
+    <div>
+      <p class="vapour-kicker">Steam Play // Local Library</p>
+      <h3>Vapour</h3>
+      <p class="vapour-copy">
+        A compact game center for quick launches, arcade energy, and retro desktop vibes.
+      </p>
+    </div>
+    <div class="vapour-status" aria-label="library status">
+      <span class="vapour-status-label">Installed</span>
+      <strong>2 games ready</strong>
+    </div>
+  </section>
+
+  <section class="vapour-library" aria-label="Game library">
+    <article class="vapour-card vapour-card--doom">
+      <div class="vapour-card-media" aria-hidden="true">
+        <img src="assets/Doom_1.png" alt="" />
+      </div>
+      <div class="vapour-card-body">
+        <p class="vapour-card-type">Featured Shooter</p>
+        <h3>DOOM</h3>
+        <p>Classic chaos, fast launch, and full-screen demon-clearing inside the portfolio desktop.</p>
+        <div class="vapour-actions">
+          <button class="primary-cta" type="button" data-action="open-doom">Launch DOOM</button>
+        </div>
+      </div>
+    </article>
+
+    <article class="vapour-card vapour-card--runner">
+      <div class="vapour-card-media vapour-card-media--runner" aria-hidden="true">
+        <div class="vapour-runner-icon">
+          <span class="vapour-runner-icon-face">=^.^=</span>
+          <span class="vapour-runner-icon-label">CAT ESCAPE</span>
+        </div>
+      </div>
+      <div class="vapour-card-body">
+        <p class="vapour-card-type">Arcade Runner</p>
+        <h3>Cat Escape</h3>
+        <p>Score-chasing browser sprint built around replay hooks, retention loops, and fast iteration.</p>
+        <div class="vapour-actions">
+          <button
+            class="primary-cta"
+            type="button"
+            data-browser-url="apps/pixel-runner.html"
+            data-browser-title="Cat Escape.EXE"
+          >
+            Launch Pixel Runner
+          </button>
+          <a class="secondary-cta" href="apps/pixel-runner.html" target="_blank" rel="noopener">Open solo</a>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <p class="resume-note">
+    Vapour keeps the gaming corner in one place while staying inside the same retro Windows-style world as the rest of the desktop.
+  </p>
+</div>
+<!-- END:inline windows/vapour.html --></div>
       </section>
 
       <section

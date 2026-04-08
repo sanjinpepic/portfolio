@@ -104,6 +104,7 @@ function runMenuAction(action) {
   if (action === "open-contact") openWindow("contact-window");
   if (action === "open-dashboard") openWindow("dashboard-window");
   if (action === "open-winamp") openWindow("winamp-window");
+  if (action === "open-vapour") openWindow("vapour-window");
   if (action === "open-doom") openWindow("doom-window");
   if (action === "open-terminal") openWindow("terminal-window");
   if (action === "open-case-studies") openWindow("case-studies-window");

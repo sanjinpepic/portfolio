@@ -26,7 +26,9 @@ const TERMINAL_WINDOWS = {
   timeline: "timeline-window",
   contact:  "contact-window",
   dashboard: "dashboard-window",
+  vapour:   "vapour-window",
   winamp:   "winamp-window",
+  doom:     "doom-window",
   terminal: "terminal-window",
   error:    "easter-error",
 };

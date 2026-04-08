@@ -416,13 +416,11 @@ export function bindDynamicContentEvents() {
     S.timelineWindowContent.dataset.bound = "true";
   }
 
-  if (S.projectList) {
-    S.projectList.addEventListener("click", (event) => {
-      const projectLink = event.target.closest(".project-link[data-browser-url]");
-      if (!projectLink) return;
-      openInRetroBrowser(projectLink.dataset.browserUrl, projectLink.dataset.browserTitle || "Project");
-    });
-  }
+  document.addEventListener("click", (event) => {
+    const browserLink = event.target.closest("[data-browser-url]");
+    if (!browserLink) return;
+    openInRetroBrowser(browserLink.dataset.browserUrl, browserLink.dataset.browserTitle || "Project");
+  });
   if (S.browserHome) {
     S.browserHome.addEventListener("click", () => loadBrowserHomePage());
   }
