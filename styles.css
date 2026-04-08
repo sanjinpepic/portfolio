@@ -717,9 +717,11 @@ body[data-bg-mode="tile"] {
   }
 }
 
-/* Mobile icon grid wrapper â€” only rendered on mobile via JS */
-.mobile-icon-grid {
-  display: contents; /* Invisible on desktop */
+/* Mobile icon grid wrapper â€” flattened on desktop, grid on mobile */
+@media (min-width: 901px) {
+  .mobile-icon-grid {
+    display: contents;
+  }
 }
 
 .about-header {
