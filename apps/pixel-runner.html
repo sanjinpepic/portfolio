@@ -159,6 +159,18 @@
         line-height: 1.05;
       }
 
+      .chip button {
+        width: 100%;
+        border: 0;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        font-size: 1.3rem;
+        text-align: left;
+        padding: 0;
+        cursor: pointer;
+      }
+
       .canvas-wrap {
         position: relative;
       }
@@ -327,6 +339,10 @@
               <span class="chip-label">Score</span>
               <strong id="scoreStat">0</strong>
             </div>
+            <div class="chip">
+              <span class="chip-label">Audio</span>
+              <button id="audioToggle" type="button" aria-pressed="true">On</button>
+            </div>
           </div>
         </header>
 
@@ -366,6 +382,7 @@
       const comboStat = document.getElementById("comboStat");
       const bestStat = document.getElementById("bestStat");
       const scoreStat = document.getElementById("scoreStat");
+      const audioToggle = document.getElementById("audioToggle");
       const bannerCard = document.getElementById("bannerCard");
       const bannerTitle = document.getElementById("bannerTitle");
       const bannerBody = document.getElementById("bannerBody");
@@ -425,6 +442,214 @@
       let bestDistance = Number(localStorage.getItem(storage.bestDistanceKey) || 0);
       let bestScore = Number(localStorage.getItem(storage.bestScoreKey) || 0);
 
+      const audio = {
+        ctx: null,
+        master: null,
+        musicGain: null,
+        sfxGain: null,
+        musicTimer: null,
+        musicStep: 0,
+        initialized: false,
+        enabled: true,
+        melody: [
+          ["C5", 0.18],
+          ["E5", 0.18],
+          ["G5", 0.18],
+          ["A5", 0.18],
+          ["G5", 0.18],
+          ["E5", 0.18],
+          ["D5", 0.18],
+          ["E5", 0.18],
+          ["G5", 0.18],
+          ["B4", 0.18],
+          ["A4", 0.18],
+          ["G4", 0.18],
+          ["E5", 0.18],
+          ["D5", 0.18],
+          ["C5", 0.32],
+          ["REST", 0.12]
+        ]
+      };
+
+      function noteToFrequency(note) {
+        if (note === "REST") {
+          return 0;
+        }
+
+        const map = {
+          C: 0,
+          "C#": 1,
+          D: 2,
+          "D#": 3,
+          E: 4,
+          F: 5,
+          "F#": 6,
+          G: 7,
+          "G#": 8,
+          A: 9,
+          "A#": 10,
+          B: 11
+        };
+        const match = note.match(/^([A-G]#?)(\d)$/);
+        if (!match) {
+          return 0;
+        }
+
+        const [, pitch, octaveString] = match;
+        const octave = Number(octaveString);
+        const midi = 12 * (octave + 1) + map[pitch];
+        return 440 * 2 ** ((midi - 69) / 12);
+      }
+
+      function ensureAudio() {
+        if (audio.initialized) {
+          if (audio.ctx.state === "suspended") {
+            audio.ctx.resume();
+          }
+          return;
+        }
+
+        const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextCtor) {
+          audio.enabled = false;
+          updateAudioToggle();
+          return;
+        }
+
+        audio.ctx = new AudioContextCtor();
+        audio.master = audio.ctx.createGain();
+        audio.musicGain = audio.ctx.createGain();
+        audio.sfxGain = audio.ctx.createGain();
+        audio.master.gain.value = 0.14;
+        audio.musicGain.gain.value = 0.38;
+        audio.sfxGain.gain.value = 0.7;
+        audio.musicGain.connect(audio.master);
+        audio.sfxGain.connect(audio.master);
+        audio.master.connect(audio.ctx.destination);
+        audio.initialized = true;
+        startMusicLoop();
+      }
+
+      function playTone({ frequency, duration = 0.12, type = "square", volume = 0.18, when = 0, target = "sfx", glideTo = null }) {
+        if (!audio.enabled) {
+          return;
+        }
+
+        ensureAudio();
+        if (!audio.ctx || frequency <= 0) {
+          return;
+        }
+
+        const now = audio.ctx.currentTime + when;
+        const gainNode = audio.ctx.createGain();
+        const osc = audio.ctx.createOscillator();
+        osc.type = type;
+        osc.frequency.setValueAtTime(frequency, now);
+        if (glideTo) {
+          osc.frequency.linearRampToValueAtTime(glideTo, now + duration);
+        }
+        gainNode.gain.setValueAtTime(0.0001, now);
+        gainNode.gain.linearRampToValueAtTime(volume, now + 0.01);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+        osc.connect(gainNode);
+        gainNode.connect(target === "music" ? audio.musicGain : audio.sfxGain);
+        osc.start(now);
+        osc.stop(now + duration + 0.02);
+      }
+
+      function startMusicLoop() {
+        if (audio.musicTimer || !audio.enabled) {
+          return;
+        }
+
+        const scheduleStep = () => {
+          if (!audio.enabled || !audio.initialized) {
+            audio.musicTimer = null;
+            return;
+          }
+
+          const [note, duration] = audio.melody[audio.musicStep % audio.melody.length];
+          const frequency = noteToFrequency(note);
+          if (frequency > 0) {
+            playTone({
+              frequency,
+              duration,
+              type: "square",
+              volume: state === "running" ? 0.06 : 0.04,
+              target: "music"
+            });
+            playTone({
+              frequency: frequency / 2,
+              duration: Math.max(0.08, duration - 0.03),
+              type: "triangle",
+              volume: state === "running" ? 0.035 : 0.025,
+              target: "music"
+            });
+          }
+
+          audio.musicStep += 1;
+          audio.musicTimer = window.setTimeout(scheduleStep, duration * 1000);
+        };
+
+        scheduleStep();
+      }
+
+      function stopMusicLoop() {
+        if (audio.musicTimer) {
+          window.clearTimeout(audio.musicTimer);
+          audio.musicTimer = null;
+        }
+      }
+
+      function updateAudioToggle() {
+        audioToggle.textContent = audio.enabled ? "On" : "Off";
+        audioToggle.setAttribute("aria-pressed", String(audio.enabled));
+      }
+
+      function playJumpSound(isDoubleJump) {
+        playTone({
+          frequency: isDoubleJump ? noteToFrequency("A5") : noteToFrequency("E5"),
+          duration: 0.09,
+          type: "square",
+          volume: 0.16,
+          glideTo: isDoubleJump ? noteToFrequency("D6") : noteToFrequency("A5")
+        });
+      }
+
+      function playPickupSound() {
+        playTone({
+          frequency: noteToFrequency("C6"),
+          duration: 0.07,
+          type: "square",
+          volume: 0.14
+        });
+        playTone({
+          frequency: noteToFrequency("E6"),
+          duration: 0.08,
+          type: "square",
+          volume: 0.13,
+          when: 0.045
+        });
+      }
+
+      function playDeathSound() {
+        playTone({
+          frequency: noteToFrequency("A4"),
+          duration: 0.22,
+          type: "sawtooth",
+          volume: 0.16,
+          glideTo: noteToFrequency("C4")
+        });
+        playTone({
+          frequency: noteToFrequency("E4"),
+          duration: 0.28,
+          type: "square",
+          volume: 0.1,
+          when: 0.05,
+          glideTo: noteToFrequency("A3")
+        });
+      }
+
       function resetRun(startMode) {
         obstacles = [];
         fish = [];
@@ -464,6 +689,7 @@
       }
 
       function startRun() {
+        ensureAudio();
         resetRun("running");
         hideBanner();
         statusText.textContent = "Stay low, keep rhythm, and cash in fish before the combo meter cools off.";
@@ -473,6 +699,7 @@
         state = "over";
         shake = 12;
         player.flashFrames = 14;
+        playDeathSound();
         bestDistance = Math.max(bestDistance, Math.floor(distance));
         bestScore = Math.max(bestScore, Math.floor(score));
         localStorage.setItem(storage.bestDistanceKey, String(bestDistance));
@@ -526,12 +753,14 @@
           return false;
         }
 
+        const isDoubleJump = player.jumpsLeft === 1;
         player.vy = force;
         player.jumpsLeft -= 1;
         player.coyoteFrames = 0;
         player.jumpBuffer = 0;
         player.squish = 4;
         burst(player.x + player.w * 0.45, player.y + player.h, "#d5fff0", 5);
+        playJumpSound(isDoubleJump);
         return true;
       }
 
@@ -627,6 +856,7 @@
         if (source === "fish") {
           collectedFish += 1;
           queueToast(`FISH CHAIN x${combo}`);
+          playPickupSound();
         } else if (source === "near-miss") {
           nearMissCount += 1;
           queueToast(`CLOSE CALL x${combo}`);
@@ -958,11 +1188,30 @@
         jump();
       });
 
+      audioToggle.addEventListener("click", () => {
+        audio.enabled = !audio.enabled;
+        if (audio.enabled) {
+          ensureAudio();
+          startMusicLoop();
+        } else {
+          stopMusicLoop();
+          if (audio.master) {
+            audio.master.gain.cancelScheduledValues(audio.ctx.currentTime);
+            audio.master.gain.setValueAtTime(0, audio.ctx.currentTime);
+          }
+        }
+        if (audio.enabled && audio.master) {
+          audio.master.gain.setValueAtTime(0.14, audio.ctx.currentTime);
+        }
+        updateAudioToggle();
+      });
+
       setBanner(
         "CAT ESCAPE.EXE",
         "Start with one jump, survive with rhythm, and master the double-jump once the stacked patterns show up."
       );
       statusText.textContent = `Best distance ${bestDistance}m | Best score ${bestScore}. First fish chain usually starts around 20m.`;
+      updateAudioToggle();
       updateHud();
       updateGame();
     </script>
