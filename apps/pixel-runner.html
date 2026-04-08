@@ -601,6 +601,32 @@
         }
       }
 
+      function suspendAudio() {
+        stopMusicLoop();
+        if (audio.ctx && audio.ctx.state === "running") {
+          audio.ctx.suspend();
+        }
+      }
+
+      function resumeAudio() {
+        if (!audio.enabled) {
+          return;
+        }
+
+        ensureAudio();
+        startMusicLoop();
+        if (audio.master) {
+          audio.master.gain.setValueAtTime(0.14, audio.ctx.currentTime);
+        }
+      }
+
+      function closeAudio() {
+        stopMusicLoop();
+        if (audio.ctx && audio.ctx.state !== "closed") {
+          audio.ctx.close();
+        }
+      }
+
       function updateAudioToggle() {
         audioToggle.textContent = audio.enabled ? "On" : "Off";
         audioToggle.setAttribute("aria-pressed", String(audio.enabled));
@@ -1191,10 +1217,9 @@
       audioToggle.addEventListener("click", () => {
         audio.enabled = !audio.enabled;
         if (audio.enabled) {
-          ensureAudio();
-          startMusicLoop();
+          resumeAudio();
         } else {
-          stopMusicLoop();
+          suspendAudio();
           if (audio.master) {
             audio.master.gain.cancelScheduledValues(audio.ctx.currentTime);
             audio.master.gain.setValueAtTime(0, audio.ctx.currentTime);
@@ -1204,6 +1229,25 @@
           audio.master.gain.setValueAtTime(0.14, audio.ctx.currentTime);
         }
         updateAudioToggle();
+      });
+
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+          suspendAudio();
+          return;
+        }
+
+        if (audio.enabled) {
+          resumeAudio();
+        }
+      });
+
+      window.addEventListener("pagehide", () => {
+        closeAudio();
+      });
+
+      window.addEventListener("beforeunload", () => {
+        closeAudio();
       });
 
       setBanner(
