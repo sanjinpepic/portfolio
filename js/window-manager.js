@@ -57,6 +57,38 @@ function applyClampedWindowPosition(win, left, top) {
   win.style.top = `${clamp(top, 0, maxY)}px`;
 }
 
+function fitWindowToContent(win) {
+  if (!win || mobileLayoutQuery.matches || win.classList.contains("maximized") || !win.classList.contains("open")) return;
+
+  const content = win.querySelector(".window-content");
+  if (!content) return;
+
+  const desktopWidth = desktop.clientWidth;
+  const desktopHeight = desktop.clientHeight;
+  if (!desktopWidth || !desktopHeight) return;
+
+  const computed = window.getComputedStyle(win);
+  const minWidth = parseFloat(computed.minWidth) || 0;
+  const minHeight = parseFloat(computed.minHeight) || 0;
+  const frameWidth = win.offsetWidth - content.clientWidth;
+  const frameHeight = win.offsetHeight - content.clientHeight;
+  const contentWidth = Math.ceil(content.scrollWidth);
+  const contentHeight = Math.ceil(content.scrollHeight);
+
+  const maxWidth = Math.max(minWidth, desktopWidth - 12);
+  const maxHeight = Math.max(minHeight, desktopHeight - 12);
+  const targetWidth = clamp(contentWidth + frameWidth + 6, minWidth, maxWidth);
+  const targetHeight = clamp(contentHeight + frameHeight + 6, minHeight, maxHeight);
+
+  const currentWidth = parseNumericStyle(win.style.width) || win.offsetWidth;
+  const currentHeight = parseNumericStyle(win.style.height) || win.offsetHeight;
+
+  if (targetWidth > currentWidth) win.style.width = `${targetWidth}px`;
+  if (targetHeight > currentHeight) win.style.height = `${targetHeight}px`;
+
+  applyClampedWindowPosition(win, win.offsetLeft, win.offsetTop);
+}
+
 function getWindowTitle(win) {
   const titleEl = win?.querySelector(".title-bar h2");
   return titleEl ? titleEl.textContent.trim() : win?.id.replace("-window", "") || "Window";
@@ -404,6 +436,7 @@ export function openWindow(id) {
     return;
   }
   bringToFront(win);
+  requestAnimationFrame(() => fitWindowToContent(win));
   if (mobileLayoutQuery.matches) updateMobileNav(win);
   syncTaskbar();
   saveDesktopState();
@@ -509,6 +542,7 @@ export function restoreWindow(id, { persist = true, immediate = false } = {}) {
   setTaskbarAnimationOrigin(win);
   win.classList.remove("minimized");
   bringToFront(win);
+  requestAnimationFrame(() => fitWindowToContent(win));
   if (mobileLayoutQuery.matches) updateMobileNav(win);
   if (immediate) {
     syncTaskbar();
