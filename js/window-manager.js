@@ -7,6 +7,8 @@ import {
   menuBar,
   mobileAppNav,
   mobileAppTitle,
+  taskbarApps,
+  taskbarClock,
   clock,
   DESKTOP_STATE_KEY,
   THEME_STATE_KEY,
@@ -55,6 +57,68 @@ function applyClampedWindowPosition(win, left, top) {
   win.style.top = `${clamp(top, 0, maxY)}px`;
 }
 
+function getWindowTitle(win) {
+  const titleEl = win?.querySelector(".title-bar h2");
+  return titleEl ? titleEl.textContent.trim() : win?.id.replace("-window", "") || "Window";
+}
+
+function getTaskbarButton(winId) {
+  return taskbarApps?.querySelector(`[data-taskbar-window="${winId}"]`) || null;
+}
+
+function setTaskbarAnimationOrigin(win) {
+  const button = getTaskbarButton(win.id);
+  if (!button) return;
+  const winRect = win.getBoundingClientRect();
+  const buttonRect = button.getBoundingClientRect();
+  const deltaX = (buttonRect.left + buttonRect.width / 2) - (winRect.left + winRect.width / 2);
+  const deltaY = (buttonRect.top + buttonRect.height / 2) - (winRect.top + winRect.height / 2);
+  win.style.setProperty("--taskbar-origin-x", `${Math.round(deltaX)}px`);
+  win.style.setProperty("--taskbar-origin-y", `${Math.round(deltaY)}px`);
+}
+
+function animateWindow(win, animationClass, onEnd) {
+  win.classList.remove("opening", "closing", "minimizing", "restoring");
+  void win.offsetWidth;
+  win.classList.add(animationClass);
+  win.addEventListener("animationend", () => {
+    win.classList.remove(animationClass);
+    if (typeof onEnd === "function") onEnd();
+  }, { once: true });
+}
+
+function updateWindowControlState(win) {
+  const maximizeButton = win.querySelector(".maximize-btn");
+  if (!maximizeButton) return;
+  const isMaximized = win.classList.contains("maximized");
+  maximizeButton.textContent = isMaximized ? "❐" : "□";
+  maximizeButton.setAttribute("aria-label", isMaximized ? `Restore ${getWindowTitle(win)}` : `Maximize ${getWindowTitle(win)}`);
+  maximizeButton.setAttribute("aria-pressed", isMaximized ? "true" : "false");
+}
+
+export function syncTaskbar() {
+  if (!taskbarApps) return;
+  taskbarApps.innerHTML = "";
+  windows.forEach((win) => {
+    const isOpen = win.classList.contains("open");
+    if (!isOpen) {
+      updateWindowControlState(win);
+      return;
+    }
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "taskbar-app";
+    button.dataset.taskbarWindow = win.id;
+    button.textContent = getWindowTitle(win);
+    button.setAttribute("aria-pressed", isOpen && !win.classList.contains("minimized") ? "true" : "false");
+    if (isOpen) button.classList.add("open");
+    if (win.id === S.activeWindowId && isOpen && !win.classList.contains("minimized")) button.classList.add("active");
+    if (win.classList.contains("minimized")) button.classList.add("minimized");
+    taskbarApps.appendChild(button);
+    updateWindowControlState(win);
+  });
+}
+
 function collectDesktopState() {
   const state = {
     openWindowIds: windows.filter((win) => win.classList.contains("open")).map((win) => win.id),
@@ -65,6 +129,10 @@ function collectDesktopState() {
       left: parseNumericStyle(win.style.left),
       top: parseNumericStyle(win.style.top),
       zIndex: parseNumericStyle(win.style.zIndex),
+      width: parseNumericStyle(win.style.width),
+      height: parseNumericStyle(win.style.height),
+      minimized: win.classList.contains("minimized"),
+      maximized: win.classList.contains("maximized"),
     };
   });
   return state;
@@ -197,6 +265,8 @@ export function restoreDesktopState() {
       if (Number.isFinite(Number(info.zIndex))) {
         win.style.zIndex = String(Number(info.zIndex));
       }
+      if (Number.isFinite(Number(info.width))) win.style.width = `${Number(info.width)}px`;
+      if (Number.isFinite(Number(info.height))) win.style.height = `${Number(info.height)}px`;
     });
     windows.forEach((win) => win.classList.remove("open"));
     const validOpenWindows = openIds
@@ -207,13 +277,20 @@ export function restoreDesktopState() {
       (a, b) => Number(a.style.zIndex || 0) - Number(b.style.zIndex || 0)
     );
     sortedByZ.forEach((win) => openWindow(win.id));
+    validOpenWindows.forEach((win) => {
+      const info = windowState[win.id];
+      if (!info || typeof info !== "object") return;
+      if (info.maximized) maximizeWindow(win.id, { persist: false });
+      if (info.minimized) minimizeWindow(win.id, { persist: false, immediate: true });
+    });
     const restoredTop = windows.reduce((maxZ, win) => Math.max(maxZ, Number(win.style.zIndex || 0)), 10);
     S.topZ = restoredTop;
     const topOpenWindow = windows
-      .filter((win) => win.classList.contains("open"))
+      .filter((win) => win.classList.contains("open") && !win.classList.contains("minimized"))
       .sort((a, b) => Number(a.style.zIndex || 0) - Number(b.style.zIndex || 0))
       .pop();
     S.activeWindowId = topOpenWindow?.id || null;
+    syncTaskbar();
     return true;
   } finally {
     S.isRestoringDesktopState = false;
@@ -222,11 +299,18 @@ export function restoreDesktopState() {
 
 export function updateClock() {
   const now = new Date();
-  clock.textContent = now.toLocaleString([], {
+  const clockLabel = now.toLocaleString([], {
     weekday: "short",
     hour: "2-digit",
     minute: "2-digit",
   });
+  clock.textContent = clockLabel;
+  if (taskbarClock) {
+    taskbarClock.textContent = now.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
 }
 
 export function updateMobileNav(openWin) {
@@ -248,19 +332,22 @@ export function updateMobileNav(openWin) {
 export function bringToFront(win) {
   windows.forEach((w) => w.classList.remove("focused"));
   win.classList.add("focused");
+  win.classList.remove("minimized");
   if (mobileLayoutQuery.matches) {
     S.activeWindowId = win.id;
+    syncTaskbar();
     return;
   }
   S.topZ += 1;
   win.style.zIndex = String(S.topZ);
   S.activeWindowId = win.id;
+  syncTaskbar();
 }
 
 export function openWindow(id) {
   const win = document.getElementById(id);
   if (!win) return;
-  win.classList.remove("closing");
+  win.classList.remove("closing", "minimizing");
   if (mobileLayoutQuery.matches) {
     windows.forEach((windowEl) => {
       if (windowEl.id !== id) windowEl.classList.remove("open");
@@ -276,10 +363,9 @@ export function openWindow(id) {
   win.classList.add("open");
   if (!wasOpen) {
     RetroSounds.open();
-    requestAnimationFrame(() => {
-      win.classList.add("opening");
-      win.addEventListener("animationend", () => win.classList.remove("opening"), { once: true });
-    });
+    syncTaskbar();
+    setTaskbarAnimationOrigin(win);
+    requestAnimationFrame(() => animateWindow(win, "opening"));
     if (id === "about-window") startTypewriter();
     if (id === "dashboard-window" && typeof window.initializeDashboard === "function") {
       window.initializeDashboard();
@@ -288,15 +374,20 @@ export function openWindow(id) {
       window.initializeNewsFeed();
     }
     if (id === "easter-error") RetroSounds.error();
+  } else if (win.classList.contains("minimized")) {
+    restoreWindow(id);
+    return;
   }
   bringToFront(win);
   if (mobileLayoutQuery.matches) updateMobileNav(win);
+  syncTaskbar();
   saveDesktopState();
 }
 
 export function closeWindow(id) {
   const win = document.getElementById(id);
   if (!win || !win.classList.contains("open")) return;
+  setTaskbarAnimationOrigin(win);
   if (id === "winamp-window" && _stopWinampPlayback) {
     _stopWinampPlayback({ terminate: true });
   }
@@ -306,7 +397,7 @@ export function closeWindow(id) {
   if (S.activeWindowId === id) {
     win.classList.remove("focused");
     const topOpenWindow = windows
-      .filter((w) => w.classList.contains("open") && w.id !== id)
+      .filter((w) => w.classList.contains("open") && !w.classList.contains("minimized") && w.id !== id)
       .sort((a, b) => Number(a.style.zIndex || 0) - Number(b.style.zIndex || 0))
       .pop();
     S.activeWindowId = topOpenWindow?.id || null;
@@ -314,10 +405,12 @@ export function closeWindow(id) {
   }
   if (mobileLayoutQuery.matches) updateMobileNav(null);
   RetroSounds.close();
-  win.classList.add("closing");
-  win.addEventListener("animationend", () => {
-    win.classList.remove("open", "closing");
-  }, { once: true });
+  animateWindow(win, "closing", () => {
+    win.classList.remove("open", "closing", "minimized", "maximized", "focused");
+    syncTaskbar();
+    saveDesktopState();
+  });
+  syncTaskbar();
 }
 
 export function closeFocusedWindow() {
@@ -330,6 +423,7 @@ export function closeAllWindows() {
   });
   S.activeWindowId = null;
   windows.forEach((w) => w.classList.remove("focused"));
+  syncTaskbar();
   saveDesktopState();
 }
 
@@ -348,6 +442,7 @@ export function cascadeWindows() {
   windows
     .filter((win) => win.classList.contains("open"))
     .forEach((win) => {
+      restoreWindow(win.id, { persist: false, immediate: true });
       win.style.left = `${x}px`;
       win.style.top = `${y}px`;
       bringToFront(win);
@@ -355,6 +450,81 @@ export function cascadeWindows() {
       y += 28;
     });
   saveDesktopState();
+}
+
+export function minimizeWindow(id, { persist = true, immediate = false } = {}) {
+  const win = document.getElementById(id);
+  if (!win || !win.classList.contains("open") || win.classList.contains("minimized")) return;
+  setTaskbarAnimationOrigin(win);
+  const finalize = () => {
+    win.classList.add("minimized");
+    win.classList.remove("focused");
+    if (S.activeWindowId === id) {
+      const topOpenWindow = windows
+        .filter((w) => w.classList.contains("open") && !w.classList.contains("minimized") && w.id !== id)
+        .sort((a, b) => Number(a.style.zIndex || 0) - Number(b.style.zIndex || 0))
+        .pop();
+      S.activeWindowId = topOpenWindow?.id || null;
+      if (topOpenWindow) topOpenWindow.classList.add("focused");
+    }
+    if (mobileLayoutQuery.matches) updateMobileNav(null);
+    syncTaskbar();
+    if (persist) saveDesktopState();
+  };
+  if (immediate) {
+    finalize();
+    return;
+  }
+  animateWindow(win, "minimizing", finalize);
+}
+
+export function restoreWindow(id, { persist = true, immediate = false } = {}) {
+  const win = document.getElementById(id);
+  if (!win || !win.classList.contains("open")) return;
+  setTaskbarAnimationOrigin(win);
+  win.classList.remove("minimized");
+  bringToFront(win);
+  if (mobileLayoutQuery.matches) updateMobileNav(win);
+  if (immediate) {
+    syncTaskbar();
+    if (persist) saveDesktopState();
+    return;
+  }
+  animateWindow(win, "restoring", () => {
+    syncTaskbar();
+    if (persist) saveDesktopState();
+  });
+}
+
+export function maximizeWindow(id, { persist = true, restore = false } = {}) {
+  const win = document.getElementById(id);
+  if (!win || !win.classList.contains("open")) return;
+  if (restore) {
+    win.classList.remove("maximized");
+    if (win.dataset.restoreLeft) win.style.left = win.dataset.restoreLeft;
+    if (win.dataset.restoreTop) win.style.top = win.dataset.restoreTop;
+    if (win.dataset.restoreWidth) win.style.width = win.dataset.restoreWidth;
+    if (win.dataset.restoreHeight) win.style.height = win.dataset.restoreHeight;
+  } else {
+    win.dataset.restoreLeft = win.style.left || `${win.offsetLeft}px`;
+    win.dataset.restoreTop = win.style.top || `${win.offsetTop}px`;
+    win.dataset.restoreWidth = win.style.width || `${win.offsetWidth}px`;
+    win.dataset.restoreHeight = win.style.height || `${win.offsetHeight}px`;
+    win.classList.add("maximized");
+    win.classList.remove("minimized");
+    win.style.left = "0px";
+    win.style.top = "0px";
+  }
+  bringToFront(win);
+  updateWindowControlState(win);
+  syncTaskbar();
+  if (persist) saveDesktopState();
+}
+
+export function toggleMaximizeWindow(id, { persist = true } = {}) {
+  const win = document.getElementById(id);
+  if (!win || !win.classList.contains("open")) return;
+  maximizeWindow(id, { persist, restore: win.classList.contains("maximized") });
 }
 
 let typewriterDone = false;
@@ -454,7 +624,8 @@ export function initDragHandlers() {
 
     handle.addEventListener("pointerdown", (event) => {
       if (mobileLayoutQuery.matches) return;
-      if (event.target.closest(".close-btn")) return;
+      if (event.target.closest(".window-btn") || event.target.closest(".close-btn")) return;
+      if (win.classList.contains("maximized")) return;
       dragging = true;
       win.classList.add("dragging");
       bringToFront(win);

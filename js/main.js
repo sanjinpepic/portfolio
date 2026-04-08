@@ -12,7 +12,8 @@ import {
   updateMobileNav, bindIconFallbackHandlers, initDragHandlers,
   loadResumeTextFile, loadCaseStudy, restoreDesktopState, restoreThemePreference,
   restoreBackgroundModePreference, applyTheme, applyBackgroundMode,
-  setRestartWinampFlutter, setStopWinampPlayback
+  setRestartWinampFlutter, setStopWinampPlayback, minimizeWindow,
+  toggleMaximizeWindow, restoreWindow, syncTaskbar
 } from "./window-manager.js";
 import {
   renderProjects, bindDynamicContentEvents, ALLOWED_URLS,
@@ -157,6 +158,34 @@ openers.forEach((icon) => {
 
 closers.forEach((btn) => {
   btn.addEventListener("click", () => closeWindow(btn.dataset.close));
+});
+
+[...document.querySelectorAll(".minimize-btn")].forEach((btn) => {
+  btn.addEventListener("click", () => minimizeWindow(btn.dataset.minimize));
+});
+
+[...document.querySelectorAll(".maximize-btn")].forEach((btn) => {
+  btn.addEventListener("click", () => toggleMaximizeWindow(btn.dataset.maximize));
+});
+
+document.getElementById("taskbar-apps")?.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-taskbar-window]");
+  if (!button) return;
+  const win = document.getElementById(button.dataset.taskbarWindow);
+  if (!win) return;
+  if (!win.classList.contains("open")) {
+    openWindow(win.id);
+    return;
+  }
+  if (win.classList.contains("minimized")) {
+    restoreWindow(win.id);
+    return;
+  }
+  if (S.activeWindowId === win.id) {
+    minimizeWindow(win.id);
+    return;
+  }
+  restoreWindow(win.id, { immediate: true });
 });
 
 if (mobileCloseBtn) {
@@ -364,6 +393,7 @@ async function initDesktop() {
   bindContextMenu(runMenuAction);
   bindScreensaver();
   loadStickyNotes();
+  syncTaskbar();
   RetroSounds.syncLabel();
   renderProjects();
   rebalanceDesktopIconColumns();
@@ -436,6 +466,7 @@ async function initDesktop() {
   await loadResumeTextFile();
   await loadCaseStudy("erasteel");
   if (!restoreDesktopState()) openWindow("about-window");
+  syncTaskbar();
 }
 
 initDesktop();

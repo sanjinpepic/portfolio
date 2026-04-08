@@ -1,6 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=VT323&display=swap");
 
 :root {
+  --taskbar-height: 2.75rem;
   --desktop-bg: #1d857b;
   --desktop-bg-image: none;
   --desktop-bg-frame: #1d857b;
@@ -336,7 +337,7 @@ body[data-bg-mode="tile"] {
 
 .desktop {
   position: fixed;
-  inset: 2rem 0 0 0;
+  inset: 2rem 0 var(--taskbar-height) 0;
 }
 
 .desktop-icon {
@@ -393,7 +394,7 @@ body[data-bg-mode="tile"] {
   height: var(--height, auto);
   min-width: 18rem;
   min-height: 12rem;
-  max-height: calc(100vh - 4rem);
+  max-height: calc(100vh - 4rem - var(--taskbar-height));
   background: var(--panel-gray);
   border: 2px solid;
   border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
@@ -429,18 +430,28 @@ body[data-bg-mode="tile"] {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.75rem;
   padding: 0 0.5rem;
   cursor: move;
   user-select: none;
 }
 
 .title-bar h2 {
+  flex: 1;
+  min-width: 0;
   margin: 0;
   font-size: 1.3rem;
   letter-spacing: 0.03em;
   color: inherit;
 }
 
+.window-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.window-btn,
 .close-btn {
   width: 1.4rem;
   height: 1.4rem;
@@ -456,13 +467,33 @@ body[data-bg-mode="tile"] {
   color: var(--text-main);
 }
 
+.window-btn:active,
 .close-btn:active {
   border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
 }
 
+.window-btn:focus-visible,
 .close-btn:focus-visible {
   outline: 2px solid var(--focus-accent);
   outline-offset: 1px;
+}
+
+.window-btn[data-role="minimize"] {
+  align-items: end;
+  padding-bottom: 0.14rem;
+}
+
+.window.maximized {
+  left: 0 !important;
+  top: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-height: none;
+  resize: none;
+}
+
+.window.maximized .window-content {
+  max-height: calc(100% - 2rem);
 }
 
 .window-content {
@@ -672,6 +703,10 @@ body[data-bg-mode="tile"] {
     width: 1.5rem;
     height: 1.5rem;
     font-size: 1.1rem;
+  }
+
+  .taskbar {
+    display: none;
   }
 }
 
@@ -1549,21 +1584,34 @@ a {
 }
 
 @keyframes windowOpen {
-  from { transform: scale(0.87); opacity: 0; }
+  from { transform: translate(var(--taskbar-origin-x, 0), var(--taskbar-origin-y, 0)) scale(0.22); opacity: 0; }
   to   { transform: scale(1);    opacity: 1; }
 }
 
 @keyframes windowClose {
-  from { transform: scale(1);    opacity: 1; }
-  to   { transform: scale(0.87); opacity: 0; }
+  from { transform: scale(1); opacity: 1; }
+  to   { transform: translate(var(--taskbar-origin-x, 0), var(--taskbar-origin-y, 0)) scale(0.22); opacity: 0; }
 }
 
 .window.opening {
-  animation: windowOpen 0.14s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  animation: windowOpen 0.18s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
 }
 
 .window.closing {
-  animation: windowClose 0.11s ease-in forwards;
+  animation: windowClose 0.14s ease-in forwards;
+}
+
+.window.minimizing {
+  animation: windowClose 0.16s ease-in forwards;
+}
+
+.window.restoring {
+  animation: windowOpen 0.18s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}
+
+.window.minimized {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 /*  Active vs inactive title bars  */
@@ -1593,6 +1641,81 @@ a {
 
 .window.focused .title-bar h2 {
   color: var(--title-text);
+}
+
+.taskbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--taskbar-height);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.45rem;
+  background: var(--menu-gray);
+  border-top: 2px solid var(--border-light);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.5);
+  z-index: 1200;
+}
+
+.taskbar-start {
+  min-width: 5.5rem;
+  height: 100%;
+  border: 2px solid;
+  border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+  background: linear-gradient(180deg, #f2f2f2 0%, #cfcfcf 100%);
+  font: inherit;
+  font-size: 1rem;
+  padding: 0 0.8rem;
+}
+
+.taskbar-apps {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  gap: 0.3rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 0.1rem;
+}
+
+.taskbar-app {
+  flex: 0 0 auto;
+  min-width: 9rem;
+  max-width: 13rem;
+  height: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border: 2px solid;
+  border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+  background: var(--surface-button);
+  font: inherit;
+  font-size: 1rem;
+  text-align: left;
+  padding: 0 0.6rem;
+}
+
+.taskbar-app.active {
+  border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+  background: linear-gradient(180deg, #bfbfbf 0%, #d8d8d8 100%);
+}
+
+.taskbar-app.minimized {
+  color: rgba(16, 16, 16, 0.72);
+}
+
+.taskbar-tray {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 5.8rem;
+  height: 100%;
+  padding: 0 0.6rem;
+  border: 2px solid;
+  border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+  background: rgba(255, 255, 255, 0.3);
 }
 
 /*  Desktop icon hover animations  */

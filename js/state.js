@@ -13,6 +13,9 @@ export const menuBar = document.querySelector(".menu-bar");
 export const mobileAppNav = document.getElementById("mobile-app-nav");
 export const mobileAppTitle = document.getElementById("mobile-app-title");
 export const mobileCloseBtn = document.getElementById("mobile-close-btn");
+export const taskbar = document.getElementById("taskbar");
+export const taskbarApps = document.getElementById("taskbar-apps");
+export const taskbarClock = document.getElementById("taskbar-clock");
 
 // ── Constants ─────────────────────────────────────────────────
 export const BROWSER_HOME_URL = "about:home";
