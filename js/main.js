@@ -120,7 +120,46 @@ function runMenuAction(action) {
 }
 
 function rebalanceDesktopIconColumns() {
-  if (mobileLayoutQuery.matches || !desktop || openers.length === 0) return;
+  if (!desktop || openers.length === 0) return;
+
+  if (mobileLayoutQuery.matches) {
+    const mobileGrid = document.getElementById("mobile-icon-grid");
+    if (!mobileGrid) return;
+
+    const iconCount = openers.length;
+    const availableWidth = desktop.clientWidth;
+    const availableHeight = desktop.clientHeight;
+    if (!availableWidth || !availableHeight) return;
+
+    const baseWidth = 88;
+    const baseHeight = 86;
+    const colGap = 12;
+    const rowGap = 14;
+    const padX = 16;
+    const padY = 20;
+    const minScale = 0.68;
+
+    let bestLayout = {
+      columns: 1,
+      rows: iconCount,
+      scale: minScale,
+    };
+
+    for (let columns = 1; columns <= iconCount; columns += 1) {
+      const rows = Math.ceil(iconCount / columns);
+      const scaleX = (availableWidth - padX * 2 - Math.max(0, columns - 1) * colGap) / (columns * baseWidth);
+      const scaleY = (availableHeight - padY * 2 - Math.max(0, rows - 1) * rowGap) / (rows * baseHeight);
+      const scale = Math.min(scaleX, scaleY, 1);
+      if (scale < minScale) continue;
+      if (scale > bestLayout.scale + 0.01 || (Math.abs(scale - bestLayout.scale) <= 0.01 && columns > bestLayout.columns)) {
+        bestLayout = { columns, rows, scale };
+      }
+    }
+
+    mobileGrid.style.setProperty("--mobile-icon-rows", String(bestLayout.rows));
+    mobileGrid.style.setProperty("--mobile-icon-scale", bestLayout.scale.toFixed(3));
+    return;
+  }
 
   const rootFontSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
   const firstX = Number.parseFloat(openers[0].style.getPropertyValue("--x")) || 3;

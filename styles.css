@@ -613,39 +613,45 @@ body[data-bg-mode="tile"] {
   .desktop-shell {
     display: block;
     height: 100%;
-    overflow-y: auto;
+    overflow: hidden;
   }
 
   .mobile-icon-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr));
-    gap: 1.5rem 1rem;
-    padding: 1.5rem 1rem;
+    grid-auto-flow: column;
+    grid-template-rows: repeat(var(--mobile-icon-rows, 4), minmax(0, max-content));
+    grid-auto-columns: calc(5.5rem * var(--mobile-icon-scale, 1));
+    justify-content: center;
+    align-content: start;
+    gap: 0.9rem 0.75rem;
+    padding: 1.25rem 1rem;
+    height: 100%;
+    overflow: hidden;
   }
 
   .desktop-icon {
     position: static;
     left: unset;
     top: unset;
-    width: 5.5rem;
-    padding: 0.25rem 0.1rem;
+    width: calc(5.5rem * var(--mobile-icon-scale, 1));
+    padding: calc(0.25rem * var(--mobile-icon-scale, 1)) calc(0.1rem * var(--mobile-icon-scale, 1));
     background: transparent;
     border: none;
     color: #fff;
     display: grid;
     justify-items: center;
-    gap: 0.3rem;
+    gap: calc(0.3rem * var(--mobile-icon-scale, 1));
   }
 
   .icon {
-    width: 3rem;
-    height: 3rem;
-    font-size: 1.6rem;
+    width: calc(3rem * var(--mobile-icon-scale, 1));
+    height: calc(3rem * var(--mobile-icon-scale, 1));
+    font-size: calc(1.6rem * var(--mobile-icon-scale, 1));
   }
 
   .label {
     text-shadow: 1px 1px #1b2f33;
-    font-size: 0.9rem;
+    font-size: calc(0.9rem * var(--mobile-icon-scale, 1));
     line-height: 1.1;
     text-align: center;
   }
