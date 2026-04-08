@@ -1651,23 +1651,12 @@ a {
   height: var(--taskbar-height);
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.3rem 0.45rem;
+  gap: 0.3rem;
+  padding: 0.3rem;
   background: var(--menu-gray);
   border-top: 2px solid var(--border-light);
   box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.5);
   z-index: 1200;
-}
-
-.taskbar-start {
-  min-width: 5.5rem;
-  height: 100%;
-  border: 2px solid;
-  border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
-  background: linear-gradient(180deg, #f2f2f2 0%, #cfcfcf 100%);
-  font: inherit;
-  font-size: 1rem;
-  padding: 0 0.8rem;
 }
 
 .taskbar-apps {
@@ -1682,19 +1671,16 @@ a {
 
 .taskbar-app {
   flex: 0 0 auto;
-  min-width: 9rem;
-  max-width: 13rem;
+  width: 2.35rem;
   height: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   border: 2px solid;
   border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
   background: var(--surface-button);
   font: inherit;
   font-size: 1rem;
-  text-align: left;
-  padding: 0 0.6rem;
+  display: grid;
+  place-items: center;
+  padding: 0.15rem;
 }
 
 .taskbar-app.active {
@@ -1706,16 +1692,21 @@ a {
   color: rgba(16, 16, 16, 0.72);
 }
 
-.taskbar-tray {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 5.8rem;
-  height: 100%;
-  padding: 0 0.6rem;
-  border: 2px solid;
-  border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
-  background: rgba(255, 255, 255, 0.3);
+.taskbar-app-icon,
+.taskbar-app-fallback {
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
+.taskbar-app-icon {
+  object-fit: contain;
+  image-rendering: auto;
+}
+
+.taskbar-app-fallback {
+  display: grid;
+  place-items: center;
+  font-weight: bold;
 }
 
 /*  Desktop icon hover animations  */

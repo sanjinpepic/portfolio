@@ -3,12 +3,12 @@
 import {
   desktop,
   windows,
+  openers,
   mobileLayoutQuery,
   menuBar,
   mobileAppNav,
   mobileAppTitle,
   taskbarApps,
-  taskbarClock,
   clock,
   DESKTOP_STATE_KEY,
   THEME_STATE_KEY,
@@ -66,6 +66,35 @@ function getTaskbarButton(winId) {
   return taskbarApps?.querySelector(`[data-taskbar-window="${winId}"]`) || null;
 }
 
+function getWindowIconMarkup(win) {
+  const opener = openers.find((icon) => icon.dataset.open === win.id);
+  const openerImage = opener?.querySelector(".icon-image");
+  if (!openerImage) {
+    return `<span class="taskbar-app-fallback" aria-hidden="true">${getWindowTitle(win).slice(0, 1)}</span>`;
+  }
+  const src = openerImage.getAttribute("src") || "";
+  const fallbackSrc = openerImage.dataset.fallbackSrc || "";
+  return `<img class="taskbar-app-icon" src="${src}" ${fallbackSrc ? `data-fallback-src="${fallbackSrc}"` : ""} alt="" />`;
+}
+
+function bindTaskbarIconFallbackHandlers(scope = taskbarApps) {
+  const icons = [...(scope?.querySelectorAll(".taskbar-app-icon") || [])];
+  icons.forEach((icon) => {
+    icon.addEventListener("error", () => {
+      const fallbackSrc = icon.dataset.fallbackSrc;
+      if (fallbackSrc && icon.getAttribute("src") !== fallbackSrc) {
+        icon.setAttribute("src", fallbackSrc);
+        return;
+      }
+      const fallback = document.createElement("span");
+      fallback.className = "taskbar-app-fallback";
+      fallback.setAttribute("aria-hidden", "true");
+      fallback.textContent = icon.closest(".taskbar-app")?.getAttribute("aria-label")?.slice(0, 1) || "?";
+      icon.replaceWith(fallback);
+    }, { once: true });
+  });
+}
+
 function setTaskbarAnimationOrigin(win) {
   const button = getTaskbarButton(win.id);
   if (!button) return;
@@ -109,7 +138,9 @@ export function syncTaskbar() {
     button.type = "button";
     button.className = "taskbar-app";
     button.dataset.taskbarWindow = win.id;
-    button.textContent = getWindowTitle(win);
+    button.innerHTML = getWindowIconMarkup(win);
+    button.setAttribute("aria-label", getWindowTitle(win));
+    button.title = getWindowTitle(win);
     button.setAttribute("aria-pressed", isOpen && !win.classList.contains("minimized") ? "true" : "false");
     if (isOpen) button.classList.add("open");
     if (win.id === S.activeWindowId && isOpen && !win.classList.contains("minimized")) button.classList.add("active");
@@ -117,6 +148,7 @@ export function syncTaskbar() {
     taskbarApps.appendChild(button);
     updateWindowControlState(win);
   });
+  bindTaskbarIconFallbackHandlers();
 }
 
 function collectDesktopState() {
@@ -299,18 +331,11 @@ export function restoreDesktopState() {
 
 export function updateClock() {
   const now = new Date();
-  const clockLabel = now.toLocaleString([], {
+  clock.textContent = now.toLocaleString([], {
     weekday: "short",
     hour: "2-digit",
     minute: "2-digit",
   });
-  clock.textContent = clockLabel;
-  if (taskbarClock) {
-    taskbarClock.textContent = now.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  }
 }
 
 export function updateMobileNav(openWin) {
