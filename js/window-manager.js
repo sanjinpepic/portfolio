@@ -57,6 +57,16 @@ function applyClampedWindowPosition(win, left, top) {
   win.style.top = `${clamp(top, 0, maxY)}px`;
 }
 
+function resetWindowToMobileViewport(win) {
+  if (!win) return;
+  // Drop any persisted desktop geometry so mobile CSS can fully control the window.
+  win.style.left = "";
+  win.style.top = "";
+  win.style.width = "";
+  win.style.height = "";
+  win.classList.remove("maximized");
+}
+
 function fitWindowToContent(win) {
   if (!win || mobileLayoutQuery.matches || win.classList.contains("maximized") || !win.classList.contains("open")) return;
 
@@ -386,6 +396,13 @@ export function updateMobileNav(openWin) {
   }
 }
 
+export function syncOpenWindowsForMobileViewport() {
+  if (!mobileLayoutQuery.matches) return;
+  windows
+    .filter((win) => win.classList.contains("open"))
+    .forEach((win) => resetWindowToMobileViewport(win));
+}
+
 export function bringToFront(win) {
   windows.forEach((w) => w.classList.remove("focused"));
   win.classList.add("focused");
@@ -406,6 +423,7 @@ export function openWindow(id) {
   if (!win) return;
   win.classList.remove("closing", "minimizing");
   if (mobileLayoutQuery.matches) {
+    resetWindowToMobileViewport(win);
     windows.forEach((windowEl) => {
       if (windowEl.id !== id) windowEl.classList.remove("open");
     });
@@ -544,6 +562,7 @@ export function restoreWindow(id, { persist = true, immediate = false } = {}) {
   if (!win || !win.classList.contains("open")) return;
   setTaskbarAnimationOrigin(win);
   win.classList.remove("minimized");
+  if (mobileLayoutQuery.matches) resetWindowToMobileViewport(win);
   bringToFront(win);
   requestAnimationFrame(() => fitWindowToContent(win));
   if (mobileLayoutQuery.matches) updateMobileNav(win);
@@ -561,6 +580,13 @@ export function restoreWindow(id, { persist = true, immediate = false } = {}) {
 export function maximizeWindow(id, { persist = true, restore = false } = {}) {
   const win = document.getElementById(id);
   if (!win || !win.classList.contains("open")) return;
+  if (mobileLayoutQuery.matches) {
+    resetWindowToMobileViewport(win);
+    updateWindowControlState(win);
+    syncTaskbar();
+    if (persist) saveDesktopState();
+    return;
+  }
   if (restore) {
     win.classList.remove("maximized");
     if (win.dataset.restoreLeft) win.style.left = win.dataset.restoreLeft;

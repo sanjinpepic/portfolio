@@ -13,7 +13,7 @@ import {
   loadResumeTextFile, loadCaseStudy, restoreDesktopState, restoreThemePreference,
   restoreBackgroundModePreference, applyTheme, applyBackgroundMode,
   setRestartWinampFlutter, setStopWinampPlayback, minimizeWindow,
-  toggleMaximizeWindow, restoreWindow, syncTaskbar
+  toggleMaximizeWindow, restoreWindow, syncTaskbar, syncOpenWindowsForMobileViewport
 } from "./window-manager.js";
 import {
   renderProjects, bindDynamicContentEvents, ALLOWED_URLS,
@@ -131,12 +131,12 @@ function rebalanceDesktopIconColumns() {
     const availableHeight = desktop.clientHeight;
     if (!availableWidth || !availableHeight) return;
 
-    const baseWidth = 88;
-    const baseHeight = 86;
+    const baseWidth = 92;
+    const baseHeight = 104;
     const colGap = 12;
     const rowGap = 14;
     const padX = 16;
-    const padY = 20;
+    const padY = 24;
     const minScale = 0.68;
 
     let bestLayout = {
@@ -151,7 +151,13 @@ function rebalanceDesktopIconColumns() {
       const scaleY = (availableHeight - padY * 2 - Math.max(0, rows - 1) * rowGap) / (rows * baseHeight);
       const scale = Math.min(scaleX, scaleY, 1);
       if (scale < minScale) continue;
-      if (scale > bestLayout.scale + 0.01 || (Math.abs(scale - bestLayout.scale) <= 0.01 && columns > bestLayout.columns)) {
+      if (
+        scale > bestLayout.scale + 0.01 ||
+        (
+          Math.abs(scale - bestLayout.scale) <= 0.01 &&
+          (rows < bestLayout.rows || (rows === bestLayout.rows && columns > bestLayout.columns))
+        )
+      ) {
         bestLayout = { columns, rows, scale };
       }
     }
@@ -356,6 +362,7 @@ mobileLayoutQuery.addEventListener("change", () => {
     updateMobileNav(null);
     return;
   }
+  syncOpenWindowsForMobileViewport();
   const firstOpen = windows.find((win) => win.classList.contains("open"));
   windows.forEach((win) => {
     if (firstOpen && win.id !== firstOpen.id) win.classList.remove("open");
