@@ -828,43 +828,51 @@
         const patternRoll = Math.random();
         const level = Math.floor(distance / 100);
         const tallChance = Math.min(0.34, 0.08 + level * 0.04);
+        
+        const baseGap = 160 + dangerLevel * 40;
 
         if (patternRoll < 0.34) {
           spawnObstacle("cactus", x);
           if (Math.random() < 0.6) {
             spawnFishArc(x + 8, 2, world.groundY - 56);
           }
-          return 136 + Math.random() * 34;
+          return baseGap + Math.random() * 40;
         }
 
         if (patternRoll < 0.6) {
           spawnObstacle(Math.random() < 0.5 ? "crate" : "cactus", x);
-          spawnObstacle("cactus", x + 126 + Math.random() * 20);
+          const offset = 140 + Math.random() * 30;
+          spawnObstacle("cactus", x + offset);
           spawnFishArc(x + 34, 3, world.groundY - 84);
-          return 166 + Math.random() * 30;
+          return offset + baseGap + Math.random() * 30;
         }
 
         if (patternRoll < 0.84 || distance < 180) {
           spawnObstacle(Math.random() < tallChance ? "tower" : "sign", x);
+          let offset = 0;
           if (distance > 220 && Math.random() < 0.34) {
-            spawnObstacle("cactus", x + 152 + Math.random() * 18);
+            offset = 150 + Math.random() * 30;
+            spawnObstacle("cactus", x + offset);
           }
           spawnFishArc(x + 14, 1 + Math.floor(Math.random() * 2), world.groundY - 102);
-          return 178 + Math.random() * 34;
+          return (offset === 0 ? baseGap : offset + baseGap) + Math.random() * 40;
         }
 
         if (distance < 320) {
           spawnObstacle("crate", x);
-          spawnObstacle("cactus", x + 142);
+          const offset = 150 + Math.random() * 20;
+          spawnObstacle("cactus", x + offset);
           spawnFishArc(x + 50, 3, world.groundY - 100);
-          return 194 + Math.random() * 28;
+          return offset + baseGap + Math.random() * 30;
         }
 
         spawnObstacle("crate", x);
-        spawnObstacle("tower", x + 118);
-        spawnObstacle("cactus", x + 246);
+        const offset1 = 140 + Math.random() * 20;
+        spawnObstacle("tower", x + offset1);
+        const offset2 = offset1 + 150 + Math.random() * 20;
+        spawnObstacle("cactus", x + offset2);
         spawnFishArc(x + 56, 4, world.groundY - 108);
-        return 252 + Math.random() * 28;
+        return offset2 + baseGap + Math.random() * 30;
       }
 
       function rectHit(a, b) {
